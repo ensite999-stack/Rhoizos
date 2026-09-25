@@ -1,1 +1,72 @@
-"use client";import {useEffect,useState} from "react";import Link from "next/link";type Domain={id:string;name:string;lifecycle_status:string;expires_at:string|null;transfer_locked:boolean};export default function Domains(){const [items,setItems]=useState<Domain[]>([]),[error,setError]=useState(""),[codes,setCodes]=useState<Record<string,string>>({});async function load(){const r=await fetch("/api/domains",{cache:"no-store"});if(r.status===401){location.href="/login";return;}const d=await r.json();if(!r.ok){setError(d.error||"Could not load domains.");return;}setItems(d.items||[]);}useEffect(()=>{load();},[]);async function renew(id:string){const r=await fetch("/api/orders/renew",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({domainId:id})}),d=await r.json();if(!r.ok){setError(d.error||"Renewal failed.");return;}location.href=d.checkoutUrl;}async function lock(id:string,locked:boolean){const r=await fetch("/api/domains/"+id+"/lock",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({locked})}),d=await r.json();if(!r.ok){setError(d.error||"Lock update failed.");return;}load();}async function code(id:string){const r=await fetch("/api/domains/"+id+"/auth-code",{cache:"no-store"}),d=await r.json();if(!r.ok){setError(d.error||"Could not reveal Auth Code.");return;}setCodes(v=>({...v,[id]:d.authCode}));}return <div className="page wide"><p className="kicker">My domains</p><h1 className="pageTitle">Your domains.</h1><p className="pageIntro">Renew, manage DNS, or unlock and transfer out.</p>{error&&<p className="error">{error}</p>}<div className="table">{items.map(x=><div className="domainRow" key={x.id}><div><h3>{x.name}</h3><p>{x.lifecycle_status} · {x.expires_at?new Date(x.expires_at).toLocaleDateString():"Expiry pending"}</p>{codes[x.id]&&<div className="codeBox">{codes[x.id]}</div>}</div><div className="actions"><Link className="secondary" href={"/dns/"+x.id}>DNS</Link><button className="secondary" onClick={()=>renew(x.id)}>Renew</button><button className="secondary" onClick={()=>lock(x.id,!x.transfer_locked)}>{x.transfer_locked?"Unlock":"Lock"}</button><button className="secondary" onClick={()=>code(x.id)}>Auth Code</button></div></div>)}</div></div>}
+"use client";
+import {useEffect,useState} from "react";
+import Link from "next/link";
+import {useI18n} from "@/components/I18nProvider";
+
+type Domain={
+  id:string;
+  name:string;
+  lifecycle_status:string;
+  expires_at:string|null;
+  transfer_locked:boolean;
+};
+
+export default function Domains(){
+  const {t,locale}=useI18n();
+  const [items,setItems]=useState<Domain[]>([]);
+  const [error,setError]=useState("");
+  const [codes,setCodes]=useState<Record<string,string>>({});
+
+  async function load(){
+    const response=await fetch("/api/domains",{cache:"no-store"});
+    if(response.status===401){location.href="/login";return;}
+    const data=await response.json();
+    if(!response.ok){setError(data.error||t("domains.loadFailed"));return;}
+    setItems(data.items||[]);
+  }
+
+  useEffect(()=>{load();},[]);
+
+  async function renew(id:string){
+    const response=await fetch("/api/orders/renew",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({domainId:id})});
+    const data=await response.json();
+    if(!response.ok){setError(data.error||t("domains.renewFailed"));return;}
+    location.href=data.checkoutUrl;
+  }
+
+  async function updateLock(id:string,locked:boolean){
+    const response=await fetch("/api/domains/"+id+"/lock",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({locked})});
+    const data=await response.json();
+    if(!response.ok){setError(data.error||t("domains.lockFailed"));return;}
+    load();
+  }
+
+  async function revealCode(id:string){
+    const response=await fetch("/api/domains/"+id+"/auth-code",{cache:"no-store"});
+    const data=await response.json();
+    if(!response.ok){setError(data.error||t("domains.codeFailed"));return;}
+    setCodes(current=>({...current,[id]:data.authCode}));
+  }
+
+  return <div className="page wide">
+    <p className="kicker">{t("domains.kicker")}</p>
+    <h1 className="pageTitle">{t("domains.title")}</h1>
+    <p className="pageIntro">{t("domains.copy")}</p>
+    {error&&<p className="error">{error}</p>}
+    <div className="table">
+      {items.map(item=><div className="domainRow" key={item.id}>
+        <div>
+          <h3>{item.name}</h3>
+          <p>{item.lifecycle_status.replace(/_/g," ")} · {item.expires_at?new Date(item.expires_at).toLocaleDateString(locale):t("domains.expiryPending")}</p>
+          {codes[item.id]&&<div className="codeBox">{codes[item.id]}</div>}
+        </div>
+        <div className="actions">
+          <Link className="secondary" href={"/dns/"+item.id}>{t("domains.dns")}</Link>
+          <button className="secondary" onClick={()=>renew(item.id)}>{t("domains.renew")}</button>
+          <button className="secondary" onClick={()=>updateLock(item.id,!item.transfer_locked)}>{item.transfer_locked?t("domains.unlock"):t("domains.lock")}</button>
+          <button className="secondary" onClick={()=>revealCode(item.id)}>{t("domains.authCode")}</button>
+        </div>
+      </div>)}
+    </div>
+  </div>;
+}

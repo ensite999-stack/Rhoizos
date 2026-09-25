@@ -1,8 +1,12 @@
+"use client";
+import {useI18n} from "@/components/I18nProvider";
+
 export default function Support(){
+  const {t}=useI18n();
   return <article className="page">
-    <p className="kicker">Support</p>
-    <h1 className="pageTitle">Talk to us.</h1>
-    <p className="pageIntro">For account help, domain operations, abuse reports, or general questions, email us directly.</p>
+    <p className="kicker">{t("support.kicker")}</p>
+    <h1 className="pageTitle">{t("support.title")}</h1>
+    <p className="pageIntro">{t("support.copy")}</p>
     <a className="supportEmail" href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
   </article>;
 }

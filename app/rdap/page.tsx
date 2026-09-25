@@ -1,23 +1,25 @@
 "use client";
 import {FormEvent,useState} from "react";
+import {useI18n} from "@/components/I18nProvider";
 
 export default function Rdap(){
+  const {t}=useI18n();
   const [domain,setDomain]=useState("");
 
-  function submit(e:FormEvent){
-    e.preventDefault();
+  function submit(event:FormEvent){
+    event.preventDefault();
     const value=domain.trim().toLowerCase();
     if(!value)return;
     location.href="/domain/"+encodeURIComponent(value);
   }
 
   return <div className="page">
-    <p className="kicker">Public Domain information</p>
-    <h1 className="pageTitle">Understand a registered Domain.</h1>
-    <p className="pageIntro">Search a Domain and Rhoizos will turn its public RDAP record into clear registration dates, registrar details, nameservers, DNSSEC and transfer-lock information.</p>
+    <p className="kicker">{t("rdap.kicker")}</p>
+    <h1 className="pageTitle">{t("rdap.title")}</h1>
+    <p className="pageIntro">{t("rdap.copy")}</p>
     <form className="form rdapSearchClean" onSubmit={submit}>
-      <label className="field">Domain<input value={domain} onChange={e=>setDomain(e.target.value)} placeholder="example.com" required spellCheck={false}/></label>
-      <button className="primary">View Domain information</button>
+      <label className="field">{t("common.domain")}<input value={domain} onChange={event=>setDomain(event.target.value)} placeholder="example.com" required spellCheck={false}/></label>
+      <button className="primary">{t("rdap.view")}</button>
     </form>
   </div>;
 }
