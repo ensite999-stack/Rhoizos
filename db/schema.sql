@@ -110,3 +110,67 @@ values
 on conflict (tld) do nothing;
 
 alter table tld_prices enable row level security;
+
+
+create table if not exists admin_users (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  password_hash text not null,
+  display_name text not null default 'Administrator',
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists admin_sessions (
+  id uuid primary key default gen_random_uuid(),
+  admin_user_id uuid not null references admin_users(id) on delete cascade,
+  token_hash char(64) not null unique,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now()
+);
+create index if not exists admin_sessions_admin_idx on admin_sessions(admin_user_id);
+create index if not exists admin_sessions_expiry_idx on admin_sessions(expires_at);
+
+create table if not exists admin_audit_log (
+  id bigserial primary key,
+  admin_user_id uuid references admin_users(id) on delete set null,
+  action text not null,
+  target_type text,
+  target_id text,
+  details jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists admin_audit_created_idx on admin_audit_log(created_at desc);
+
+create table if not exists pricing_settings (
+  singleton boolean primary key default true check (singleton = true),
+  default_register_markup_pct numeric(8,3) not null default 0,
+  default_renew_markup_pct numeric(8,3) not null default 0,
+  default_transfer_markup_pct numeric(8,3) not null default 0,
+  minimum_margin numeric(12,2) not null default 0,
+  currency char(3) not null default 'USD',
+  updated_at timestamptz not null default now()
+);
+insert into pricing_settings(singleton) values(true) on conflict(singleton) do nothing;
+
+alter table tld_prices add column if not exists cost_register numeric(12,2);
+alter table tld_prices add column if not exists cost_renew numeric(12,2);
+alter table tld_prices add column if not exists cost_transfer numeric(12,2);
+alter table tld_prices add column if not exists markup_register_pct numeric(8,3);
+alter table tld_prices add column if not exists markup_renew_pct numeric(8,3);
+alter table tld_prices add column if not exists markup_transfer_pct numeric(8,3);
+alter table tld_prices add column if not exists override_register numeric(12,2);
+alter table tld_prices add column if not exists override_renew numeric(12,2);
+alter table tld_prices add column if not exists override_transfer numeric(12,2);
+
+update tld_prices set
+  cost_register=coalesce(cost_register,register_price),
+  cost_renew=coalesce(cost_renew,renew_price),
+  cost_transfer=coalesce(cost_transfer,transfer_price);
+
+alter table admin_users enable row level security;
+alter table admin_sessions enable row level security;
+alter table admin_audit_log enable row level security;
+alter table pricing_settings enable row level security;
