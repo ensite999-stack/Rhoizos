@@ -1,0 +1,2 @@
+import type {MetadataRoute} from "next";
+export default function manifest():MetadataRoute.Manifest{return {name:"Rhoizos",short_name:"Rhoizos",description:"Domain search, registration, transfer, renewal, DNS management, RDAP lookup and private DNS notes.",start_url:"/",display:"standalone",background_color:"#071426",theme_color:"#702963",icons:[{src:"/icon.svg",sizes:"any",type:"image/svg+xml",purpose:"any"}]};}

@@ -87,7 +87,7 @@ const enUS:Record<string,string>={
   "detail.unavailable":"Public registration details are not available through Rhoizos for this extension yet.",
   "status.transferLock":"Transfer lock is enabled","status.registryTransferLock":"Registry transfer lock is enabled",
   "status.deleteProtected":"Protected from deletion","status.updateProtected":"Protected from unauthorized updates","status.active":"Active",
-  "meta.title":"Rhoizos — Your Domain. Your World!","meta.description":"A simple, focused place to search, register, transfer, renew and manage Domains."
+  "meta.title":"Rhoizos — Domain Search, Registration, Transfer & DNS","meta.description":"Rhoizos is a focused domain platform for domain search, registration, transfer, renewal, DNS management, RDAP lookup and private DNS notes."
 };
 
 const enGB={...enUS,
@@ -142,7 +142,7 @@ const zhCN={...enUS,
   "detail.registrar":"注册商","detail.registeredSince":"注册时间","detail.expires":"注册到期","detail.updated":"最后更新","detail.dnssec":"DNSSEC","detail.enabled":"已启用","detail.notEnabled":"未显示为启用",
   "detail.nameservers":"Nameserver","detail.status":"域名状态","detail.unavailableTitle":"已注册域名","detail.unavailable":"Rhoizos 暂时无法为这个后缀提供公开注册信息。",
   "status.transferLock":"已开启转移锁","status.registryTransferLock":"注册局转移锁已开启","status.deleteProtected":"已防止删除","status.updateProtected":"已防止未授权修改","status.active":"正常",
-  "meta.title":"Rhoizos — 你的域名。你的世界！","meta.description":"一个简洁、专注的域名搜索、注册、转入、续费和管理平台。"
+  "meta.title":"Rhoizos — 域名搜索、注册、转入与 DNS 管理","meta.description":"一个简洁、专注的域名搜索、注册、转入、续费和管理平台。"
 };
 
 const zhTW={...zhCN,
@@ -178,7 +178,7 @@ const zhTW={...zhCN,
   "rdap.kicker":"公開網域資訊","rdap.title":"了解一個已註冊網域。","rdap.copy":"搜尋網域後，Rhoizos 會把公開 RDAP 記錄整理成容易理解的註冊日期、註冊商、Nameserver、DNSSEC 和轉移鎖資訊。","rdap.view":"查看網域資訊",
   "detail.search":"網域搜尋","detail.searchAnother":"搜尋另一個網域…","detail.checking":"正在查詢網域…","detail.registeredLabel":"已註冊網域","detail.availableLabel":"可註冊網域","detail.resultLabel":"網域結果","detail.preview":"即時註冊商可用性尚未連接。","detail.premium":"這是溢價網域，需要人工報價。","detail.available":"這個網域可以註冊。","detail.registered":"這個網域已經被註冊。","detail.priceYear":"/ 年","detail.registerButton":"註冊網域","detail.starting":"正在開始…","detail.rdapButton":"查看公開註冊資訊","detail.rdapLoading":"正在載入公開註冊資訊…","detail.rdapTitle":"公開網域資訊","detail.rdapCopy":"RDAP 是網域的公開註冊記錄。Rhoizos 會整理重要內容，而不是直接顯示原始註冊局資料。","detail.registrar":"註冊商","detail.registeredSince":"註冊時間","detail.expires":"註冊到期","detail.updated":"最後更新","detail.notEnabled":"未顯示為啟用","detail.nameservers":"Nameserver","detail.status":"網域狀態","detail.unavailableTitle":"已註冊網域","detail.unavailable":"Rhoizos 暫時無法為這個後綴提供公開註冊資訊。",
   "status.transferLock":"已開啟轉移鎖","status.registryTransferLock":"註冊局轉移鎖已開啟","status.deleteProtected":"已防止刪除","status.updateProtected":"已防止未授權修改","status.active":"正常",
-  "meta.title":"Rhoizos — 你的網域。你的世界！","meta.description":"一個簡潔、專注的網域搜尋、註冊、轉入、續費和管理平台。"
+  "meta.title":"Rhoizos — 網域搜尋、註冊、轉入與 DNS 管理","meta.description":"一個簡潔、專注的網域搜尋、註冊、轉入、續費和管理平台。"
 };
 
 const frFR={...enUS,
@@ -214,7 +214,7 @@ const frFR={...enUS,
   "rdap.kicker":"Informations publiques du domaine","rdap.title":"Comprendre un domaine enregistré.","rdap.copy":"Recherchez un domaine et Rhoizos transformera son enregistrement RDAP public en dates, registrar, serveurs de noms, DNSSEC et informations de verrouillage faciles à lire.","rdap.view":"Voir les informations du domaine",
   "detail.search":"Recherche de domaine","detail.searchAnother":"Rechercher un autre domaine…","detail.checking":"Vérification du domaine…","detail.registeredLabel":"DOMAINE ENREGISTRÉ","detail.availableLabel":"DOMAINE DISPONIBLE","detail.resultLabel":"RÉSULTAT DU DOMAINE","detail.preview":"La disponibilité en temps réel du registrar n’est pas encore connectée.","detail.premium":"Ce domaine est premium et nécessite un devis manuel.","detail.available":"Ce domaine est disponible à l’enregistrement.","detail.registered":"Ce domaine est déjà enregistré.","detail.priceYear":"/ an","detail.registerButton":"Enregistrer le domaine","detail.starting":"Démarrage…","detail.rdapButton":"Voir les informations publiques d’enregistrement","detail.rdapLoading":"Chargement des informations publiques…","detail.rdapTitle":"Informations publiques du domaine","detail.rdapCopy":"RDAP est le registre public d’un domaine. Nous traduisons les éléments utiles au lieu d’afficher les données brutes du registre.","detail.registrar":"Registrar","detail.registeredSince":"Enregistré depuis","detail.expires":"Expiration","detail.updated":"Dernière mise à jour","detail.notEnabled":"Non indiqué comme activé","detail.nameservers":"Serveurs de noms","detail.status":"Statut du domaine","detail.unavailableTitle":"Domaine enregistré","detail.unavailable":"Les informations publiques ne sont pas encore disponibles via Rhoizos pour cette extension.",
   "status.transferLock":"Le verrou de transfert est activé","status.registryTransferLock":"Le verrou de transfert du registre est activé","status.deleteProtected":"Protégé contre la suppression","status.updateProtected":"Protégé contre les modifications non autorisées","status.active":"Actif",
-  "meta.title":"Rhoizos — Votre domaine. Votre monde !","meta.description":"Un espace simple et ciblé pour rechercher, enregistrer, transférer, renouveler et gérer des domaines."
+  "meta.title":"Rhoizos — Recherche, enregistrement, transfert et DNS","meta.description":"Rhoizos est une plateforme dédiée à la recherche, l’enregistrement, le transfert et le renouvellement de domaines, avec gestion DNS, RDAP et notes DNS privées."
 };
 
 const esES={...enUS,
@@ -250,7 +250,7 @@ const esES={...enUS,
   "rdap.kicker":"Información pública del dominio","rdap.title":"Entiende un dominio registrado.","rdap.copy":"Busca un dominio y Rhoizos convertirá su registro RDAP público en fechas, registrador, servidores de nombres, DNSSEC y bloqueos fáciles de entender.","rdap.view":"Ver información del dominio",
   "detail.search":"Búsqueda de dominio","detail.searchAnother":"Buscar otro dominio…","detail.checking":"Comprobando dominio…","detail.registeredLabel":"DOMINIO REGISTRADO","detail.availableLabel":"DOMINIO DISPONIBLE","detail.resultLabel":"RESULTADO DEL DOMINIO","detail.preview":"La disponibilidad en tiempo real del registrador aún no está conectada.","detail.premium":"Este es un dominio premium y necesita una cotización manual.","detail.available":"Este dominio está disponible para registrar.","detail.registered":"Este dominio ya está registrado.","detail.priceYear":"/ año","detail.registerButton":"Registrar dominio","detail.starting":"Iniciando…","detail.rdapButton":"Ver detalles públicos de registro","detail.rdapLoading":"Cargando detalles públicos…","detail.rdapTitle":"Información pública del dominio","detail.rdapCopy":"RDAP es el registro público de un dominio. Traducimos las partes útiles en lugar de mostrar datos brutos del registro.","detail.registrar":"Registrador","detail.registeredSince":"Registrado desde","detail.expires":"Caduca","detail.updated":"Última actualización","detail.notEnabled":"No aparece activado","detail.nameservers":"Servidores de nombres","detail.status":"Estado del dominio","detail.unavailableTitle":"Dominio registrado","detail.unavailable":"Rhoizos todavía no ofrece información pública para esta extensión.",
   "status.transferLock":"El bloqueo de transferencia está activado","status.registryTransferLock":"El bloqueo de transferencia del registro está activado","status.deleteProtected":"Protegido contra eliminación","status.updateProtected":"Protegido contra cambios no autorizados","status.active":"Activo",
-  "meta.title":"Rhoizos — Tu dominio. ¡Tu mundo!","meta.description":"Un lugar simple y enfocado para buscar, registrar, transferir, renovar y gestionar dominios."
+  "meta.title":"Rhoizos — Búsqueda, registro, transferencia y DNS","meta.description":"Rhoizos es una plataforma centrada en búsqueda, registro, transferencia y renovación de dominios, con gestión DNS, RDAP y notas DNS privadas."
 };
 
 export const messages:Record<Locale,Record<string,string>>={
