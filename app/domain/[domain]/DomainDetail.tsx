@@ -212,7 +212,6 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
                 {item.available===true&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
                 {canBuy(item)&&<>
                   <button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>{carted.has(item.domain)?t("cart.added"):t("cart.add")}</button>
-                  <Link className="secondaryLink" href={"/checkout/guest?domain="+encodeURIComponent(item.domain)}>{t("cart.buyGuest")}</Link>
                 </>}
                 {!canBuy(item)&&<button className="secondary" type="button" onClick={()=>go(item.domain)}>{t("detail.view")}</button>}
               </div>
@@ -230,7 +229,6 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
             {result.price!==null?<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>:<span className="pricePending">{t("detail.priceUnavailable")}</span>}
             {result.price!==null&&<>
               {carted.has(result.domain)?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>:<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>}
-              <Link className="secondaryLink" href={"/checkout/guest?domain="+encodeURIComponent(result.domain)}>{t("cart.buyGuest")}</Link>
             </>}
           </div>}
           {registered&&<div className="availabilityAction registeredAction"><button className="secondary publicDetailsButton" onClick={loadRdap} disabled={rdapState==="loading"}>{rdapState==="loading"?t("detail.rdapLoading"):t("detail.rdapButton")}</button></div>}

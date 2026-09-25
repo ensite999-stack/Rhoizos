@@ -20,7 +20,9 @@ export default function Login(){
     });
     const data=await response.json();
     if(!response.ok){setError(data.error||t("login.failed"));setBusy(false);return;}
-    location.href="/domains";
+    const params=new URLSearchParams(window.location.search);
+    const next=params.get("next");
+    location.href=next&&next.startsWith("/")&&!next.startsWith("//")?next:"/domains";
   }
 
   return <div className="page">

@@ -3,6 +3,7 @@ import {fail,ok} from "@/lib/http";
 import {normalizeDomain} from "@/lib/domain";
 import {publicPrices,retailFromCost,retailFromCosts,retailPrice} from "@/lib/pricing";
 import {domainAvailability,domainsAvailability} from "@/lib/spaceship";
+import {namesiloAvailability} from "@/lib/namesilo";
 
 export const runtime="nodejs";
 export const maxDuration=30;
@@ -72,7 +73,33 @@ export async function GET(request:NextRequest){
         });
       }
 
-      const availability=await domainsAvailability(domains);
+      let availability:
+        {domain:string;available:boolean|null;premium:boolean;registerPrice?:number|null}[];
+      if(process.env.NAMESILO_API_KEY){
+        try{
+          const namesilo=await namesiloAvailability(domains);
+          const premiumDomains=namesilo.filter(item=>item.available===true&&item.premium).map(item=>item.domain);
+          let premiumPricing=new Map<string,{premium:boolean;registerPrice:number|null}>();
+          if(premiumDomains.length){
+            const provider=await domainsAvailability(premiumDomains);
+            premiumPricing=new Map(provider.map(item=>[item.domain,{premium:item.premium,registerPrice:item.registerPrice}]));
+          }
+          availability=namesilo.map(item=>{
+            const provider=premiumPricing.get(item.domain);
+            return {
+              domain:item.domain,
+              available:item.available,
+              premium:provider?.premium??item.premium,
+              registerPrice:provider?.registerPrice??null
+            };
+          });
+        }catch(error){
+          console.error("NameSilo availability query failed; using registrar fallback.",error instanceof Error?error.message:"unknown");
+          availability=await domainsAvailability(domains);
+        }
+      }else{
+        availability=await domainsAvailability(domains);
+      }
       const availabilityMap=new Map(availability.map(item=>[item.domain,item]));
 
       const liveEntries=domains.flatMap((domain,index)=>{
@@ -84,6 +111,7 @@ export async function GET(request:NextRequest){
 
       return ok({
         query:label,
+        availabilityProvider:process.env.NAMESILO_API_KEY?"namesilo":"spaceship",
         page,
         total:uniqueRequested.length?uniqueRequested.length:allTlds.length,
         hasMore,

@@ -18,7 +18,7 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
         <Link className="brand notranslate" href="/" translate="no" aria-label="Rhoizos"><img src="/assets/rhoizos-mark.svg" alt="Rhoizos"/></Link>
         <nav className="mainNav" aria-label="Primary">
           <Link href="/">{t("nav.domain")}</Link>
-          <Link href="/#pricing">{t("nav.pricing")}</Link>
+          <Link href="/pricing">{t("nav.pricing")}</Link>
           <Link href="/transfer">{t("nav.transfer")}</Link>
           <Link href="/#learn">{t("nav.learn")}</Link>
           <Link href="/rdap">{t("nav.rdap")}</Link>
@@ -44,9 +44,11 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <Link href="/rdap">{t("footer.rdap")}</Link>
           <Link href="/domains">{t("footer.domains")}</Link>
           <Link href="/#learn">{t("footer.learn")}</Link>
+          <Link href="/pricing">{t("footer.pricing")}</Link>
+          <Link href="/privacy">{t("footer.privacy")}</Link>
+          <Link href="/terms">{t("footer.terms")}</Link>
           <Link href="/support">{t("footer.support")}</Link>
           <a href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
-          <Link href="/policies">{t("footer.policies")}</Link>
         </nav>
         <div className="footerPreferences">
           <ThemeToggle initialTheme={theme}/>

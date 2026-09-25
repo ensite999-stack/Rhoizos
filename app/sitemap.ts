@@ -5,5 +5,8 @@ export default function sitemap():MetadataRoute.Sitemap{const now=new Date();ret
 {url:SITE_URL+"/transfer",lastModified:now,changeFrequency:"weekly",priority:.85},
 {url:SITE_URL+"/rdap",lastModified:now,changeFrequency:"weekly",priority:.75},
 {url:SITE_URL+"/support",lastModified:now,changeFrequency:"monthly",priority:.5},
-{url:SITE_URL+"/policies",lastModified:now,changeFrequency:"monthly",priority:.4}
+{url:SITE_URL+"/pricing",lastModified:now,changeFrequency:"weekly",priority:.8},
+{url:SITE_URL+"/privacy",lastModified:now,changeFrequency:"monthly",priority:.45},
+{url:SITE_URL+"/terms",lastModified:now,changeFrequency:"monthly",priority:.45},
+{url:SITE_URL+"/policies",lastModified:now,changeFrequency:"monthly",priority:.3}
 ];}
