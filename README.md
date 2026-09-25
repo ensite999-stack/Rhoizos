@@ -3,153 +3,116 @@
 **你的域名，你的世界。**  
 **Your domain. Your world.**
 
-Rhoizos is a focused domain storefront and control surface built around a small set of actions: search, register, pay, transfer in, transfer out, renew, RDAP lookup, and DNS management with private per-record notes.
+Rhoizos is a focused domain registrar storefront: search, register, transfer, renew, RDAP, DNS, and private per-record notes.
 
-The interface is intentionally restrained: Scandinavian-inspired light surfaces, large typography, high contrast, generous spacing, and the Rhoizos purple accent `#702693`.
+## Current architecture
 
-## Status
-
-**Staging implementation, not a production registrar deployment.**
-
-The repository contains the storefront, a FOSSBilling integration overlay, a Spaceship registrar adapter, and a NOWPayments payment adapter. Live money-moving actions remain disabled unless the production environment explicitly enables them.
-
-Real registration, renewal, transfer, payment, email, and DNS operations must be acceptance-tested against the actual production accounts before launch.
-
-## Product scope
-
-Rhoizos v1 keeps only the following customer-facing capabilities:
-
-- Domain search and registration.
-- Crypto checkout through NOWPayments.
-- Transfer in with EPP/Auth code.
-- Transfer out by unlocking the domain and retrieving its EPP/Auth code.
-- Renewal through a renewal invoice and the configured crypto payment gateway.
-- RDAP lookup.
-- DNS record management.
-- A private note on each DNS record. Notes are stored in Rhoizos and are never published in DNS.
-- Account registration, login, password reset, and the contact details required by the registrar workflow.
-
-There is no hosting bundle, site builder, email product, analytics dashboard, or unrelated upsell layer in the storefront.
-
-## Preview
-
-```sh
-npm run dev
-# http://localhost:3000
-
-npm run check
-```
-
-Preview mode is deliberately non-transactional. It shows example TLD prices, a sample domain portfolio, and sample DNS records. It does **not** claim real availability and does not submit payments, registrations, renewals, transfers, or nameserver changes.
-
-## Architecture
+The primary application is now **Vercel-native**.
 
 ```text
 Browser
   |
   v
-Rhoizos storefront
+Next.js on Vercel
+  |-- storefront + account UI
+  |-- API Routes / Server Functions
+  |-- NOWPayments IPN webhook
+  |-- hourly reconciliation cron
   |
-  v
-FOSSBilling 0.7.2
-  |--------------------|
-  v                    v
-NOWPayments        Spaceship API
-payments           domain operations
+  |------> Postgres (Neon / Supabase compatible)
+  |------> Spaceship API
+  |------> NOWPayments API
 ```
 
-The current overlay targets **FOSSBilling 0.7.2's API/model contract**. Do not install it on another FOSSBilling release without porting and testing the integration.
+A traditional VPS is not required for the new runtime. Persistent state lives in Postgres and server-side work runs in Vercel Functions.
 
-The production host requires PHP 8.3+, curl, intl, mbstring, PDO SQLite, the normal FOSSBilling database/dependencies, HTTPS, and cron.
+The previous FOSSBilling 0.7.2 implementation is intentionally retained in `fossbilling/`, `scripts/`, and the PHP tests during migration. It is a rollback/reference implementation, not the primary runtime.
 
-## Domain operations
+## Product scope
 
-The Spaceship adapter implements availability, registration, transfer in, renewal, nameservers, transfer lock/unlock, EPP retrieval, contact submission, and privacy operations.
+- Domain availability and retail pricing.
+- Register -> NOWPayments -> verified payment -> Spaceship registration.
+- Transfer in with EPP/Auth Code -> payment -> async registrar transfer.
+- Transfer out with lock/unlock and Auth Code retrieval.
+- Renewal with a normal-renewal eligibility check before checkout.
+- Public RDAP lookup.
+- DNS add/delete and private per-record notes.
+- Required registrar contact details and account/session handling.
 
-Registration, transfer, and renewal are treated as charge-producing asynchronous operations. Their operation IDs are persisted before retry decisions are made so an ambiguous timeout is not blindly replayed.
+There is no hosting, email bundle, site builder, general invoice dashboard, or unrelated upsell layer.
 
-## Payments
+## Safety model
 
-NOWPayments is used as the crypto payment gateway.
+- Browser amounts and browser payment state are never trusted.
+- NOWPayments IPN signatures are HMAC-SHA512 verified.
+- After a valid IPN, payment status is fetched again from NOWPayments before settlement.
+- Payment settlement is idempotent at the order level.
+- Charge-producing registrar operations claim an operation row before the provider request.
+- Ambiguous provider timeouts are not blindly retried.
+- Transfer/Auth Codes are AES-256-GCM encrypted at rest using `RHOIZOS_DATA_KEY`.
+- Auth Code reveal and transfer lock changes require a recent login session.
+- Private DNS notes stay in Rhoizos Postgres and are never sent to Spaceship DNS.
+- Premium domains do not auto-purchase.
+- Non-normal expiry/redemption renewal paths stop and require support handling.
 
-Registration and transfer orders flow through cart checkout. Renewal uses FOSSBilling's renewal-invoice flow and then the configured payment gateway. Payment settlement and registrar provisioning are separate states.
+## Local development
 
-API keys and secrets must stay in server-side configuration. Never place them in JavaScript, Git, or a public preview deployment.
-
-## DNS notes
-
-DNS records are stored at the DNS provider. The custom note is separate metadata stored by Rhoizos.
-
-Examples:
-
-```text
-A      @      192.0.2.1       Website origin
-TXT    @      verify=...       Search verification
-CNAME  www    example.com      Public website
+```sh
+cp .env.example .env.local
+npm install
+npm run dev
 ```
 
-Changing the note does not alter public DNS.
+Initialize Postgres once:
 
-## Installation outline
+```sh
+psql "$DATABASE_URL" -f db/schema.sql
+```
 
-1. Prepare an isolated FOSSBilling 0.7.2 staging installation.
-2. Back up its files and database.
-3. Run:
-
-   ```sh
-   bash scripts/install.sh /absolute/path/to/fossbilling
-   ```
-
-4. Enable the Rhoizos module and select the Rhoizos client theme.
-5. Create a private directory outside the web root and set `RHOIZOS_STATE_DIR`.
-6. Configure the Spaceship registrar and supported TLD retail prices.
-7. Configure the NOWPayments gateway and the existing API/IPN credentials.
-8. Configure SMTP, HTTPS, secure cookies, FOSSBilling cron, and the Rhoizos reconciliation worker.
-9. Run acceptance tests.
-10. Only after successful controlled testing, enable `RHOIZOS_LIVE_PAYMENTS=1` and `RHOIZOS_LIVE_REGISTRATION=1`.
-
-See `.env.example` for the environment variables used by the overlay.
-
-## Acceptance checks
-
-Before production, verify at minimum:
-
-- Signup, email verification, login, logout, password reset, and CSRF behavior.
-- Real domain availability and pricing.
-- Registration payment -> payment settlement -> asynchronous registration completion.
-- Transfer-in payment -> transfer operation and completion state.
-- Renewal invoice -> NOWPayments -> renewal operation -> updated expiry.
-- Transfer-out unlock, EPP retrieval, and optional relock.
-- Client isolation: one account cannot access another account's domains, DNS, notes, or EPP codes.
-- DNS add/delete behavior and private-note persistence.
-- Lost/repeated payment callbacks and reconciliation.
-- Mobile and desktop rendering.
-- Published operator identity, jurisdiction, refund terms, privacy terms, abuse contact, and support information.
-
-## Tests
+Build verification:
 
 ```sh
 npm run check
-find fossbilling scripts tests -name '*.php' -print0 | xargs -0 -n1 php -l
-php tests/core.php
-bash -n scripts/install.sh
 ```
 
-CI does not spend money or contact the live registrar/payment APIs.
+The legacy PHP validation remains in GitHub Actions during migration.
 
-## Important limits
+## Vercel deployment
 
-- RDAP currently uses fixed registry origins for `.com`, `.net`, and `.org`.
-- Premium-domain pricing is not automatically accepted.
-- The DNS editor currently covers A, AAAA, CNAME, TXT, and MX.
-- Registrar/registry contact requirements still apply; Rhoizos does not promise anonymous registration.
-- NOWPayments and the relevant blockchain network process payment information independently of Rhoizos.
-- Multi-host production deployment requires shared transactional state and distributed locking instead of the current single-host local operation journal.
+1. Create a Postgres database using Neon or Supabase.
+2. Run `db/schema.sql`.
+3. Import this GitHub repository into Vercel.
+4. Configure every required environment variable from `.env.example`.
+5. Generate `RHOIZOS_DATA_KEY` as 32 random bytes encoded in base64.
+6. Configure `CRON_SECRET`.
+7. Point NOWPayments IPN to:
+   `/api/payments/nowpayments/webhook`
+8. Keep:
+   `RHOIZOS_LIVE_PAYMENTS=0`
+   and
+   `RHOIZOS_LIVE_REGISTRATION=0`
+   during controlled acceptance testing.
+9. Verify account isolation, domain search/pricing, payment callbacks, reconciliation, registration, transfer, renewal, transfer-out and DNS.
+10. Enable live fences only after acceptance succeeds.
 
-## References
+## Required environment
 
-- Spaceship API: https://docs.spaceship.dev/
-- FOSSBilling registrar integration: https://docs.fossbilling.org/extensions-and-development/guides/creating-a-registrar-integration/
-- FOSSBilling payment gateway integration: https://docs.fossbilling.org/extensions-and-development/guides/creating-a-payment-gateway/
-- FOSSBilling 0.7.2 source: https://github.com/FOSSBilling/FOSSBilling/tree/0.7.2
-- NOWPayments API: https://nowpayments.io/api
+See `.env.example`.
+
+Core variables:
+
+- `DATABASE_URL`
+- `RHOIZOS_APP_URL`
+- `RHOIZOS_DATA_KEY`
+- `RHOIZOS_TLD_PRICES_JSON`
+- `SPACESHIP_API_KEY`
+- `SPACESHIP_API_SECRET`
+- `NOWPAYMENTS_API_KEY`
+- `NOWPAYMENTS_IPN_SECRET`
+- `CRON_SECRET`
+
+## Legacy runtime
+
+See `legacy/README.md`.
+
+Do not run the Vercel-native app and the legacy FOSSBilling runtime against the same live payment/registrar credentials unless shared idempotency has been deliberately designed.
