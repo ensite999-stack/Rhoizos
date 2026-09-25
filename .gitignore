@@ -2,6 +2,9 @@
 .env.*
 !.env.example
 node_modules/
+.next/
+out/
+.vercel/
 var/
 .phpunit.cache/
 playwright-report/
