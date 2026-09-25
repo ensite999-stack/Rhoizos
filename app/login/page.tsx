@@ -1,1 +1,37 @@
-"use client";import {FormEvent,useState} from "react";import Link from "next/link";export default function Login(){const [error,setError]=useState(""),[busy,setBusy]=useState(false);async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setError("");const f=new FormData(e.currentTarget),r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:f.get("email"),password:f.get("password")})}),d=await r.json();if(!r.ok){setError(d.error||"Login failed.");setBusy(false);return;}location.href="/domains";}return <div className="page"><p className="kicker">Account</p><h1 className="pageTitle">Welcome back.</h1><p className="pageIntro">Access your domains, renewals, transfers and DNS.</p><form className="form" onSubmit={submit}><label className="field">Email<input name="email" type="email" autoComplete="email" required/></label><label className="field">Password<input name="password" type="password" autoComplete="current-password" required/></label>{error&&<p className="error">{error}</p>}<div className="formActions"><button className="primary" disabled={busy}>Log in</button><Link href="/signup">Create account</Link></div></form></div>}
+"use client";
+import {FormEvent,useState} from "react";
+import Link from "next/link";
+import {useI18n} from "@/components/I18nProvider";
+
+export default function Login(){
+  const {t}=useI18n();
+  const [error,setError]=useState("");
+  const [busy,setBusy]=useState(false);
+
+  async function submit(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const form=new FormData(event.currentTarget);
+    const response=await fetch("/api/auth/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email:form.get("email"),password:form.get("password")})
+    });
+    const data=await response.json();
+    if(!response.ok){setError(data.error||t("login.failed"));setBusy(false);return;}
+    location.href="/domains";
+  }
+
+  return <div className="page">
+    <p className="kicker">{t("login.kicker")}</p>
+    <h1 className="pageTitle">{t("login.title")}</h1>
+    <p className="pageIntro">{t("login.copy")}</p>
+    <form className="form" onSubmit={submit}>
+      <label className="field">{t("common.email")}<input name="email" type="email" autoComplete="email" required/></label>
+      <label className="field">{t("common.password")}<input name="password" type="password" autoComplete="current-password" required/></label>
+      {error&&<p className="error">{error}</p>}
+      <div className="formActions"><button className="primary" disabled={busy}>{t("login.button")}</button><Link href="/signup">{t("login.create")}</Link></div>
+    </form>
+  </div>;
+}
