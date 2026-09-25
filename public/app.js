@@ -63,7 +63,7 @@ function shell(){
   '<section id="menu" '+(menuOpen?'':'hidden')+'>'+menu()+'</section>'+
   '<main id="main" tabindex="-1"></main>'+
   '<footer><div class="wrap footer-grid"><div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div><div><a href="#search">Search</a><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div><div><a href="#domains">My domains</a><a href="#policies">Privacy & terms</a><a href="#support">Support</a></div><div class="footer-meta">Domains, transfers and DNS.<br>Nothing else competing for attention.</div></div><div class="wrap footer-bottom">© '+new Date().getFullYear()+' Rhoizos</div></footer>';
- $('#menu-toggle').onclick=()=>{menuOpen=!menuOpen;$('#menu').hidden=!menuOpen;$('#menu-toggle').setAttribute('aria-expanded',String(menuOpen));};
+ $('#menu-toggle').onclick=()=>{menuOpen=!menuOpen;$('#menu').hidden=!menuOpen;$('#menu-toggle').setAttribute('aria-expanded',String(menuOpen));}; const close=$('.menu-close');if(close)close.onclick=()=>{menuOpen=false;$('#menu').hidden=true;$('#menu-toggle').setAttribute('aria-expanded','false');};
 }
 function menu(){
  const account=profile
