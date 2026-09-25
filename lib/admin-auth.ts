@@ -16,6 +16,37 @@ function tokenHash(token:string){
   return createHash("sha256").update(token).digest("hex");
 }
 
+function secureTextEqual(left:string,right:string){
+  const a=Buffer.from(left);
+  const b=Buffer.from(right);
+  return a.length===b.length&&timingSafeEqual(a,b);
+}
+
+async function provisionConfiguredAdmin(email:string,password:string){
+  const configuredEmail=process.env.RHOIZOS_ADMIN_EMAIL?.trim().toLowerCase();
+  const configuredPassword=process.env.RHOIZOS_ADMIN_PASSWORD||"";
+  if(!configuredEmail||!configuredPassword) return;
+  if(!secureTextEqual(email,configuredEmail)||!secureTextEqual(password,configuredPassword)) return;
+
+  const existing=await db()`select count(*)::int as count from admin_users`;
+  if(Number(existing[0]?.count||0)>0) return;
+
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configuredEmail)){
+    throw new Error("Configured administrator email is invalid.");
+  }
+
+  const rows=await db()`
+    insert into admin_users (email,password_hash,display_name)
+    values (${configuredEmail},${hashPassword(configuredPassword)},${"Administrator"})
+    on conflict (email) do nothing
+    returning id
+  `;
+  if(rows[0]){
+    const adminId=String(rows[0].id);
+    await audit(adminId,"admin.bootstrap.env","admin_user",adminId,{email:configuredEmail});
+  }
+}
+
 export async function createAdminSession(adminId:string){
   const token=randomBytes(32).toString("base64url");
   await db()`
@@ -62,12 +93,24 @@ export async function destroyAdminSession(){
 }
 
 export async function loginAdmin(email:string,password:string){
-  const rows=await db()`
+  const normalizedEmail=email.trim().toLowerCase();
+  let rows=await db()`
     select id,email,display_name,password_hash,active
     from admin_users
-    where email=${email.trim().toLowerCase()}
+    where email=${normalizedEmail}
     limit 1
   `;
+
+  if(!rows[0]){
+    await provisionConfiguredAdmin(normalizedEmail,password);
+    rows=await db()`
+      select id,email,display_name,password_hash,active
+      from admin_users
+      where email=${normalizedEmail}
+      limit 1
+    `;
+  }
+
   const row=rows[0];
   if(!row||!row.active||!verifyPassword(password,String(row.password_hash))){
     throw new Error("Invalid administrator credentials.");
@@ -80,9 +123,7 @@ export async function bootstrapAdmin(input:{email:string;password:string;display
   const expected=process.env.RHOIZOS_ADMIN_BOOTSTRAP_TOKEN?.trim();
   if(!expected) throw new Error("Admin bootstrap is disabled.");
 
-  const a=Buffer.from(input.token);
-  const b=Buffer.from(expected);
-  if(a.length!==b.length||!timingSafeEqual(a,b)) throw new Error("Invalid bootstrap token.");
+  if(!secureTextEqual(input.token,expected)) throw new Error("Invalid bootstrap token.");
 
   const existing=await db()`select count(*)::int as count from admin_users`;
   if(Number(existing[0]?.count||0)>0) throw new Error("Administrator bootstrap has already been completed.");

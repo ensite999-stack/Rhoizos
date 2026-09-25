@@ -48,7 +48,6 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <Link href="/policies">{t("footer.policies")}</Link>
         </nav>
         <div className="footerPreferences">
-          <div className="footerPreferenceBlock"><span>{t("footer.language")}</span><LocaleMenu variant="footer"/></div>
           <ThemeToggle initialTheme={theme}/>
         </div>
         <div className="footerCopyright">© {year} Rhoizos</div>

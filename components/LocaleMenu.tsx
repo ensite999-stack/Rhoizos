@@ -33,12 +33,12 @@ export default function LocaleMenu({variant="header"}:{variant?:"header"|"footer
   return <div className={"localeMenu "+variant} ref={ref}>
     <button className="localeTrigger" type="button" onClick={()=>setOpen(value=>!value)} aria-expanded={open} aria-label={t("locale.change")}>
       <span className="localeGlobe">◎</span>
-      <span>{variant==="header"?current.short:current.label}</span>
+      <span>{current.label}</span>
       <span className="localeChevron">⌄</span>
     </button>
     {open&&<div className="localePopover" role="menu">
       {localeOptions.map(option=><button type="button" role="menuitemradio" aria-checked={option.value===locale} key={option.value} onClick={()=>select(option.value)}>
-        <span>{option.label}</span><span className="localeCode">{option.short}</span>{option.value===locale&&<span className="localeCheck">✓</span>}
+        <span>{option.label}</span>{option.value===locale&&<span className="localeCheck">✓</span>}
       </button>)}
     </div>}
   </div>;
