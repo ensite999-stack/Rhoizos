@@ -1,1 +1,113 @@
-<!doctype html><html lang="en" data-bs-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta property="bb:url" content="{{ constant('SYSTEM_URL') }}"><meta property="bb:client_area" content="{{ '/'|link }}"><meta name="csrf-token" content="{{ CSRFToken }}"><title>Rhoizos — {% block meta_title %}Client Console{% endblock %}</title>{{ encore_entry_link_tags('huraga') }}<link rel="stylesheet" href="{{ constant('SYSTEM_URL') }}rhoizos-assets/style.css">{{ 'Api/API.js'|library_url|script_tag }}{{ encore_entry_script_tags('huraga') }}{% block head %}{% endblock %}{% block js %}{% endblock %}</head><body>{% block body %}<header><a class="brand" href="{{ '/rhoizos'|link }}"><span class="mark"><img src="{{ constant('SYSTEM_URL') }}rhoizos-assets/assets/logo-source.png" alt=""></span>Rhoizos</a><nav class="nav"><a href="{{ '/rhoizos'|link }}#cart">Cart</a><a href="{{ '/rhoizos'|link }}#{% if client %}dashboard{% else %}login{% endif %}">{% if client %}Console{% else %}Log in{% endif %}</a><a href="{{ '/rhoizos'|link }}#search">Domain Search</a></nav></header><main class="wrap page">{% block content_before %}{% endblock %}{% block content %}{% endblock %}{% block content_after %}{% endblock %}</main><footer><div class="wrap footer-inner"><span>© {{ now|date('Y') }} Rhoizos</span><div class="footer-links"><a href="{{ '/rhoizos'|link }}#why">The Why</a><a href="{{ '/rhoizos'|link }}#policies">AUP & Privacy</a><a href="{{ '/rhoizos'|link }}#support">PGP Key / Support</a></div></div></footer>{% endblock %}<div class="toast-container position-fixed bottom-0 end-0 p-3"></div></body></html>
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta property="bb:url" content="{{ constant('SYSTEM_URL') }}">
+    <meta property="bb:client_area" content="{{ '/'|link }}">
+    <meta name="csrf-token" content="{{ CSRFToken }}">
+    <title>Rhoizos — {% block meta_title %}Client Console{% endblock %}</title>
+    {{ encore_entry_link_tags('huraga') }}
+    <link rel="stylesheet" href="{{ constant('SYSTEM_URL') }}rhoizos-assets/style.css">
+    {{ 'Api/API.js'|library_url|script_tag }}
+    {{ encore_entry_script_tags('huraga') }}
+    {% block head %}{% endblock %}
+    {% block js %}{% endblock %}
+</head>
+<body>
+{% block body %}
+<header>
+    <a class="brand" href="{{ '/rhoizos'|link }}" aria-label="Rhoizos home">
+        <span class="mark"><img src="{{ constant('SYSTEM_URL') }}rhoizos-assets/assets/rhoizos-mark.svg" alt=""></span>
+        <span>Rhoizos</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+        <a href="{{ '/rhoizos'|link }}#cart" aria-label="Shopping cart">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h3l3 13h11l3-9H6M9 21h.01M18 21h.01"/></svg>
+            <span class="nav-label">Cart</span>
+        </a>
+        <span class="sep" aria-hidden="true"></span>
+        <a href="{% if client %}{{ '/rhoizos'|link }}#dashboard{% else %}{{ '/rhoizos'|link }}#login{% endif %}" aria-label="{% if client %}Client console{% else %}Log in{% endif %}">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg>
+            <span class="nav-label">{% if client %}Console{% else %}Log in{% endif %}</span>
+        </a>
+        <span class="sep" aria-hidden="true"></span>
+        <button id="native-menu-toggle" type="button" aria-expanded="false" aria-controls="menu">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 16h18"/></svg>
+            <span class="nav-label">Menu</span>
+        </button>
+    </nav>
+</header>
+
+<section id="menu" hidden>
+    <div class="menu-panel">
+        <div class="menu-title">
+            <h2>Console Index</h2>
+            <span class="eyebrow">RHOIZOS / DIRECTORY</span>
+        </div>
+        <div class="menu-grid">
+            <div>
+                <h3>01 / CORE ACTIONS</h3>
+                <a href="{{ '/rhoizos'|link }}#search">Domain Search</a>
+                <a href="{{ '/rhoizos'|link }}#transfer">Transfer In</a>
+                <a href="{{ '/rhoizos'|link }}#rdap">RDAP Lookup</a>
+            </div>
+            <div>
+                <h3>02 / CLIENT CONSOLE</h3>
+                <a href="{{ '/rhoizos'|link }}#dashboard">Dashboard</a>
+                <a href="{{ '/rhoizos'|link }}#dns">DNS Management</a>
+                <a href="{{ '/rhoizos'|link }}#invoices">Crypto Invoices</a>
+            </div>
+            <div>
+                <h3>03 / MANIFESTO & POLICIES</h3>
+                <a href="{{ '/rhoizos'|link }}#why">The Why</a>
+                <a href="{{ '/rhoizos'|link }}#policies">AUP &amp; Privacy</a>
+                <a href="{{ '/rhoizos'|link }}#support">PGP Key / Support</a>
+            </div>
+        </div>
+        {% if client %}
+            <a class="secondary native-signout" href="{{ 'client/logout'|link }}">Log out</a>
+        {% endif %}
+    </div>
+</section>
+
+<main class="wrap page">
+    {% block content_before %}{% endblock %}
+    {% block content %}{% endblock %}
+    {% block content_after %}{% endblock %}
+</main>
+
+<footer>
+    <div class="wrap footer-inner">
+        <span>© {{ now|date('Y') }} Rhoizos</span>
+        <div class="footer-links">
+            <a href="{{ '/rhoizos'|link }}#why">The Why</a>
+            <a href="{{ '/rhoizos'|link }}#policies">AUP &amp; Privacy</a>
+            <a href="{{ '/rhoizos'|link }}#support">PGP Key / Support</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('native-menu-toggle');
+    const panel = document.getElementById('menu');
+    if (!toggle || !panel) return;
+    toggle.addEventListener('click', function () {
+        const open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+        panel.hidden = open;
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !panel.hidden) {
+            panel.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+});
+</script>
+</body>
+</html>
