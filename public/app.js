@@ -154,7 +154,7 @@ function auth(signup=false){
  setMain('<div class="auth '+(signup?'':'auth-small')+'">'+title('ACCOUNT',signup?'Create account.':'Welcome back.',signup?'One contact profile is used for your domain registration details.':'Access your domains, renewals, transfers and DNS.')+
  '<form id="auth-form" class="panel">'+
  (signup?'<div class="form-grid">'+field('First name','first_name','text','autocomplete="given-name" maxlength="125"')+field('Last name','last_name','text','autocomplete="family-name" maxlength="125"')+
- '<label class="full">Account type<select name="type" id="account-type"><option value="individual">Individual</option><option value="company">Company / organization</option></select></label>'+
+ '<label class="full">Account type<select name="type" id="account-type" aria-label="Account type"><option value="individual">Individual</option><option value="company">Company / organization</option></select></label>'+
  '<label class="full">Company / organization <span class="muted">(required for company accounts)</span><input name="company" id="company" autocomplete="organization" maxlength="255"></label></div>':'')+
  '<div class="form-grid">'+field('Email','email','email','autocomplete="email" maxlength="255"')+
  (signup?field('Phone','phone_full','tel','placeholder="+86.13800138000" pattern="\\+[0-9]{1,3}\\.[0-9]{4,14}" maxlength="17"'):'')+
