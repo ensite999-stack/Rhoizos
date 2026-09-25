@@ -24,5 +24,10 @@ export async function GET(request:NextRequest){
       price:result.available&&!result.premium?price:null,
       preview:false
     });
-  }catch(error){return fail(error);}
+  }catch(error){
+    const message=error instanceof Error?error.message:"";
+    if(message==="Enter a valid domain name.") return fail(error);
+    console.error("Domain search failed",error);
+    return NextResponse.json({error:"Domain search is temporarily unavailable."},{status:503});
+  }
 }

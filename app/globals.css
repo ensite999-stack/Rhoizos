@@ -585,6 +585,40 @@ svg{display:block}
 .detailContent{padding:76px 0 116px}
 .detailLoading,.detailError,.detailNotice{padding:24px 0;color:var(--muted);font-size:15px}
 .detailError{color:var(--danger)}
+.domainSuggestions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border-top:1px solid var(--line);
+}
+.domainSuggestion{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  min-width:0;
+  padding:28px 0;
+  border-bottom:1px solid var(--line);
+}
+.domainSuggestion:nth-child(odd){padding-right:28px;border-right:1px solid var(--line)}
+.domainSuggestion:nth-child(even){padding-left:28px}
+.domainSuggestion h2{
+  margin:0;
+  color:var(--text);
+  font-size:30px;
+  line-height:1.05;
+  letter-spacing:-.04em;
+  font-weight:630;
+  word-break:break-word;
+}
+.domainSuggestionAction{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+  flex:0 0 auto;
+}
+.domainSuggestionAction strong{color:var(--text);font-size:17px}
+.domainSuggestionAction .textAction{margin-top:4px}
 .domainSummary{
   display:flex;
   justify-content:space-between;
@@ -832,6 +866,9 @@ html[data-theme="dark"] .footerLogo img{filter:brightness(0) invert(1)}
   .detailSearchForm input{height:52px;font-size:16px}
   .detailSearchForm button{width:48px;height:48px}
   .detailContent{padding:54px 0 86px}
+  .domainSuggestions{grid-template-columns:1fr}
+  .domainSuggestion:nth-child(n){padding:22px 0;border-right:0}
+  .domainSuggestion h2{font-size:27px}
   .domainSummary{flex-direction:column;align-items:flex-start;gap:28px;padding-bottom:40px}
   .domainSummary h1{font-size:48px}
   .domainSummary p{font-size:15px}

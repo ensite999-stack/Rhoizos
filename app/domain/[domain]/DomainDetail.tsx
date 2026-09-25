@@ -61,10 +61,26 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     setBusy(true);
     setError("");
     setResult(null);
+    setSuggestions([]);
     setRdap(null);
     setRdapState("idle");
 
     try{
+      const bareLabel=!value.includes(".")&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value);
+      if(bareLabel){
+        const candidates=["com","net","org","io"].map(tld=>value+"."+tld);
+        const matches=await Promise.all(candidates.map(async domain=>{
+          const response=await fetch("/api/domain/search?domain="+encodeURIComponent(domain),{cache:"no-store"});
+          const data=await response.json();
+          if(!response.ok)throw new Error(data.error||"Domain search failed.");
+          return data as SearchResult;
+        }));
+        setSuggestions(matches);
+        setQuery(value);
+        if(push)window.history.pushState(null,"","/domain/"+encodeURIComponent(value));
+        return;
+      }
+
       const response=await fetch("/api/domain/search?domain="+encodeURIComponent(value),{cache:"no-store"});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Domain search failed.");
@@ -139,6 +155,21 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
       <div className="detailInner">
         {busy&&!result&&<div className="detailLoading">{t("detail.checking")}</div>}
         {error&&<div className="detailError">{error}</div>}
+
+        {!!suggestions.length&&<div className="domainSuggestions">
+          {suggestions.map(item=><div className="domainSuggestion" key={item.domain}>
+            <div>
+              <span className="detailEyebrow">
+                {item.available===true?t("detail.availableLabel"):item.available===false?t("detail.registeredLabel"):t("detail.resultLabel")}
+              </span>
+              <h2>{item.domain}</h2>
+            </div>
+            <div className="domainSuggestionAction">
+              {item.price!==null&&<strong>{"$"+item.price.toFixed(2)}</strong>}
+              <button className="textAction" type="button" onClick={()=>load(item.domain,true)}>{t("home.check")}</button>
+            </div>
+          </div>)}
+        </div>}
 
         {result&&<div className="domainSummary">
           <div>
