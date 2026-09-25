@@ -2,8 +2,8 @@ export const locales=["en-US","en-GB","zh-CN","zh-TW","fr-FR","es-ES"] as const;
 export type Locale=(typeof locales)[number];
 
 export const localeOptions:{value:Locale;label:string;short:string;htmlLang:string}[]=[
-  {value:"en-US",label:"English (US)",short:"EN-US",htmlLang:"en-US"},
-  {value:"en-GB",label:"English (UK)",short:"EN-GB",htmlLang:"en-GB"},
+  {value:"en-US",label:"English (United States)",short:"EN-US",htmlLang:"en-US"},
+  {value:"en-GB",label:"English (United Kingdom)",short:"EN-GB",htmlLang:"en-GB"},
   {value:"zh-CN",label:"简体中文",short:"简中",htmlLang:"zh-CN"},
   {value:"zh-TW",label:"繁體中文",short:"繁中",htmlLang:"zh-TW"},
   {value:"fr-FR",label:"Français",short:"FR",htmlLang:"fr-FR"},
