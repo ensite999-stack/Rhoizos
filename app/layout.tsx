@@ -3,8 +3,8 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata:Metadata={
-  title:"Rhoizos — Your domain. Your world!",
-  description:"A simple, focused place to search, register, transfer, renew and manage domains."
+  title:"Rhoizos — Your Domain. Your World!",
+  description:"A simple, focused place to search, register, transfer, renew and manage Domains."
 };
 
 function CartIcon(){
@@ -19,11 +19,11 @@ export default function RootLayout({children}:{children:React.ReactNode}){
       <div className="headerInner">
         <Link className="brand" href="/">
           <img src="/assets/rhoizos-mark.svg" alt=""/>
-          <span>Rhoizos<sup className="tmMark">™</sup></span>
+          <span>Rhoizos</span>
         </Link>
 
         <nav className="mainNav" aria-label="Primary">
-          <Link href="/">Domains</Link>
+          <Link href="/">Domain</Link>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/transfer">Transfer</Link>
           <Link href="/#learn">Learn</Link>
@@ -34,8 +34,8 @@ export default function RootLayout({children}:{children:React.ReactNode}){
           <Link href="/support" className="desktopUtility">Support</Link>
           <span className="languageLabel">EN</span>
           <Link href="/login" className="desktopUtility">Log in</Link>
-          <Link href="/domains" className="domainsLink">My domains</Link>
           <Link href="/cart" className="cartLink" aria-label="Cart"><CartIcon/></Link>
+          <Link href="/domains" className="domainsLink">My Domains</Link>
         </nav>
       </div>
     </header>
@@ -50,11 +50,11 @@ export default function RootLayout({children}:{children:React.ReactNode}){
         </Link>
 
         <nav className="footerNav" aria-label="Footer">
-          <Link href="/">Search domains</Link>
-          <Link href="/transfer">Transfer a domain</Link>
+          <Link href="/">Search Domains</Link>
+          <Link href="/transfer">Transfer a Domain</Link>
           <Link href="/rdap">RDAP lookup</Link>
-          <Link href="/domains">My domains</Link>
-          <Link href="/#learn">Learn about domains</Link>
+          <Link href="/domains">My Domains</Link>
+          <Link href="/#learn">Learn about Domains</Link>
           <Link href="/support">Support</Link>
           <a href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
           <Link href="/policies">Privacy & terms</Link>
