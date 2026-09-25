@@ -2,11 +2,8 @@
 import Link from "next/link";
 import LocaleMenu from "./LocaleMenu";
 import ThemeToggle,{type Theme} from "./ThemeToggle";
+import CartLink from "./CartLink";
 import {useI18n} from "./I18nProvider";
-
-function CartIcon(){
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.4 9.1a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 1.9-1.4L20 7H6.2M9 20h.01M17 20h.01" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-}
 
 export default function SiteChrome({children,year,theme}:{children:React.ReactNode;year:number;theme:Theme}){
   const {t}=useI18n();
@@ -26,7 +23,7 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <Link href="/support" className="desktopUtility">{t("nav.support")}</Link>
           <LocaleMenu/>
           <Link href="/login" className="desktopUtility">{t("nav.login")}</Link>
-          <Link href="/cart" className="cartLink" aria-label={t("nav.cart")}><CartIcon/></Link>
+          <CartLink/>
           <Link href="/domains" className="domainsLink">{t("nav.myDomains")}</Link>
         </nav>
       </div>

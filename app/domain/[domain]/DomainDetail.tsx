@@ -1,6 +1,9 @@
 "use client";
 import {FormEvent,useEffect,useState} from "react";
+import Link from "next/link";
+import {useRouter} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
+import {addCart,onCartChange,readCart} from "@/lib/cart-client";
 
 type SearchResult={
   domain:string;
@@ -30,6 +33,7 @@ function SearchIcon(){
 
 export default function DomainDetail({initialDomain}:{initialDomain:string}){
   const {t,locale}=useI18n();
+  const router=useRouter();
   const [query,setQuery]=useState(initialDomain);
   const [result,setResult]=useState<SearchResult|null>(null);
   const [suggestions,setSuggestions]=useState<SearchResult[]>([]);
@@ -37,6 +41,13 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
   const [rdapState,setRdapState]=useState<RdapState>("idle");
   const [error,setError]=useState("");
   const [busy,setBusy]=useState(true);
+  const [carted,setCarted]=useState<Set<string>>(new Set());
+
+  useEffect(()=>{
+    const sync=()=>setCarted(new Set(readCart().map(item=>item.domain)));
+    sync();
+    return onCartChange(sync);
+  },[]);
 
   function formatDate(value:string|null){
     if(!value)return t("common.notPublished");
@@ -56,7 +67,29 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     return status.replace(/[_-]+/g," ");
   }
 
-  async function load(name:string,push=false){
+  function statusKey(item:SearchResult){
+    if(item.premium)return "premium";
+    if(item.available===true)return "available";
+    if(item.available===false)return "registered";
+    return "unknown";
+  }
+
+  function statusText(item:SearchResult){
+    if(item.premium)return t("detail.premiumLabel");
+    if(item.available===true)return t("detail.availableLabel");
+    if(item.available===false)return t("detail.registeredLabel");
+    return t("detail.resultLabel");
+  }
+
+  function go(name:string){
+    const value=name.trim().toLowerCase();
+    if(!value)return;
+    const target="/domain/"+encodeURIComponent(value);
+    if(value===initialDomain.toLowerCase())load(value);
+    else router.push(target);
+  }
+
+  async function load(name:string){
     const value=name.trim().toLowerCase();
     if(!value)return;
     setBusy(true);
@@ -69,16 +102,11 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     try{
       const bareLabel=!value.includes(".")&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value);
       if(bareLabel){
-        const candidates=["com","net","org","io"].map(tld=>value+"."+tld);
-        const matches=await Promise.all(candidates.map(async domain=>{
-          const response=await fetch("/api/domain/search?domain="+encodeURIComponent(domain),{cache:"no-store"});
-          const data=await response.json();
-          if(!response.ok)throw new Error(data.error||"Domain search failed.");
-          return data as SearchResult;
-        }));
-        setSuggestions(matches);
+        const response=await fetch("/api/domain/search?q="+encodeURIComponent(value),{cache:"no-store"});
+        const data=await response.json();
+        if(!response.ok)throw new Error(data.error||"Domain search failed.");
+        setSuggestions(data.items||[]);
         setQuery(value);
-        if(push)window.history.pushState(null,"","/domain/"+encodeURIComponent(value));
         return;
       }
 
@@ -87,7 +115,6 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
       if(!response.ok)throw new Error(data.error||"Domain search failed.");
       setResult(data);
       setQuery(data.domain);
-      if(push)window.history.pushState(null,"","/domain/"+encodeURIComponent(data.domain));
     }catch(error){
       setError(error instanceof Error?error.message:"Domain search failed.");
     }finally{
@@ -99,7 +126,12 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
 
   function submit(event:FormEvent){
     event.preventDefault();
-    load(query,true);
+    go(query);
+  }
+
+  function add(item:SearchResult){
+    if(item.available!==true||item.premium||item.price===null)return;
+    addCart({domain:item.domain,price:item.price,kind:"register"});
   }
 
   async function loadRdap(){
@@ -108,34 +140,11 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     try{
       const response=await fetch("/api/rdap?domain="+encodeURIComponent(result.domain),{cache:"no-store"});
       const data=await response.json();
-      if(!response.ok){
-        setRdapState("unavailable");
-        return;
-      }
+      if(!response.ok){setRdapState("unavailable");return;}
       setRdap(data);
       setRdapState("loaded");
     }catch{
       setRdapState("unavailable");
-    }
-  }
-
-  async function register(){
-    if(!result?.available||result.premium)return;
-    setBusy(true);
-    setError("");
-    try{
-      const response=await fetch("/api/orders/register",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({domain:result.domain})
-      });
-      if(response.status===401){location.href="/login";return;}
-      const data=await response.json();
-      if(!response.ok)throw new Error(data.error||"Could not start checkout.");
-      location.href=data.checkoutUrl;
-    }catch(error){
-      setError(error instanceof Error?error.message:"Could not start checkout.");
-      setBusy(false);
     }
   }
 
@@ -154,36 +163,48 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
 
     <section className="detailContent">
       <div className="detailInner">
-        {busy&&!result&&<div className="detailLoading">{t("detail.checking")}</div>}
+        {busy&&!result&&!suggestions.length&&<div className="detailLoading">{t("detail.checking")}</div>}
         {error&&<div className="detailError">{error}</div>}
 
-        {!!suggestions.length&&<div className="domainSuggestions">
-          {suggestions.map(item=><div className="domainSuggestion" key={item.domain}>
-            <div>
-              <span className="detailEyebrow">
-                {item.available===true?t("detail.availableLabel"):item.available===false?t("detail.registeredLabel"):t("detail.resultLabel")}
-              </span>
-              <h2>{item.domain}</h2>
-            </div>
-            <div className="domainSuggestionAction">
-              {item.price!==null&&<strong>{"$"+item.price.toFixed(2)}</strong>}
-              <button className="textAction" type="button" onClick={()=>load(item.domain,true)}>{t("home.check")}</button>
-            </div>
-          </div>)}
-        </div>}
+        {!!suggestions.length&&<>
+          <div className="domainResultsHeader">
+            <strong>{suggestions.length}</strong>
+            <span>{t("detail.resultsFound")}</span>
+          </div>
+          <div className="domainSuggestions">
+            {suggestions.map(item=><div className="domainSuggestion" key={item.domain}>
+              <button className="domainSuggestionName" type="button" onClick={()=>go(item.domain)}>
+                <h2>{item.domain}</h2>
+                <span className={"domainStatus "+statusKey(item)}>{statusText(item)}</span>
+              </button>
+              <div className="domainSuggestionAction">
+                {item.available===true&&!item.premium&&item.price!==null&&<strong>{"$"+item.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>}
+                {item.available===true&&!item.premium&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
+                {item.premium&&<span className="pricePending">{t("detail.premiumShort")}</span>}
+                {item.available===true&&!item.premium&&item.price!==null
+                  ?<button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>
+                    {carted.has(item.domain)?t("cart.added"):t("cart.add")}
+                  </button>
+                  :<button className="secondary" type="button" onClick={()=>go(item.domain)}>{t("detail.view")}</button>}
+              </div>
+            </div>)}
+          </div>
+        </>}
 
         {result&&<div className="domainSummary">
           <div>
-            <span className="detailEyebrow">
-              {registered?t("detail.registeredLabel"):result.available===true?t("detail.availableLabel"):t("detail.resultLabel")}
-            </span>
+            <span className={"domainStatus "+statusKey(result)}>{statusText(result)}</span>
             <h1>{result.domain}</h1>
             <p>{result.preview?t("detail.preview"):result.premium?t("detail.premium"):result.available?t("detail.available"):t("detail.registered")}</p>
           </div>
 
           {result.available===true&&!result.premium&&<div className="availabilityAction">
-            {result.price!==null&&<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>}
-            <button className="primary" onClick={register} disabled={busy}>{busy?t("detail.starting"):t("detail.registerButton")}</button>
+            {result.price!==null
+              ?<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>
+              :<span className="pricePending">{t("detail.priceUnavailable")}</span>}
+            {result.price!==null&&(carted.has(result.domain)
+              ?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>
+              :<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>)}
           </div>}
 
           {registered&&<div className="availabilityAction registeredAction">

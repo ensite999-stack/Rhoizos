@@ -4,6 +4,26 @@ import {requiredEnv} from "./env";
 const BASE="https://spaceship.dev/api/v1";
 export type SpaceshipResult<T>={body:T;headers:Headers};
 
+type PremiumPrice={operation?:string;price?:number;currency?:string};
+type AvailabilityBody={
+  domain:string;
+  result?:"available"|"taken";
+  premiumPricing?:PremiumPrice[]|null;
+};
+
+function normalizeAvailability(body:AvailabilityBody){
+  const premium=Array.isArray(body.premiumPricing)&&body.premiumPricing.some(item=>
+    (item?.operation==="register"||!item?.operation)&&Number(item?.price)>0
+  );
+  return {
+    domain:normalizeDomain(body.domain),
+    available:body.result==="available"?true:body.result==="taken"?false:null,
+    taken:body.result==="taken",
+    premium,
+    premiumPricing:premium?body.premiumPricing||[]:[]
+  };
+}
+
 export async function spaceshipRequest<T>(
   method:"GET"|"POST"|"PUT"|"DELETE",path:string,body?:unknown
 ):Promise<SpaceshipResult<T>>{
@@ -24,11 +44,21 @@ export async function spaceshipRequest<T>(
 
 export async function domainAvailability(input:string){
   const domain=normalizeDomain(input);
-  const {body}=await spaceshipRequest<{result?:"available"|"taken";premiumPricing?:unknown}>(
+  const {body}=await spaceshipRequest<AvailabilityBody>(
     "GET",`/domains/${encodeURIComponent(domain)}/available`
   );
-  return {domain,available:body.result==="available",taken:body.result==="taken",premium:Boolean(body.premiumPricing)};
+  return normalizeAvailability({...body,domain:body.domain||domain});
 }
+
+export async function domainsAvailability(inputs:string[]){
+  const domains=inputs.map(normalizeDomain).slice(0,20);
+  if(!domains.length)return [];
+  const {body}=await spaceshipRequest<{domains?:AvailabilityBody[]}>(
+    "POST","/domains/available",{domains}
+  );
+  return (body.domains||[]).map(item=>normalizeAvailability(item));
+}
+
 export async function domainDetails(input:string){
   const domain=normalizeDomain(input);
   return (await spaceshipRequest<{
