@@ -1,7 +1,7 @@
 "use client";
 import {FormEvent,useEffect,useState} from "react";
 import Link from "next/link";
-type Result={domain:string;available:boolean;premium:boolean;price:number|null};
+type Result={domain:string;available:boolean|null;premium:boolean;price:number|null;preview?:boolean};
 type Price={tld:string;register:number;renew:number;transfer:number};
 export default function Home(){
   const [domain,setDomain]=useState("");
@@ -42,7 +42,7 @@ export default function Home(){
     <div className="miniLinks"><Link href="/transfer">Transfer a domain</Link><Link href="/rdap">RDAP lookup</Link></div>
     {!!prices.length&&<div className="priceRow">{prices.slice(0,6).map(p=><span key={p.tld}><b>{p.tld}</b>{"$"+p.register.toFixed(2)} / year</span>)}</div>}
     {error&&<p className="error">{error}</p>}
-    {result&&<div className="searchResult"><h2>{result.domain}</h2><p>{result.premium?"Premium domain — manual quote required.":result.available?"Available":"Already registered"}</p><div className="searchResultActions">{result.price!==null&&<strong>{"$"+result.price.toFixed(2)}</strong>}{result.available&&!result.premium&&<button className="primary" onClick={register} disabled={busy}>Register</button>}</div></div>}
+    {result&&<div className="searchResult"><h2>{result.domain}</h2><p>{result.preview?"Live availability not connected.":result.premium?"Premium domain — manual quote required.":result.available?"Available":"Already registered"}</p><div className="searchResultActions">{result.price!==null&&<strong>{"$"+result.price.toFixed(2)}</strong>}{result.available===true&&!result.premium&&<button className="primary" onClick={register} disabled={busy}>Register</button>}</div></div>}
   </div></section>
   <section className="section"><p className="kicker">Domain services</p><h2>Everything essential.<br/>Nothing in the way.</h2><div className="services">
     <div><h3>Register</h3><p>Live availability, clear retail pricing, and direct checkout.</p><Link href="/">Search domains →</Link></div>
