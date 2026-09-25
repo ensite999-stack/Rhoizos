@@ -1,6 +1,8 @@
 import {destroyAllSessions,hashPassword,requireUser,verifyPassword} from "@/lib/auth";
 import {db} from "@/lib/db";
 import {fail,ok} from "@/lib/http";
+import {appUrl} from "@/lib/env";
+import {safeSendTemplateEmail} from "@/lib/email";
 export const runtime="nodejs";
 
 export async function POST(request:Request){
@@ -11,6 +13,12 @@ export async function POST(request:Request){
     if(!rows[0]||!verifyPassword(String(body.currentPassword||""),String(rows[0].password_hash))) throw new Error("Current password is incorrect.");
     const next=hashPassword(String(body.newPassword||""));
     await db()`update users set password_hash=${next},updated_at=now() where id=${user.id}`;
+    await safeSendTemplateEmail(
+      user.email,
+      "rhoizos-password-changed",
+      {SECURITY_URL:appUrl()+"/account/security"},
+      "rhoizos:password-changed:"+user.id+":"+Date.now()
+    );
     return ok({saved:true});
   }catch(error){return fail(error);}
 }

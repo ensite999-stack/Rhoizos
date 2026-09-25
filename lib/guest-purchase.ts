@@ -1,11 +1,12 @@
 import {createHash,randomBytes} from "node:crypto";
 import {db} from "./db";
-import {appUrl,requiredEnv} from "./env";
+import {appUrl} from "./env";
 import {normalizeDomain,validateContact,type ContactInput} from "./domain";
 import {hashPassword,createSession} from "./auth";
 import {createCheckout,createRegisterOrder} from "./orders";
 import {domainAvailability} from "./spaceship";
 import {retailFromCost,retailPrice} from "./pricing";
+import {sendTemplateEmail} from "./email";
 
 function tokenHash(token:string){return createHash("sha256").update(token).digest("hex");}
 function normalizeEmail(input:string){
@@ -13,10 +14,6 @@ function normalizeEmail(input:string){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
   return email;
 }
-function escapeHtml(value:string){
-  return value.replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]||char));
-}
-
 export async function quoteRegisterDomain(input:string){
   const domain=normalizeDomain(input);
   const availability=await domainAvailability(domain);
@@ -28,30 +25,13 @@ export async function quoteRegisterDomain(input:string){
 }
 
 async function sendPurchaseEmail(email:string,domain:string,token:string){
-  const apiKey=requiredEnv("RESEND_API_KEY");
-  const from=requiredEnv("RHOIZOS_EMAIL_FROM");
   const url=appUrl()+"/checkout/guest?token="+encodeURIComponent(token);
-  const response=await fetch("https://api.resend.com/emails",{
-    method:"POST",
-    headers:{"Authorization":"Bearer "+apiKey,"Content-Type":"application/json"},
-    body:JSON.stringify({
-      from,
-      to:[email],
-      subject:"Continue your Rhoizos domain purchase",
-      html:`<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
-        <h2 style="margin:0 0 16px">Continue your Rhoizos purchase</h2>
-        <p>You requested to purchase <strong>${escapeHtml(domain)}</strong> without creating a password.</p>
-        <p><a href="${escapeHtml(url)}" style="display:inline-block;padding:12px 18px;background:#702963;color:#fff;text-decoration:none;border-radius:6px">Continue purchase</a></p>
-        <p>This link expires in 30 minutes and can be used once.</p>
-        <p>If you did not request this, you can ignore this email.</p>
-      </div>`
-    }),
-    signal:AbortSignal.timeout(15000)
-  });
-  if(!response.ok){
-    const body=await response.text().catch(()=>"");
-    throw new Error("Could not send the purchase email."+ (body?" Email provider rejected the request.":""));
-  }
+  await sendTemplateEmail(
+    email,
+    "rhoizos-purchase-link",
+    {DOMAIN:domain,PURCHASE_URL:url,EXPIRES_MINUTES:30},
+    "rhoizos:purchase-link:"+tokenHash(token)
+  );
 }
 
 export async function createGuestPurchaseLink(emailInput:string,domainInput:string){

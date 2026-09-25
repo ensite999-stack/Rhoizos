@@ -1,16 +1,17 @@
 import {db} from "./db";
 import {openSecret} from "./crypto";
-import {liveRegistration} from "./env";
+import {appUrl,liveRegistration} from "./env";
 import {createContact,domainAvailability,domainDetails,spaceshipRequest} from "./spaceship";
 import type {ContactInput} from "./domain";
 import {retailFromCost} from "./pricing";
+import {safeSendUserTemplate,sendExpiryReminders} from "./email";
 
 function contacts(id:string){return {registrant:id,admin:id,tech:id,billing:id};}
 
 export async function startProvisioning(orderId:string){
   if(!liveRegistration()) throw new Error("Live registration is not enabled.");
   const sql=db();
-  const rows=await sql`select id,user_id,kind,domain,status,payment_status,request from orders where id=${orderId} limit 1`;
+  const rows=await sql`select id,user_id,kind,domain,amount_usd,status,payment_status,request from orders where id=${orderId} limit 1`;
   const order=rows[0];if(!order) throw new Error("Order not found.");
   if(order.payment_status!=="paid") throw new Error("Order is not paid.");
 
@@ -52,10 +53,27 @@ export async function startProvisioning(orderId:string){
     if(!providerId) throw new Error("Spaceship did not return an operation ID.");
     await sql`update operations set provider_operation_id=${providerId},status='pending',updated_at=now() where order_id=${orderId}`;
     await sql`update orders set status='provisioning',updated_at=now() where id=${orderId}`;
+    if(kind==="transfer"){
+      await safeSendUserTemplate(
+        String(order.user_id),
+        "rhoizos-transfer-started",
+        {DOMAIN:domain,ORDER_ID:orderId,ACTIVITY_URL:appUrl()+"/account/activity"},
+        "rhoizos:transfer-started:"+orderId
+      );
+    }
   }catch(error){
     const message=error instanceof Error?error.message.slice(0,500):"Provisioning failed.";
     await sql`update operations set last_error=${message},updated_at=now() where order_id=${orderId}`;
     await sql`update orders set status='manual_review',last_error=${message},updated_at=now() where id=${orderId}`;
+    const kind=String(order.kind),domain=String(order.domain);
+    await safeSendUserTemplate(
+      String(order.user_id),
+      kind==="register"?"rhoizos-registration-review":"rhoizos-operation-review",
+      kind==="register"
+        ?{DOMAIN:domain,ORDER_ID:orderId,SUPPORT_URL:appUrl()+"/support"}
+        :{DOMAIN:domain,ORDER_ID:orderId,ORDER_KIND:kind,SUPPORT_URL:appUrl()+"/support"},
+      "rhoizos:manual-review:"+orderId
+    );
     throw error;
   }
 }
@@ -75,6 +93,40 @@ async function syncOwnedDomain(row:Record<string,unknown>){
   `;
   return true;
 }
+
+async function notifyCompleted(row:Record<string,unknown>){
+  const kind=String(row.kind),domain=String(row.domain),orderId=String(row.order_id),userId=String(row.user_id);
+  if(kind==="register"){
+    await safeSendUserTemplate(
+      userId,
+      "rhoizos-registration-complete",
+      {DOMAIN:domain,DOMAIN_URL:appUrl()+"/domains"},
+      "rhoizos:registration-complete:"+orderId
+    );
+    return;
+  }
+  if(kind==="transfer"){
+    await safeSendUserTemplate(
+      userId,
+      "rhoizos-transfer-complete",
+      {DOMAIN:domain,DOMAIN_URL:appUrl()+"/domains"},
+      "rhoizos:transfer-complete:"+orderId
+    );
+    return;
+  }
+  const details=await domainDetails(domain);
+  await safeSendUserTemplate(
+    userId,
+    "rhoizos-renewal-complete",
+    {
+      DOMAIN:domain,
+      EXPIRES_AT:details.expirationDate?new Date(details.expirationDate).toISOString().slice(0,10):"Updated",
+      DOMAIN_URL:appUrl()+"/domains"
+    },
+    "rhoizos:renewal-complete:"+orderId
+  );
+}
+
 export async function reconcileOperation(operationId:string){
   const sql=db();
   const rows=await sql`
@@ -87,6 +139,7 @@ export async function reconcileOperation(operationId:string){
     if(await syncOwnedDomain(row)){
       await sql`update operations set status='success',updated_at=now() where id=${operationId}`;
       await sql`update orders set status='active',updated_at=now() where id=${String(row.order_id)}`;
+      await notifyCompleted(row);
     }
     return;
   }
@@ -95,19 +148,35 @@ export async function reconcileOperation(operationId:string){
   const status=String(remote.body.status||"pending");
   if(status==="failed"){
     await sql`update operations set status='failed',updated_at=now() where id=${operationId}`;
-    await sql`update orders set status='failed',updated_at=now() where id=${String(row.order_id)}`;
+    await sql`update orders set status='failed',last_error='Provider operation failed.',updated_at=now() where id=${String(row.order_id)}`;
+    await safeSendUserTemplate(
+      String(row.user_id),
+      "rhoizos-operation-review",
+      {
+        DOMAIN:String(row.domain),
+        ORDER_ID:String(row.order_id),
+        ORDER_KIND:String(row.kind),
+        SUPPORT_URL:appUrl()+"/support"
+      },
+      "rhoizos:operation-failed:"+String(row.order_id)
+    );
     return;
   }
   if(status!=="success"){
     await sql`update operations set status=${status},updated_at=now() where id=${operationId}`;return;
   }
-  if(row.kind==="transfer"&&!(await syncOwnedDomain(row))){
-    await sql`update operations set status='accepted',updated_at=now() where id=${operationId}`;
-    await sql`update orders set status='transferring',updated_at=now() where id=${String(row.order_id)}`;return;
+  if(row.kind==="transfer"){
+    if(!(await syncOwnedDomain(row))){
+      await sql`update operations set status='accepted',updated_at=now() where id=${operationId}`;
+      await sql`update orders set status='transferring',updated_at=now() where id=${String(row.order_id)}`;
+      return;
+    }
+  }else{
+    await syncOwnedDomain(row);
   }
-  await syncOwnedDomain(row);
   await sql`update operations set status='success',updated_at=now() where id=${operationId}`;
   await sql`update orders set status='active',updated_at=now() where id=${String(row.order_id)}`;
+  await notifyCompleted(row);
 }
 export async function reconcileAll(limit=50){
   const sql=db();
@@ -115,4 +184,5 @@ export async function reconcileAll(limit=50){
   for(const row of paid){try{await startProvisioning(String(row.id));}catch{}}
   const ops=await sql`select id from operations where status in ('pending','accepted') order by updated_at asc limit ${limit}`;
   for(const row of ops){try{await reconcileOperation(String(row.id));}catch{}}
+  try{await sendExpiryReminders();}catch(error){console.error("Expiry reminder scan failed",error);}
 }

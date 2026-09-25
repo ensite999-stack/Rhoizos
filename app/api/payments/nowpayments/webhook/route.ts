@@ -1,7 +1,8 @@
 import {db} from "@/lib/db";
 import {verifyNowPaymentsSignature,getPayment} from "@/lib/nowpayments";
 import {startProvisioning} from "@/lib/provision";
-import {liveRegistration} from "@/lib/env";
+import {appUrl,liveRegistration} from "@/lib/env";
+import {safeSendUserTemplate} from "@/lib/email";
 
 export const runtime="nodejs";
 
@@ -20,7 +21,7 @@ export async function POST(request:Request){
   if(String(payment.payment_id||"")!==paymentId) return new Response("Payment mismatch",{status:400});
   const orderId=String(payment.order_id||"");
   const sql=db();
-  const rows=await sql`select id,amount_usd,provider_invoice_id,payment_status,payment_id from orders where id=${orderId} limit 1`;
+  const rows=await sql`select id,user_id,kind,domain,amount_usd,provider_invoice_id,payment_status,payment_id from orders where id=${orderId} limit 1`;
   const order=rows[0];
   if(!order) return new Response("Unknown order",{status:404});
 
@@ -31,6 +32,18 @@ export async function POST(request:Request){
 
   if(status!=="finished"){
     await sql`update orders set payment_status=${status},updated_at=now() where id=${orderId} and payment_status<>'paid'`;
+    if(status==="failed"||status==="expired"){
+      await safeSendUserTemplate(
+        String(order.user_id),
+        "rhoizos-payment-failed",
+        {
+          DOMAIN:String(order.domain),
+          ORDER_ID:orderId,
+          CHECKOUT_URL:appUrl()+"/domain/"+encodeURIComponent(String(order.domain))
+        },
+        "rhoizos:payment-failed:"+orderId+":"+paymentId+":"+status
+      );
+    }
     return new Response("ok");
   }
 
@@ -51,6 +64,18 @@ export async function POST(request:Request){
     }
     await tx`update orders set payment_status='paid',payment_id=${paymentId},status='paid',updated_at=now() where id=${orderId}`;
   });
+
+  await safeSendUserTemplate(
+    String(order.user_id),
+    "rhoizos-payment-received",
+    {
+      DOMAIN:String(order.domain),
+      ORDER_ID:orderId,
+      AMOUNT_USD:Number(order.amount_usd).toFixed(2),
+      ORDER_KIND:String(order.kind)
+    },
+    "rhoizos:payment-received:"+orderId+":"+paymentId
+  );
 
   if(liveRegistration()){
     try{await startProvisioning(orderId);}catch{}

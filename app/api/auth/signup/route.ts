@@ -2,6 +2,8 @@ import {db} from "@/lib/db";
 import {hashPassword} from "@/lib/auth";
 import {validateContact,type ContactInput} from "@/lib/domain";
 import {fail,ok} from "@/lib/http";
+import {appUrl} from "@/lib/env";
+import {safeSendTemplateEmail} from "@/lib/email";
 
 export const runtime="nodejs";
 
@@ -21,6 +23,12 @@ export async function POST(request:Request){
       on conflict (email) do nothing returning id
     `;
     if(!rows[0]) throw new Error("An account with this email already exists.");
+    await safeSendTemplateEmail(
+      contact.email,
+      "rhoizos-account-created",
+      {DOMAINS_URL:appUrl()+"/domains"},
+      "rhoizos:account-created:"+String(rows[0].id)
+    );
     return ok({created:true},201);
   }catch(error){return fail(error);}
 }
