@@ -355,7 +355,7 @@ svg{display:block}
 .textAction:hover{text-decoration:underline}
 
 /* Why Rhoizos */
-.whySection{padding:126px 0 132px;background:var(--surface-soft);color:var(--text)}
+.whySection{padding:84px 0 88px;background:#702963;color:#fff}
 .whyEditorial{
   display:grid;
   grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);
@@ -364,7 +364,7 @@ svg{display:block}
 }
 .whyTitle h2{
   margin:0;
-  color:var(--text);
+  color:#fff;
   font-size:clamp(56px,6.2vw,86px);
   line-height:.94;
   letter-spacing:-.065em;
@@ -373,19 +373,19 @@ svg{display:block}
 .whyText{max-width:690px}
 .whyText p{
   margin:0 0 24px;
-  color:var(--text-soft);
+  color:rgba(255,255,255,.82);
   font-size:17px;
-  line-height:1.78;
+  line-height:1.72;
 }
 .whyText .whyLead{
-  margin-bottom:30px;
-  color:var(--text);
+  margin-bottom:24px;
+  color:#fff;
   font-size:clamp(24px,2.4vw,34px);
   line-height:1.32;
   letter-spacing:-.03em;
   font-weight:570;
 }
-.whyText strong{color:var(--text);font-weight:700}
+.whyText strong{color:#fff;font-weight:700}
 
 /* Folded Domain basics */
 .learnSection{padding:112px 0 128px;background:var(--surface);color:var(--text)}
@@ -807,7 +807,7 @@ html[data-theme="dark"] .footerLogo img{filter:brightness(0) invert(1)}
   .offerItem,.offerItem+.offerItem{padding:24px 0;border-right:0;border-top:1px solid var(--line)}
   .offerItem:first-child{border-top:0}
 
-  .whySection{padding:82px 0 88px}
+  .whySection{padding:58px 0 64px}
   .whyEditorial{gap:34px}
   .whyTitle h2{font-size:52px}
   .whyText p{font-size:15px}
