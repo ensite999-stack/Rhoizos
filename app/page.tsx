@@ -98,7 +98,6 @@ export default function Home(){
     <section className="whySection">
       <div className="lightInner whyEditorial">
         <div className="whyTitle">
-          <span className="sectionLabel">{t("home.whyLabel")}</span>
           <h2>{t("home.whyTitle1")}<br/>{t("home.whyTitle2")}</h2>
         </div>
         <div className="whyText">
