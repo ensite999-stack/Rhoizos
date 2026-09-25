@@ -96,7 +96,6 @@ function home(){
  );
  $('#search-form').onsubmit=search;
 }
-function splitDomain(
 function splitDomain(raw){
  let domain=raw.trim().toLowerCase();
  if(/[:/\s@?#]/.test(domain))throw Error('Enter a domain name without URL, path, email, or spaces.');
