@@ -44,8 +44,8 @@
 <section id="menu" hidden>
     <div class="menu-panel">
         <div class="menu-head">
-            <p class="eyebrow">RHOIZOS</p>
-            <h2>Menu</h2>
+            <span>Rhoizos</span>
+            <button type="button" class="menu-close" aria-label="Close menu">Close</button>
         </div>
         <div class="menu-grid">
             <div>
@@ -87,7 +87,7 @@
         <div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div>
         <div><a href="{{ '/rhoizos'|link }}#search">Search</a><a href="{{ '/rhoizos'|link }}#transfer">Transfer in</a><a href="{{ '/rhoizos'|link }}#rdap">RDAP</a></div>
         <div><a href="{{ '/rhoizos'|link }}#domains">My domains</a><a href="{{ '/rhoizos'|link }}#policies">Privacy &amp; terms</a><a href="{{ '/rhoizos'|link }}#support">Support</a></div>
-        <div class="footer-meta">Crypto payments via NOWPayments.<br>Domain provisioning via configured registrar.</div>
+        <div class="footer-meta">Domains, transfers and DNS.<br>Nothing else competing for attention.</div>
     </div>
     <div class="wrap footer-bottom">© {{ now|date('Y') }} Rhoizos</div>
 </footer>
@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', function () {
         toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
         panel.hidden = open;
     });
+    const close = panel.querySelector('.menu-close');
+    if (close) close.addEventListener('click', function () { panel.hidden = true; toggle.setAttribute('aria-expanded','false'); });
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && !panel.hidden) {
             panel.hidden = true;
