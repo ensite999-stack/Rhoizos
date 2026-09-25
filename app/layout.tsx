@@ -32,8 +32,8 @@ export async function generateMetadata():Promise<Metadata>{
     icons:{icon:[{url:"/icon.svg",type:"image/svg+xml",sizes:"any"}],shortcut:"/icon.svg"},
     manifest:"/manifest.webmanifest",
     robots:{index:true,follow:true,googleBot:{index:true,follow:true,"max-image-preview":"large","max-snippet":-1,"max-video-preview":-1}},
-    openGraph:{title,description,siteName:"Rhoizos",type:"website",images:[{url:"/assets/logo-source.png",alt:"Rhoizos"}]},
-    twitter:{title,description,card:"summary_large_image",images:["/assets/logo-source.png"]},
+    openGraph:{title,description,siteName:"Rhoizos",type:"website",images:[{url:"/icon.svg",width:1024,height:1024,alt:"Rhoizos"}]},
+    twitter:{title,description,card:"summary",images:["/icon.svg"]},
     other:{google:"notranslate"}
   };
 }

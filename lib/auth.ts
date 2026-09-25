@@ -56,3 +56,7 @@ export async function destroySession(){
   if(token) await db()`delete from sessions where token_hash=${tokenHash(token)}`;
   store.set(COOKIE,"",{path:"/",maxAge:0});
 }
+export async function destroyAllSessions(userId:string){
+  await db()`delete from sessions where user_id=${userId}`;
+  (await cookies()).set(COOKIE,"",{path:"/",maxAge:0});
+}

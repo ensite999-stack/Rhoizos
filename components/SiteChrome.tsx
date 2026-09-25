@@ -4,6 +4,7 @@ import {usePathname} from "next/navigation";
 import LocaleMenu from "./LocaleMenu";
 import ThemeToggle,{type Theme} from "./ThemeToggle";
 import CartLink from "./CartLink";
+import AccountMenu from "./AccountMenu";
 import {useI18n} from "./I18nProvider";
 
 export default function SiteChrome({children,year,theme}:{children:React.ReactNode;year:number;theme:Theme}){
@@ -27,7 +28,7 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <LocaleMenu/>
           <Link href="/login" className="desktopUtility">{t("nav.login")}</Link>
           <CartLink/>
-          <Link href="/domains" className="domainsLink">{t("nav.myDomains")}</Link>
+          <AccountMenu/>
         </nav>
       </div>
     </header>

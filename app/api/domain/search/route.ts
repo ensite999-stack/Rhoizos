@@ -43,21 +43,25 @@ export async function GET(request:NextRequest){
         ...COMMON_TLDS
       ];
       const allTlds=[...new Set(ordered)];
-      const requestedTld=(request.nextUrl.searchParams.get("tld")||"").replace(/^\./,"").trim().toLowerCase();
-      if(requestedTld&&!/^[a-z0-9-]{2,63}$/.test(requestedTld)){
-        return NextResponse.json({error:"Invalid domain extension."},{status:400});
+      const requestedTlds=(request.nextUrl.searchParams.get("tld")||"")
+        .split(",")
+        .map(value=>value.replace(/^\./,"").trim().toLowerCase())
+        .filter(Boolean);
+      if(requestedTlds.length>20||requestedTlds.some(tld=>!/^[a-z0-9-]{2,63}$/.test(tld))){
+        return NextResponse.json({error:"Invalid domain extension filter."},{status:400});
       }
-      const page=requestedTld?0:Math.max(0,Number.parseInt(request.nextUrl.searchParams.get("page")||"0",10)||0);
+      const uniqueRequested=[...new Set(requestedTlds)];
+      const page=uniqueRequested.length?0:Math.max(0,Number.parseInt(request.nextUrl.searchParams.get("page")||"0",10)||0);
       const start=page*PAGE_SIZE;
-      const tlds=requestedTld?[requestedTld]:allTlds.slice(start,start+PAGE_SIZE);
+      const tlds=uniqueRequested.length?uniqueRequested:allTlds.slice(start,start+PAGE_SIZE);
       const domains=tlds.map(tld=>label+"."+tld);
-      const hasMore=!requestedTld&&start+tlds.length<allTlds.length;
+      const hasMore=!uniqueRequested.length&&start+tlds.length<allTlds.length;
 
       if(!process.env.SPACESHIP_API_KEY||!process.env.SPACESHIP_API_SECRET){
         return ok({
           query:label,
           page,
-          total:requestedTld?1:allTlds.length,
+          total:uniqueRequested.length?uniqueRequested.length:allTlds.length,
           hasMore,
           tlds:allTlds.map(tld=>"."+tld),
           items:domains.map((domain,index)=>{
@@ -72,7 +76,7 @@ export async function GET(request:NextRequest){
       return ok({
         query:label,
         page,
-        total:requestedTld?1:allTlds.length,
+        total:uniqueRequested.length?uniqueRequested.length:allTlds.length,
         hasMore,
         tlds:allTlds.map(tld=>"."+tld),
         items:await Promise.all(domains.map(async (domain,index)=>{

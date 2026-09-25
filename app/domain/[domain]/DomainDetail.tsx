@@ -1,35 +1,38 @@
 "use client";
-import {FormEvent,useEffect,useState} from "react";
+import {FormEvent,useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
 import RdapDetails,{type RdapInfo} from "@/components/RdapDetails";
 import {addCart,onCartChange,readCart} from "@/lib/cart-client";
 
-type SearchResult={
-  domain:string;
-  available:boolean|null;
-  premium:boolean;
-  price:number|null;
-  preview?:boolean;
-};
+type SearchResult={domain:string;available:boolean|null;premium:boolean;price:number|null;preview?:boolean};
 
 function SearchIcon(){
-  return <svg viewBox="0 0 24 24" aria-hidden="true">
-    <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2"/>
-    <path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
+}
+function FilterIcon(){
+  return <svg viewBox="0 0 20 20" aria-hidden="true">
+    <path d="M3 5h14M6 10h8M8.5 15h3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+    <circle cx="7" cy="5" r="1.6" fill="var(--surface-raised)" stroke="currentColor" strokeWidth="1.3"/>
+    <circle cx="12.5" cy="10" r="1.6" fill="var(--surface-raised)" stroke="currentColor" strokeWidth="1.3"/>
+    <circle cx="10" cy="15" r="1.6" fill="var(--surface-raised)" stroke="currentColor" strokeWidth="1.3"/>
   </svg>;
 }
 
 export default function DomainDetail({initialDomain}:{initialDomain:string}){
   const {t}=useI18n();
   const router=useRouter();
+  const filterRef=useRef<HTMLDivElement>(null);
   const [query,setQuery]=useState(initialDomain);
   const [result,setResult]=useState<SearchResult|null>(null);
   const [suggestions,setSuggestions]=useState<SearchResult[]>([]);
   const [searchLabel,setSearchLabel]=useState("");
   const [tlds,setTlds]=useState<string[]>([]);
-  const [selectedTld,setSelectedTld]=useState("");
+  const [selectedTlds,setSelectedTlds]=useState<string[]>([]);
+  const [draftTlds,setDraftTlds]=useState<string[]>([]);
+  const [filterSearch,setFilterSearch]=useState("");
+  const [filterOpen,setFilterOpen]=useState(false);
   const [resultsTotal,setResultsTotal]=useState(0);
   const [resultsPage,setResultsPage]=useState(0);
   const [hasMore,setHasMore]=useState(false);
@@ -46,6 +49,20 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     return onCartChange(sync);
   },[]);
 
+  useEffect(()=>{
+    const outside=(event:PointerEvent)=>{if(filterRef.current&&!filterRef.current.contains(event.target as Node))setFilterOpen(false);};
+    const escape=(event:KeyboardEvent)=>{if(event.key==="Escape")setFilterOpen(false);};
+    document.addEventListener("pointerdown",outside);
+    document.addEventListener("keydown",escape);
+    return ()=>{document.removeEventListener("pointerdown",outside);document.removeEventListener("keydown",escape);};
+  },[]);
+
+  const filteredTlds=useMemo(()=>{
+    const term=filterSearch.trim().toLowerCase().replace(/^\./,"");
+    return term?tlds.filter(tld=>tld.toLowerCase().includes(term)):tlds;
+  },[tlds,filterSearch]);
+  const popularTlds=tlds.filter(tld=>[".com",".net",".org",".io",".co",".ai",".dev",".app"].includes(tld)).slice(0,8);
+
   function statusKey(item:SearchResult){
     if(item.available===false)return "registered";
     if(item.premium)return "premium";
@@ -58,27 +75,23 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     if(item.available===true)return t("detail.availableLabel");
     return t("detail.resultLabel");
   }
-  function canBuy(item:SearchResult){
-    return item.available===true&&item.price!==null;
-  }
+  function canBuy(item:SearchResult){return item.available===true&&item.price!==null;}
 
-  async function loadSuggestions(label:string,page=0,append=false,tld=""){
+  async function loadSuggestions(label:string,page=0,append=false,filters:string[]=[]){
     append?setLoadingMore(true):setBusy(true);
     setError("");
     try{
       const params=new URLSearchParams({q:label,page:String(page)});
-      if(tld)params.set("tld",tld);
+      if(filters.length)params.set("tld",filters.map(value=>value.replace(/^\./,"")).join(","));
       const response=await fetch("/api/domain/search?"+params.toString(),{cache:"no-store"});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Domain search failed.");
       const incoming=(data.items||[]) as SearchResult[];
-      setSuggestions(current=>append
-        ?[...current,...incoming.filter(item=>!current.some(existing=>existing.domain===item.domain))]
-        :incoming
-      );
+      setSuggestions(current=>append?[...current,...incoming.filter(item=>!current.some(existing=>existing.domain===item.domain))]:incoming);
       setSearchLabel(label);
       setTlds(Array.isArray(data.tlds)?data.tlds:[]);
-      setSelectedTld(tld);
+      setSelectedTlds(filters);
+      setDraftTlds(filters);
       setResultsTotal(Number(data.total||incoming.length));
       setResultsPage(Number(data.page||page));
       setHasMore(Boolean(data.hasMore));
@@ -93,36 +106,20 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
   async function load(name:string){
     const value=name.trim().toLowerCase();
     if(!value)return;
-    setBusy(true);
-    setError("");
-    setResult(null);
-    setSuggestions([]);
-    setSearchLabel("");
-    setTlds([]);
-    setSelectedTld("");
-    setResultsTotal(0);
-    setResultsPage(0);
-    setHasMore(false);
-    setRdap(null);
-    setRdapState("idle");
+    setBusy(true);setError("");setResult(null);setSuggestions([]);setSearchLabel("");setTlds([]);
+    setSelectedTlds([]);setDraftTlds([]);setResultsTotal(0);setResultsPage(0);setHasMore(false);setRdap(null);setRdapState("idle");
 
     const bare=!value.includes(".")&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value);
-    if(bare){
-      await loadSuggestions(value,0,false,"");
-      return;
-    }
+    if(bare){await loadSuggestions(value,0,false,[]);return;}
 
     try{
       const response=await fetch("/api/domain/search?domain="+encodeURIComponent(value),{cache:"no-store"});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Domain search failed.");
-      setResult(data);
-      setQuery(data.domain);
+      setResult(data);setQuery(data.domain);
     }catch(error){
       setError(error instanceof Error?error.message:"Domain search failed.");
-    }finally{
-      setBusy(false);
-    }
+    }finally{setBusy(false);}
   }
 
   useEffect(()=>{load(initialDomain);},[initialDomain]);
@@ -131,30 +128,23 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     const value=name.trim().toLowerCase();
     if(!value)return;
     const target="/domain/"+encodeURIComponent(value);
-    if(value===initialDomain.toLowerCase())load(value);
-    else router.push(target);
+    if(value===initialDomain.toLowerCase())load(value);else router.push(target);
   }
+  function submit(event:FormEvent){event.preventDefault();go(query);}
+  function add(item:SearchResult){if(canBuy(item))addCart({domain:item.domain,price:item.price!,kind:"register"});}
+  async function loadMore(){if(searchLabel&&hasMore&&!loadingMore)await loadSuggestions(searchLabel,resultsPage+1,true,selectedTlds);}
 
-  function submit(event:FormEvent){
-    event.preventDefault();
-    go(query);
+  function toggleDraft(tld:string){
+    setDraftTlds(current=>current.includes(tld)?current.filter(item=>item!==tld):current.length<20?[...current,tld]:current);
   }
-
-  function add(item:SearchResult){
-    if(!canBuy(item))return;
-    addCart({domain:item.domain,price:item.price!,kind:"register"});
-  }
-
-  async function loadMore(){
-    if(!searchLabel||!hasMore||loadingMore)return;
-    await loadSuggestions(searchLabel,resultsPage+1,true,selectedTld);
-  }
-
-  async function filter(next:string){
+  async function applyFilters(){
     if(!searchLabel)return;
-    setSuggestions([]);
-    setSelectedTld(next);
-    await loadSuggestions(searchLabel,0,false,next);
+    setFilterOpen(false);setSuggestions([]);
+    await loadSuggestions(searchLabel,0,false,draftTlds);
+  }
+  async function clearFilters(){
+    setDraftTlds([]);setFilterSearch("");setFilterOpen(false);setSuggestions([]);
+    if(searchLabel)await loadSuggestions(searchLabel,0,false,[]);
   }
 
   async function loadRdap(){
@@ -164,11 +154,8 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
       const response=await fetch("/api/rdap?domain="+encodeURIComponent(result.domain),{cache:"no-store"});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"RDAP lookup failed.");
-      setRdap(data);
-      setRdapState("loaded");
-    }catch{
-      setRdapState("unavailable");
-    }
+      setRdap(data);setRdapState("loaded");
+    }catch{setRdapState("unavailable");}
   }
 
   const registered=result?.available===false;
@@ -190,74 +177,67 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
         {error&&<div className="detailError">{error}</div>}
 
         {!!searchLabel&&<div className="domainFilterBar">
-          <label>
-            <span>{t("detail.filterExtension")}</span>
-            <select value={selectedTld} onChange={event=>filter(event.target.value)} disabled={busy}>
-              <option value="">{t("detail.allExtensions")}</option>
-              {tlds.map(tld=><option value={tld.replace(/^\./,"")} key={tld}>{tld}</option>)}
-            </select>
-          </label>
-          <div><strong>{suggestions.length}{resultsTotal>suggestions.length?" / "+resultsTotal:""}</strong> {t("detail.resultsFound")}</div>
+          <div className="filterWrap" ref={filterRef}>
+            <button className={"filterTrigger"+(selectedTlds.length?" active":"")} type="button" onClick={()=>{setDraftTlds(selectedTlds);setFilterOpen(v=>!v)}}>
+              <FilterIcon/><span>{t("detail.filters")}</span>{selectedTlds.length>0&&<b>{selectedTlds.length}</b>}
+            </button>
+            {selectedTlds.map(tld=><button className="activeFilterChip" type="button" key={tld} onClick={()=>{const next=selectedTlds.filter(item=>item!==tld);setSuggestions([]);loadSuggestions(searchLabel,0,false,next)}}>{tld}<span>×</span></button>)}
+            {filterOpen&&<div className="filterPopover">
+              <div className="filterPopoverHead"><strong>{t("detail.filterExtensions")}</strong><button type="button" onClick={()=>setFilterOpen(false)}>×</button></div>
+              <input className="filterSearch" value={filterSearch} onChange={event=>setFilterSearch(event.target.value)} placeholder={t("detail.searchExtensions")} autoFocus/>
+              {!!popularTlds.length&&<div className="filterPopular">
+                <span>{t("detail.popularExtensions")}</span>
+                <div>{popularTlds.map(tld=><button type="button" className={draftTlds.includes(tld)?"selected":""} key={tld} onClick={()=>toggleDraft(tld)}>{tld}</button>)}</div>
+              </div>}
+              <div className="filterTldList">
+                {filteredTlds.map(tld=><label key={tld}><input type="checkbox" checked={draftTlds.includes(tld)} onChange={()=>toggleDraft(tld)}/><span>{tld}</span></label>)}
+              </div>
+              <div className="filterActions">
+                <button className="filterClear" type="button" onClick={clearFilters}>{t("detail.clear")}</button>
+                <button className="primary" type="button" onClick={applyFilters}>{t("detail.apply")} {draftTlds.length?"("+draftTlds.length+")":""}</button>
+              </div>
+            </div>}
+          </div>
+          <div className="filterResults"><strong>{suggestions.length}{resultsTotal>suggestions.length?" / "+resultsTotal:""}</strong> {t("detail.resultsFound")}</div>
         </div>}
 
         {!!suggestions.length&&<>
           <div className="domainSuggestions">
             {suggestions.map(item=><div className="domainSuggestion" key={item.domain}>
               <button className="domainSuggestionName" type="button" onClick={()=>go(item.domain)}>
-                <h2>{item.domain}</h2>
-                <span className={"domainStatus "+statusKey(item)}>{statusText(item)}</span>
+                <h2>{item.domain}</h2><span className={"domainStatus "+statusKey(item)}>{statusText(item)}</span>
               </button>
               <div className="domainSuggestionAction">
                 {canBuy(item)&&<strong>{"$"+item.price!.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>}
                 {item.available===true&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
                 {canBuy(item)&&<>
-                  <button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>
-                    {carted.has(item.domain)?t("cart.added"):t("cart.add")}
-                  </button>
+                  <button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>{carted.has(item.domain)?t("cart.added"):t("cart.add")}</button>
                   <Link className="secondaryLink" href={"/checkout/guest?domain="+encodeURIComponent(item.domain)}>{t("cart.buyGuest")}</Link>
                 </>}
                 {!canBuy(item)&&<button className="secondary" type="button" onClick={()=>go(item.domain)}>{t("detail.view")}</button>}
               </div>
             </div>)}
           </div>
-          {hasMore&&<div className="domainLoadMore">
-            <button className="secondary" type="button" onClick={loadMore} disabled={loadingMore}>
-              {loadingMore?t("detail.loadingMore"):t("detail.loadMore")}
-            </button>
-          </div>}
+          {hasMore&&<div className="domainLoadMore"><button className="secondary" type="button" onClick={loadMore} disabled={loadingMore}>{loadingMore?t("detail.loadingMore"):t("detail.loadMore")}</button></div>}
         </>}
 
         {result&&<div className="domainSummary">
           <div>
-            <span className={"domainStatus "+statusKey(result)}>{statusText(result)}</span>
-            <h1>{result.domain}</h1>
+            <span className={"domainStatus "+statusKey(result)}>{statusText(result)}</span><h1>{result.domain}</h1>
             <p>{result.preview?t("detail.preview"):result.premium?t("detail.premium"):result.available?t("detail.available"):t("detail.registered")}</p>
           </div>
-
           {result.available===true&&<div className="availabilityAction">
-            {result.price!==null
-              ?<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>
-              :<span className="pricePending">{t("detail.priceUnavailable")}</span>}
+            {result.price!==null?<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>:<span className="pricePending">{t("detail.priceUnavailable")}</span>}
             {result.price!==null&&<>
-              {carted.has(result.domain)
-                ?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>
-                :<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>}
+              {carted.has(result.domain)?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>:<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>}
               <Link className="secondaryLink" href={"/checkout/guest?domain="+encodeURIComponent(result.domain)}>{t("cart.buyGuest")}</Link>
             </>}
           </div>}
-
-          {registered&&<div className="availabilityAction registeredAction">
-            <button className="secondary publicDetailsButton" onClick={loadRdap} disabled={rdapState==="loading"}>
-              {rdapState==="loading"?t("detail.rdapLoading"):t("detail.rdapButton")}
-            </button>
-          </div>}
+          {registered&&<div className="availabilityAction registeredAction"><button className="secondary publicDetailsButton" onClick={loadRdap} disabled={rdapState==="loading"}>{rdapState==="loading"?t("detail.rdapLoading"):t("detail.rdapButton")}</button></div>}
         </div>}
 
         {rdapState==="loaded"&&rdap&&<RdapDetails data={rdap}/>}
-        {rdapState==="unavailable"&&<div className="detailNotice">
-          <h2>{t("detail.unavailableTitle")}</h2>
-          <p>{t("detail.unavailable")}</p>
-        </div>}
+        {rdapState==="unavailable"&&<div className="detailNotice"><h2>{t("detail.unavailableTitle")}</h2><p>{t("detail.unavailable")}</p></div>}
       </div>
     </section>
   </div>;
