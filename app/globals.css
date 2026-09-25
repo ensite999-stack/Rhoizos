@@ -287,3 +287,438 @@ main{background:#fff}
   .adminHeader h1{font-size:32px}
   .adminPricingGlobal{grid-template-columns:1fr}
 }
+
+
+/* 2026-09-25 premium product refinement */
+html{-webkit-tap-highlight-color:transparent}
+a,button,input,select,textarea,label{-webkit-tap-highlight-color:transparent}
+a:focus,button:focus,input:focus,select:focus,textarea:focus{outline:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid rgba(112,38,147,.58);
+  outline-offset:3px
+}
+button{-webkit-appearance:none;appearance:none}
+a,button{touch-action:manipulation}
+
+/* Header */
+.siteHeader{
+  background:#081522;
+  border-bottom:1px solid rgba(255,255,255,.075)
+}
+.headerInner{
+  width:min(calc(100% - 56px),1320px);
+  height:78px
+}
+.brand{font-size:21px;letter-spacing:-.04em}
+.brand img{width:48px;height:31px}
+.mainNav{gap:34px;color:#c2cad6;font-size:14px}
+.accountNav{gap:18px;color:#d7dde6}
+.domainsLink{font-weight:620;color:#fff}
+.cartLink{
+  width:36px;height:36px;
+  opacity:.9;
+  transition:opacity .15s ease,transform .15s ease
+}
+.cartLink:hover{opacity:1;transform:translateY(-1px)}
+
+/* Blue-black hero */
+.homeHero{
+  min-height:610px;
+  padding:88px 0 76px;
+  background:
+    radial-gradient(900px 430px at 50% 8%,rgba(25,75,157,.22),transparent 66%),
+    radial-gradient(650px 360px at 78% 22%,rgba(112,38,147,.10),transparent 72%),
+    linear-gradient(145deg,#0b1d36 0%,#081625 48%,#06111e 100%);
+}
+.heroLead{max-width:860px}
+.heroTitle{
+  font-size:clamp(54px,6vw,80px);
+  line-height:.95;
+  letter-spacing:-.065em;
+  font-weight:650
+}
+.heroCopy{
+  max-width:620px;
+  margin-top:22px;
+  color:#b6c1d0;
+  font-size:17px;
+  line-height:1.7
+}
+.searchPanel{max-width:1080px;margin-top:46px}
+.searchModes{
+  margin-bottom:19px;
+  padding:4px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.searchModes button{
+  min-width:122px;
+  height:48px;
+  color:#aeb9c8;
+  font-size:15px
+}
+.searchModes button.active{
+  background:#fff;
+  color:#17202c;
+  box-shadow:0 5px 18px rgba(0,0,0,.14)
+}
+.searchForm{
+  padding:8px 9px 8px 28px;
+  border:1px solid rgba(255,255,255,.62);
+  box-shadow:0 24px 70px rgba(0,0,0,.30)
+}
+.searchForm input{
+  height:68px;
+  font-size:22px
+}
+.searchButton{
+  width:64px;height:64px;
+  box-shadow:0 7px 22px rgba(112,38,147,.28)
+}
+.searchPromos{
+  justify-content:center;
+  gap:12px;
+  margin-top:20px;
+  color:#aab6c5;
+  font-size:13px
+}
+.searchPromos span{
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent
+}
+.searchPromos i{
+  margin-right:12px;
+  color:#526277;
+  font-style:normal
+}
+.searchPromos b{color:#fff;font-weight:700}
+
+/* Cleaner pricing */
+.offersSection{padding:96px 0 106px}
+.sectionHeading h2,.learnHeading h2{
+  font-size:clamp(42px,4.4vw,60px);
+  font-weight:630
+}
+.offerGrid{margin-top:50px}
+.offerItem{padding-top:34px;padding-bottom:34px}
+.offerTop strong{font-size:32px}
+.offerTop span{font-size:21px}
+.textAction{font-size:13px}
+
+/* Why Rhoizos: large editorial text, no badges or visual labels */
+.whySection{
+  padding:126px 0 132px;
+  background:#f5f6f8
+}
+.whyEditorial{
+  display:grid;
+  grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);
+  gap:110px;
+  align-items:start
+}
+.whyTitle h2{
+  margin:0;
+  font-size:clamp(56px,6.2vw,86px);
+  line-height:.94;
+  letter-spacing:-.065em;
+  font-weight:625
+}
+.whyText{max-width:690px}
+.whyText p{
+  margin:0 0 24px;
+  color:#4e5a69;
+  font-size:17px;
+  line-height:1.78
+}
+.whyText .whyLead{
+  margin-bottom:30px;
+  color:#111827;
+  font-size:clamp(24px,2.4vw,34px);
+  line-height:1.32;
+  letter-spacing:-.03em;
+  font-weight:570
+}
+.whyText strong{color:#111827;font-weight:700}
+
+/* Domain education as clean text rows */
+.learnSection{padding:112px 0 128px}
+.learnHeading{margin-bottom:56px}
+.learnList{
+  border-top:1px solid #dfe3e8
+}
+.learnList article{
+  display:grid;
+  grid-template-columns:minmax(220px,.72fr) minmax(0,1.28fr);
+  gap:70px;
+  padding:30px 0 34px;
+  border-bottom:1px solid #dfe3e8
+}
+.learnList h3{
+  margin:0;
+  color:#18202b;
+  font-size:22px;
+  letter-spacing:-.025em;
+  font-weight:650
+}
+.learnList p{
+  max-width:680px;
+  margin:0;
+  color:#65717f;
+  font-size:15px;
+  line-height:1.75
+}
+
+/* Domain detail */
+.domainDetailPage{background:#fff;color:#111827;min-height:70vh}
+.detailSearchBand{
+  padding:46px 0 50px;
+  background:
+    radial-gradient(700px 260px at 72% 0%,rgba(112,38,147,.07),transparent 68%),
+    linear-gradient(145deg,#0b1d36,#071522);
+  color:#fff
+}
+.detailInner{width:min(calc(100% - 48px),1080px);margin:auto}
+.detailSearchBand p{
+  margin:0 0 12px;
+  color:#94a1b2;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase
+}
+.detailSearchForm{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  padding:7px 8px 7px 23px;
+  background:#fff;
+  border-radius:999px;
+  box-shadow:0 18px 52px rgba(0,0,0,.24)
+}
+.detailSearchForm input{
+  min-width:0;
+  height:58px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#151b24;
+  font-size:19px
+}
+.detailSearchForm button{
+  display:grid;
+  place-items:center;
+  width:54px;height:54px;
+  border:0;
+  border-radius:50%;
+  background:#702693;
+  color:#fff
+}
+.detailSearchForm button svg{width:24px;height:24px}
+.detailContent{padding:76px 0 116px}
+.detailLoading,.detailError,.detailNotice{
+  padding:24px 0;
+  color:#687483;
+  font-size:15px
+}
+.detailError{color:#b34646}
+.domainSummary{
+  display:flex;
+  justify-content:space-between;
+  gap:70px;
+  align-items:flex-end;
+  padding-bottom:54px;
+  border-bottom:1px solid #e0e4e9
+}
+.detailEyebrow{
+  display:block;
+  margin-bottom:13px;
+  color:#778290;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.1em
+}
+.domainSummary h1{
+  margin:0;
+  color:#111827;
+  font-size:clamp(48px,6.2vw,78px);
+  line-height:.98;
+  letter-spacing:-.06em;
+  font-weight:630;
+  word-break:break-word
+}
+.domainSummary p{
+  max-width:670px;
+  margin:18px 0 0;
+  color:#66717f;
+  font-size:16px;
+  line-height:1.7
+}
+.availabilityAction{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:15px;
+  flex:0 0 auto
+}
+.availabilityAction strong{
+  color:#111827;
+  font-size:30px;
+  letter-spacing:-.035em
+}
+.availabilityAction small{
+  margin-left:5px;
+  color:#7a8491;
+  font-size:12px;
+  font-weight:500
+}
+.rdapFriendly{padding-top:62px}
+.rdapIntro{
+  display:grid;
+  grid-template-columns:.8fr 1.2fr;
+  gap:70px;
+  margin-bottom:42px
+}
+.rdapIntro h2{
+  margin:0;
+  font-size:34px;
+  letter-spacing:-.04em
+}
+.rdapIntro p{
+  margin:0;
+  color:#66717f;
+  font-size:15px;
+  line-height:1.72
+}
+.rdapFacts{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  margin:0;
+  border-top:1px solid #e0e4e9
+}
+.rdapFacts>div{
+  padding:24px 24px 27px 0;
+  border-bottom:1px solid #e0e4e9
+}
+.rdapFacts>div:nth-child(3n+2),
+.rdapFacts>div:nth-child(3n+3){padding-left:24px;border-left:1px solid #e0e4e9}
+.rdapFacts dt{
+  color:#7a8491;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em
+}
+.rdapFacts dd{
+  margin:9px 0 0;
+  color:#1d2632;
+  font-size:16px;
+  line-height:1.5
+}
+.rdapSection{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  gap:42px;
+  padding:32px 0;
+  border-bottom:1px solid #e0e4e9
+}
+.rdapSection h3{
+  margin:0;
+  font-size:18px
+}
+.nameserverList{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  color:#53606f;
+  font-size:14px
+}
+.statusTextList p{
+  margin:0 0 8px;
+  color:#53606f;
+  font-size:14px
+}
+.detailNotice{
+  margin-top:50px;
+  border-top:1px solid #e0e4e9
+}
+.detailNotice h2{margin:0 0 8px;color:#111827;font-size:28px}
+.detailNotice p{margin:0}
+
+/* More polished white secondary pages */
+.page{
+  padding-top:86px;
+  padding-bottom:132px
+}
+.pageTitle{font-weight:620}
+.field input,.field select{
+  transition:border-color .15s ease,box-shadow .15s ease,background .15s ease
+}
+.secondary,.primary,.primaryLink,.secondaryLink,.textAction{
+  transition:transform .15s ease,background .15s ease,border-color .15s ease,color .15s ease
+}
+.primary:hover,.primaryLink:hover{transform:translateY(-1px)}
+.secondary:hover,.secondaryLink:hover{transform:translateY(-1px)}
+
+/* Footer */
+.footerStack{padding-top:78px}
+.footerNav{font-size:18px}
+
+/* Tablet */
+@media(max-width:900px){
+  .whyEditorial{grid-template-columns:1fr;gap:45px}
+  .whyTitle h2{max-width:680px}
+  .learnList article{grid-template-columns:1fr;gap:12px}
+  .rdapIntro{grid-template-columns:1fr;gap:18px}
+  .rdapFacts{grid-template-columns:1fr 1fr}
+  .rdapFacts>div:nth-child(n){padding-left:0;border-left:0}
+  .rdapFacts>div:nth-child(even){padding-left:22px;border-left:1px solid #e0e4e9}
+}
+
+/* Mobile */
+@media(max-width:640px){
+  .headerInner{width:calc(100% - 28px)}
+  .accountNav{gap:10px}
+  .domainsLink{font-size:11px}
+  .cartLink{order:-1}
+
+  .homeHero{padding:70px 0 54px}
+  .heroTitle{font-size:54px}
+  .heroCopy{max-width:330px}
+  .searchPanel{margin-top:40px}
+  .searchModes button{min-width:108px}
+  .searchForm{padding-left:19px}
+  .searchForm input{height:57px;font-size:17px}
+  .searchButton{width:54px;height:54px}
+  .searchPromos{justify-content:flex-start;gap:8px;font-size:12px}
+  .searchPromos i{margin-right:8px}
+
+  .whySection{padding:82px 0 88px}
+  .whyEditorial{gap:34px}
+  .whyTitle h2{font-size:52px}
+  .whyText p{font-size:15px}
+  .whyText .whyLead{font-size:26px}
+
+  .learnSection{padding:78px 0 90px}
+  .learnList article{padding:23px 0 26px}
+  .learnList h3{font-size:20px}
+  .learnList p{font-size:14px}
+
+  .detailInner{width:calc(100% - 30px)}
+  .detailSearchBand{padding:34px 0 37px}
+  .detailSearchForm{padding-left:18px}
+  .detailSearchForm input{height:52px;font-size:16px}
+  .detailSearchForm button{width:48px;height:48px}
+  .detailContent{padding:54px 0 86px}
+  .domainSummary{flex-direction:column;align-items:flex-start;gap:28px;padding-bottom:40px}
+  .domainSummary h1{font-size:48px}
+  .domainSummary p{font-size:15px}
+  .availabilityAction{align-items:flex-start}
+  .rdapFriendly{padding-top:46px}
+  .rdapIntro h2{font-size:30px}
+  .rdapFacts{grid-template-columns:1fr}
+  .rdapFacts>div:nth-child(n){padding:20px 0;border-left:0}
+  .rdapSection{grid-template-columns:1fr;gap:14px;padding:26px 0}
+}
