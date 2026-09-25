@@ -62,7 +62,7 @@ function shell(){
   '</nav></header>'+
   '<section id="menu" '+(menuOpen?'':'hidden')+'>'+menu()+'</section>'+
   '<main id="main" tabindex="-1"></main>'+
-  '<footer><div class="wrap footer-grid"><div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div><div><a href="#search">Search</a><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div><div><a href="#domains">My domains</a><a href="#policies">Privacy & terms</a><a href="#support">Support</a></div><div class="footer-meta">Domains, transfers and DNS.<br>Nothing else competing for attention.</div></div><div class="wrap footer-bottom">© '+new Date().getFullYear()+' Rhoizos</div></footer>';
+  '<footer><div class="wrap footer-grid"><div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div><div><a href="#search">Search</a><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div><div><a href="#domains">My domains</a><a href="#policies">Privacy & terms</a><a href="#support">Support</a></div><div class="footer-meta">Search, register, transfer, renew and manage DNS.<br>Focused domain infrastructure.</div></div><div class="wrap footer-bottom">© '+new Date().getFullYear()+' Rhoizos</div></footer>';
  $('#menu-toggle').onclick=()=>{menuOpen=!menuOpen;$('#menu').hidden=!menuOpen;$('#menu-toggle').setAttribute('aria-expanded',String(menuOpen));}; const close=$('.menu-close');if(close)close.onclick=()=>{menuOpen=false;$('#menu').hidden=true;$('#menu-toggle').setAttribute('aria-expanded','false');};
 }
 function menu(){
@@ -78,13 +78,21 @@ function menu(){
 function home(){
  const prices=(live?tlds:previewPrices).slice(0,4);
  setMain(
-  '<section class="hero"><div class="hero-copy"><h1>你的域名，<br><span>你的世界。</span></h1><p class="sub">搜索、注册、转移、续费和 DNS 管理。一个安静、直接的域名控制台。</p></div>'+
-  '<div class="search-area"><div class="search-mode"><span>Register a domain</span><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div>'+
-  '<form id="search-form" class="searchbox">'+icon('search')+'<input id="domain" aria-label="Domain name" placeholder="yourname.com" required autocomplete="off" spellcheck="false" maxlength="253"><button class="primary">Search</button></form>'+
-  '<div id="results" aria-live="polite"></div></div>'+
-  '<div class="price-strip">'+prices.map(t=>'<div><b>'+esc(t.tld)+'</b><span>'+money(t.price_registration)+'</span><small>per year</small></div>').join('')+'</div>'+previewNote()+
+  '<section class="hero">'+
+   '<div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div>'+
+   '<div class="hero-inner">'+
+    '<div class="hero-switch"><span class="active">Register</span><a href="#transfer">Transfer</a></div>'+
+    '<div class="hero-copy"><p class="hero-kicker">RHOIZOS DOMAINS</p><h1>你的域名，<br><span>你的世界。</span></h1><p class="sub">搜索、注册、转移、续费和 DNS 管理。简单、直接，所有权始终清晰。</p></div>'+
+    '<div class="search-area">'+
+     '<form id="search-form" class="searchbox">'+icon('search')+'<input id="domain" aria-label="Domain name" placeholder="Search for a domain name…" required autocomplete="off" spellcheck="false" maxlength="253"><button class="primary">Search</button></form>'+
+     '<div id="results" aria-live="polite"></div>'+
+     '<div class="hero-links"><a href="#transfer">Transfer a domain →</a><a href="#rdap">RDAP lookup →</a></div>'+
+    '</div>'+
+    '<div class="price-strip">'+prices.map(t=>'<div><b>'+esc(t.tld)+'</b><span>'+money(t.price_registration)+'</span><small>registration / year</small></div>').join('')+'</div>'+
+    previewNote()+
+   '</div>'+
   '</section>'+
-  '<section class="quiet-grid"><article><span>01</span><h2>Register</h2><p>Find a name, confirm the price, and register it.</p></article><article><span>02</span><h2>Transfer & renew</h2><p>Move domains in, renew them, or unlock and move them out.</p></article><article><span>03</span><h2>DNS + notes</h2><p>Manage records and keep private notes beside each one.</p></article></section>','home'
+  '<section class="quiet-grid"><article><span>01</span><h2>Find your name</h2><p>Search availability and see the price before you continue.</p></article><article><span>02</span><h2>Keep control</h2><p>Renew, transfer in, unlock, and transfer out without hidden steps.</p></article><article><span>03</span><h2>Manage DNS</h2><p>Edit records and keep a private note beside every record.</p></article></section>','home'
  );
  $('#search-form').onsubmit=search;
 }
