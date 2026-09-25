@@ -30,8 +30,8 @@ export default function Signup(){
         <label className="field">{t("common.password")}<input name="password" type="password" minLength={12} required/></label>
         <label className="field">{t("signup.accountType")}<select name="accountType"><option value="individual">{t("signup.individual")}</option><option value="company">{t("common.company")}</option></select></label>
         <label className="field">{t("common.company")}<input name="company"/></label>
-        <label className="field">{t("signup.phone")}<input name="phone" placeholder="+86.13800138000" required/></label>
-        <label className="field">{t("signup.country")}<input name="country" placeholder="SG" maxLength={2} required/></label>
+        <label className="field">{t("signup.phone")}<input name="phone" type="tel" autoComplete="tel" required/></label>
+        <label className="field">{t("signup.country")}<input name="country" autoComplete="country" maxLength={2} required/></label>
         <label className="field">{t("signup.state")}<input name="state" required/></label>
         <label className="field">{t("common.city")}<input name="city" required/></label>
         <label className="field full">{t("signup.street")}<input name="address1" required/></label>
