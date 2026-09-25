@@ -108,7 +108,8 @@ class Rules
     {
         unset($r['label'], $r['ttl'], $r['group']);
         // DNS identifiers are case-insensitive. TXT contents are not.
-        foreach ($r as $key => &$value) if (is_string($value) && !(($r['type'] ?? '') === 'TXT' && $key === 'value')) $value = strtolower($value);
+        $isTxt = strtoupper((string)($r['type'] ?? '')) === 'TXT';
+        foreach ($r as $key => &$value) if (is_string($value) && !($isTxt && $key === 'value')) $value = strtolower($value);
         unset($value); ksort($r);
         return hash('sha256', json_encode($r, JSON_THROW_ON_ERROR));
     }
