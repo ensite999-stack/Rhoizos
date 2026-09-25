@@ -3,9 +3,13 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata:Metadata={
-  title:"Rhoizos — Domains, simply managed.",
-  description:"Search, register, transfer, renew and manage domains with Rhoizos."
+  title:"Rhoizos — Your domain. Your world!",
+  description:"A simple, focused place to search, register, transfer, renew and manage domains."
 };
+
+function CartIcon(){
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.4 9.1a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 1.9-1.4L20 7H6.2M9 20h.01M17 20h.01" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+}
 
 export default function RootLayout({children}:{children:React.ReactNode}){
   const year=new Date().getFullYear();
@@ -22,14 +26,16 @@ export default function RootLayout({children}:{children:React.ReactNode}){
           <Link href="/">Domains</Link>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/transfer">Transfer</Link>
+          <Link href="/#learn">Learn</Link>
           <Link href="/rdap">RDAP</Link>
         </nav>
 
         <nav className="accountNav" aria-label="Account">
-          <Link href="/support">Support</Link>
+          <Link href="/support" className="desktopUtility">Support</Link>
           <span className="languageLabel">EN</span>
-          <Link href="/login">Log in</Link>
-          <Link className="accountButton" href="/domains">My domains</Link>
+          <Link href="/login" className="desktopUtility">Log in</Link>
+          <Link href="/domains" className="domainsLink">My domains</Link>
+          <Link href="/cart" className="cartLink" aria-label="Cart"><CartIcon/></Link>
         </nav>
       </div>
     </header>
@@ -48,6 +54,7 @@ export default function RootLayout({children}:{children:React.ReactNode}){
           <Link href="/transfer">Transfer a domain</Link>
           <Link href="/rdap">RDAP lookup</Link>
           <Link href="/domains">My domains</Link>
+          <Link href="/#learn">Learn about domains</Link>
           <Link href="/support">Support</Link>
           <a href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
           <Link href="/policies">Privacy & terms</Link>

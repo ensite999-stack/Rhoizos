@@ -16,6 +16,7 @@ async function contactSnapshot(userId:string):Promise<ContactInput>{
   if(!rows[0]) throw new Error("Account not found.");
   return validateContact(rows[0] as unknown as ContactInput);
 }
+
 async function insertOrder(userId:string,kind:"register"|"transfer"|"renew",domain:string,amount:number,request:Record<string,unknown>){
   const id=randomUUID();
   const rows=await db()`
@@ -25,29 +26,36 @@ async function insertOrder(userId:string,kind:"register"|"transfer"|"renew",doma
   `;
   return String(rows[0].id);
 }
+
 export async function createRegisterOrder(userId:string,input:string){
   const domain=normalizeDomain(input),a=await domainAvailability(domain);
   if(a.premium) throw new Error("Premium domains require a separate quote.");
   if(!a.available) throw new Error("Domain is not available.");
-  return insertOrder(userId,"register",domain,retailPrice(domain,"register"),{years:1,contact:await contactSnapshot(userId)});
+  const amount=await retailPrice(domain,"register");
+  return insertOrder(userId,"register",domain,amount,{years:1,contact:await contactSnapshot(userId)});
 }
+
 export async function createTransferOrder(userId:string,input:string,authCode:string){
   const domain=normalizeDomain(input);
   if(!authCode.trim()||authCode.length>80) throw new Error("A valid EPP/Auth Code is required.");
   const a=await domainAvailability(domain);
   if(a.premium) throw new Error("Premium transfers require manual review.");
   if(!a.taken) throw new Error("Domain does not appear eligible for transfer.");
-  return insertOrder(userId,"transfer",domain,retailPrice(domain,"transfer"),{
+  const amount=await retailPrice(domain,"transfer");
+  return insertOrder(userId,"transfer",domain,amount,{
     contact:await contactSnapshot(userId),authCode:sealSecret(authCode.trim())
   });
 }
+
 export async function createRenewOrder(userId:string,domainId:string){
   const rows=await db()`select name from domains where id=${domainId} and user_id=${userId} limit 1`;
   if(!rows[0]) throw new Error("Domain not found.");
   const domain=normalizeDomain(String(rows[0].name)),details=await domainDetails(domain);
   if(details.lifecycleStatus!=="registered") throw new Error("This domain is outside the normal renewal path. Contact support.");
-  return insertOrder(userId,"renew",domain,retailPrice(domain,"renew"),{years:1,domainId});
+  const amount=await retailPrice(domain,"renew");
+  return insertOrder(userId,"renew",domain,amount,{years:1,domainId});
 }
+
 export async function createCheckout(orderId:string,userId:string){
   if(!livePayments()) throw new Error("Live payments are not enabled.");
   const sql=db();
@@ -56,6 +64,7 @@ export async function createCheckout(orderId:string,userId:string){
   if(order.payment_status==="ready"&&order.checkout_url) return String(order.checkout_url);
   if(order.payment_status==="creating") throw new Error("Checkout creation outcome is uncertain. Contact support before retrying.");
   if(order.payment_status!=="new") throw new Error("Order is not eligible for checkout.");
+
   const claim=await sql`update orders set payment_status='creating',updated_at=now()
     where id=${orderId} and payment_status='new' returning id`;
   if(!claim[0]) throw new Error("Checkout is already being created.");
@@ -69,6 +78,7 @@ export async function createCheckout(orderId:string,userId:string){
   });
   const url=new URL(invoice.invoice_url);
   if(url.protocol!=="https:"||url.hostname!=="nowpayments.io") throw new Error("Unexpected NOWPayments checkout URL.");
+
   await sql`update orders set provider_invoice_id=${String(invoice.id)},checkout_url=${url.toString()},
     payment_status='ready',updated_at=now() where id=${orderId}`;
   return url.toString();

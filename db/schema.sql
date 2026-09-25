@@ -89,3 +89,24 @@ create table if not exists payment_events (
   payload jsonb not null,
   received_at timestamptz not null default now()
 );
+
+create table if not exists tld_prices (
+  tld text primary key,
+  register_price numeric(12,2) not null check (register_price > 0),
+  renew_price numeric(12,2) not null check (renew_price > 0),
+  transfer_price numeric(12,2) not null check (transfer_price > 0),
+  featured boolean not null default false,
+  sort_order integer not null default 100,
+  active boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+insert into tld_prices (tld,register_price,renew_price,transfer_price,featured,sort_order)
+values
+  ('com',19.99,19.99,18.99,true,10),
+  ('net',21.99,21.99,20.99,true,20),
+  ('org',17.99,17.99,16.99,true,30),
+  ('io',59.99,59.99,58.99,true,40)
+on conflict (tld) do nothing;
+
+alter table tld_prices enable row level security;
