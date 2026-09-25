@@ -11,7 +11,10 @@ export async function GET(request:NextRequest){
     const input=request.nextUrl.searchParams.get("domain");
     if(!input) return ok({prices:publicPrices()});
     const domain=normalizeDomain(input);
+    if(!process.env.SPACESHIP_API_KEY||!process.env.SPACESHIP_API_SECRET){
+      return ok({domain,available:null,premium:false,price:retailPrice(domain,"register"),preview:true});
+    }
     const result=await domainAvailability(domain);
-    return ok({...result,price:result.available&&!result.premium?retailPrice(domain,"register"):null});
+    return ok({...result,price:result.available&&!result.premium?retailPrice(domain,"register"):null,preview:false});
   }catch(error){return fail(error);}
 }
