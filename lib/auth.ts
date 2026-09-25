@@ -39,7 +39,7 @@ export async function currentUser():Promise<SessionUser|null>{
     select u.id,u.email,u.first_name,u.last_name,u.company,u.account_type,u.country,u.state,u.city,
       u.address1,u.postcode,u.phone,s.authenticated_at
     from sessions s join users u on u.id=s.user_id
-    where s.token_hash=${tokenHash(token)} and s.expires_at>now() limit 1
+    where s.token_hash=${tokenHash(token)} and s.expires_at>now() and u.active=true limit 1
   `;
   return (rows[0] as unknown as SessionUser)||null;
 }
