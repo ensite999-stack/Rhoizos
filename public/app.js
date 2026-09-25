@@ -79,20 +79,23 @@ function home(){
  const prices=(live?tlds:previewPrices).slice(0,4);
  setMain(
   '<section class="hero">'+
-   '<div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div>'+
+   '<div class="hero-glow"></div>'+
    '<div class="hero-inner">'+
-    '<div class="hero-switch"><span class="active">Register</span><a href="#transfer">Transfer</a></div>'+
-    '<div class="hero-copy"><p class="hero-kicker">RHOIZOS DOMAINS</p><h1>你的域名，<br><span>你的世界。</span></h1><p class="sub">搜索、注册、转移、续费和 DNS 管理。简单、直接，所有权始终清晰。</p></div>'+
+    '<div class="hero-topline"><span>RHOIZOS / DOMAINS</span><div><a class="active" href="#search">Register</a><a href="#transfer">Transfer</a><a href="#rdap">RDAP</a></div></div>'+
+    '<div class="hero-copy"><h1>你的域名，<br><span>你的世界。</span></h1><p class="sub">搜索、注册、转移、续费与 DNS 管理。没有多余层级，没有捆绑销售。</p></div>'+
     '<div class="search-area">'+
-     '<form id="search-form" class="searchbox">'+icon('search')+'<input id="domain" aria-label="Domain name" placeholder="Search for a domain name…" required autocomplete="off" spellcheck="false" maxlength="253"><button class="primary">Search</button></form>'+
+     '<form id="search-form" class="searchbox">'+icon('search')+'<input id="domain" aria-label="Domain name" placeholder="yourname.com" required autocomplete="off" spellcheck="false" maxlength="253"><button class="primary">Search '+icon('arrow')+'</button></form>'+
      '<div id="results" aria-live="polite"></div>'+
-     '<div class="hero-links"><a href="#transfer">Transfer a domain →</a><a href="#rdap">RDAP lookup →</a></div>'+
     '</div>'+
-    '<div class="price-strip">'+prices.map(t=>'<div><b>'+esc(t.tld)+'</b><span>'+money(t.price_registration)+'</span><small>registration / year</small></div>').join('')+'</div>'+
+    '<div class="price-strip">'+prices.map((t,i)=>'<div><span class="price-index">0'+(i+1)+'</span><b>'+esc(t.tld)+'</b><span>'+money(t.price_registration)+'</span><small>first year</small></div>').join('')+'</div>'+
     previewNote()+
    '</div>'+
   '</section>'+
-  '<section class="quiet-grid"><article><span>01</span><h2>Find your name</h2><p>Search availability and see the price before you continue.</p></article><article><span>02</span><h2>Keep control</h2><p>Renew, transfer in, unlock, and transfer out without hidden steps.</p></article><article><span>03</span><h2>Manage DNS</h2><p>Edit records and keep a private note beside every record.</p></article></section>','home'
+  '<section class="editorial"><div class="editorial-head"><span>What Rhoizos does</span><span>Nothing more than you need.</span></div>'+
+   '<a class="editorial-row" href="#search"><span class="row-index">01</span><h2>Register</h2><p>Search availability, see the price, and register.</p><span class="row-arrow">↗</span></a>'+
+   '<a class="editorial-row" href="#transfer"><span class="row-index">02</span><h2>Transfer & renew</h2><p>Move domains in, renew them, or unlock and transfer out.</p><span class="row-arrow">↗</span></a>'+
+   '<a class="editorial-row" href="#dns"><span class="row-index">03</span><h2>DNS + notes</h2><p>Manage records and keep a private note beside each one.</p><span class="row-arrow">↗</span></a>'+
+  '</section>','home'
  );
  $('#search-form').onsubmit=search;
 }
