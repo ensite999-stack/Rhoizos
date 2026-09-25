@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+node_modules/
+var/
+.phpunit.cache/
+playwright-report/
+test-results/
