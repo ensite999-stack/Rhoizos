@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta property="bb:url" content="{{ constant('SYSTEM_URL') }}">
     <meta property="bb:client_area" content="{{ '/'|link }}">
     <meta name="csrf-token" content="{{ CSRFToken }}">
-    <title>Rhoizos — {% block meta_title %}Client Console{% endblock %}</title>
+    <meta name="theme-color" content="#f4f4f0">
+    <title>Rhoizos — {% block meta_title %}Your domain. Your world.{% endblock %}</title>
     {{ encore_entry_link_tags('huraga') }}
     <link rel="stylesheet" href="{{ constant('SYSTEM_URL') }}rhoizos-assets/style.css">
     {{ 'Api/API.js'|library_url|script_tag }}
@@ -16,58 +17,62 @@
 </head>
 <body>
 {% block body %}
-<header>
-    <a class="brand" href="{{ '/rhoizos'|link }}" aria-label="Rhoizos home">
+<header class="site-header">
+    <a class="brand" href="{{ '/rhoizos'|link }}#search" aria-label="Rhoizos home">
         <span class="mark"><img src="{{ constant('SYSTEM_URL') }}rhoizos-assets/assets/rhoizos-mark.svg" alt=""></span>
         <span>Rhoizos</span>
     </a>
-    <nav class="nav" aria-label="Primary">
-        <a href="{{ '/rhoizos'|link }}#cart" aria-label="Shopping cart">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h3l3 13h11l3-9H6M9 21h.01M18 21h.01"/></svg>
-            <span class="nav-label">Cart</span>
+    <nav class="desktop-links" aria-label="Primary">
+        <a href="{{ '/rhoizos'|link }}#search">Search</a>
+        <a href="{{ '/rhoizos'|link }}#transfer">Transfer</a>
+        <a href="{{ '/rhoizos'|link }}#rdap">RDAP</a>
+        <a href="{{ '/rhoizos'|link }}#domains">My domains</a>
+    </nav>
+    <nav class="nav-actions" aria-label="Account">
+        <a href="{{ '/rhoizos'|link }}#cart" aria-label="Cart">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.5h10.9L21 7H6M9 20h.01M18 20h.01"/></svg>
         </a>
-        <span class="sep" aria-hidden="true"></span>
-        <a href="{% if client %}{{ '/rhoizos'|link }}#dashboard{% else %}{{ '/rhoizos'|link }}#login{% endif %}" aria-label="{% if client %}Client console{% else %}Log in{% endif %}">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg>
-            <span class="nav-label">{% if client %}Console{% else %}Log in{% endif %}</span>
+        <a href="{% if client %}{{ '/rhoizos'|link }}#domains{% else %}{{ '/rhoizos'|link }}#login{% endif %}" aria-label="{% if client %}Account{% else %}Log in{% endif %}">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>
         </a>
-        <span class="sep" aria-hidden="true"></span>
-        <button id="native-menu-toggle" type="button" aria-expanded="false" aria-controls="menu">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 16h18"/></svg>
-            <span class="nav-label">Menu</span>
+        <button id="native-menu-toggle" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
         </button>
     </nav>
 </header>
 
 <section id="menu" hidden>
     <div class="menu-panel">
-        <div class="menu-title">
-            <h2>Console Index</h2>
-            <span class="eyebrow">RHOIZOS / DIRECTORY</span>
+        <div class="menu-head">
+            <p class="eyebrow">RHOIZOS</p>
+            <h2>Menu</h2>
         </div>
         <div class="menu-grid">
             <div>
-                <h3>01 / CORE ACTIONS</h3>
-                <a href="{{ '/rhoizos'|link }}#search">Domain Search</a>
-                <a href="{{ '/rhoizos'|link }}#transfer">Transfer In</a>
-                <a href="{{ '/rhoizos'|link }}#rdap">RDAP Lookup</a>
+                <span>Services</span>
+                <a href="{{ '/rhoizos'|link }}#search">Domain search</a>
+                <a href="{{ '/rhoizos'|link }}#transfer">Transfer in</a>
+                <a href="{{ '/rhoizos'|link }}#rdap">RDAP lookup</a>
             </div>
             <div>
-                <h3>02 / CLIENT CONSOLE</h3>
-                <a href="{{ '/rhoizos'|link }}#dashboard">Dashboard</a>
-                <a href="{{ '/rhoizos'|link }}#dns">DNS Management</a>
-                <a href="{{ '/rhoizos'|link }}#invoices">Crypto Invoices</a>
+                <span>Domains</span>
+                <a href="{{ '/rhoizos'|link }}#domains">My domains</a>
+                <a href="{{ '/rhoizos'|link }}#dns">DNS management</a>
+                <a href="{{ '/rhoizos'|link }}#cart">Checkout</a>
             </div>
             <div>
-                <h3>03 / MANIFESTO & POLICIES</h3>
-                <a href="{{ '/rhoizos'|link }}#why">The Why</a>
-                <a href="{{ '/rhoizos'|link }}#policies">AUP &amp; Privacy</a>
-                <a href="{{ '/rhoizos'|link }}#support">PGP Key / Support</a>
+                <span>Account</span>
+                {% if client %}
+                    <a href="{{ '/rhoizos'|link }}#domains">Account</a>
+                    <a href="{{ 'client/logout'|link }}">Log out</a>
+                {% else %}
+                    <a href="{{ '/rhoizos'|link }}#login">Log in</a>
+                    <a href="{{ '/rhoizos'|link }}#signup">Create account</a>
+                {% endif %}
+                <a href="{{ '/rhoizos'|link }}#policies">Privacy &amp; terms</a>
+                <a href="{{ '/rhoizos'|link }}#support">Support</a>
             </div>
         </div>
-        {% if client %}
-            <a class="secondary native-signout" href="{{ 'client/logout'|link }}">Log out</a>
-        {% endif %}
     </div>
 </section>
 
@@ -78,14 +83,13 @@
 </main>
 
 <footer>
-    <div class="wrap footer-inner">
-        <span>© {{ now|date('Y') }} Rhoizos</span>
-        <div class="footer-links">
-            <a href="{{ '/rhoizos'|link }}#why">The Why</a>
-            <a href="{{ '/rhoizos'|link }}#policies">AUP &amp; Privacy</a>
-            <a href="{{ '/rhoizos'|link }}#support">PGP Key / Support</a>
-        </div>
+    <div class="wrap footer-grid">
+        <div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div>
+        <div><a href="{{ '/rhoizos'|link }}#search">Search</a><a href="{{ '/rhoizos'|link }}#transfer">Transfer in</a><a href="{{ '/rhoizos'|link }}#rdap">RDAP</a></div>
+        <div><a href="{{ '/rhoizos'|link }}#domains">My domains</a><a href="{{ '/rhoizos'|link }}#policies">Privacy &amp; terms</a><a href="{{ '/rhoizos'|link }}#support">Support</a></div>
+        <div class="footer-meta">Crypto payments via NOWPayments.<br>Domain provisioning via configured registrar.</div>
     </div>
+    <div class="wrap footer-bottom">© {{ now|date('Y') }} Rhoizos</div>
 </footer>
 {% endblock %}
 
