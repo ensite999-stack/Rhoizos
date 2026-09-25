@@ -31,7 +31,8 @@ function SearchIcon(){
 export default function DomainDetail({initialDomain}:{initialDomain:string}){
   const {t,locale}=useI18n();
   const [query,setQuery]=useState(initialDomain);
-  const [result,setResult]=useState<SearchResult|null>(null);\n  const [suggestions,setSuggestions]=useState<SearchResult[]>([]);
+  const [result,setResult]=useState<SearchResult|null>(null);
+  const [suggestions,setSuggestions]=useState<SearchResult[]>([]);
   const [rdap,setRdap]=useState<RdapInfo|null>(null);
   const [rdapState,setRdapState]=useState<RdapState>("idle");
   const [error,setError]=useState("");
