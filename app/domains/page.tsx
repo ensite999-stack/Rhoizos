@@ -9,6 +9,8 @@ type Domain={
   lifecycle_status:string;
   expires_at:string|null;
   transfer_locked:boolean;
+  privacy_supported:boolean;
+  privacy_protected:boolean|null;
 };
 
 export default function Domains(){
@@ -41,6 +43,17 @@ export default function Domains(){
     load();
   }
 
+  async function updatePrivacy(id:string,enabled:boolean){
+    const response=await fetch("/api/domains/"+id+"/privacy",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({enabled})
+    });
+    const data=await response.json();
+    if(!response.ok){setError(data.error||t("domains.privacyFailed"));return;}
+    setItems(current=>current.map(item=>item.id===id?{...item,privacy_protected:enabled}:item));
+  }
+
   async function revealCode(id:string){
     const response=await fetch("/api/domains/"+id+"/auth-code",{cache:"no-store"});
     const data=await response.json();
@@ -58,6 +71,16 @@ export default function Domains(){
         <div>
           <h3>{item.name}</h3>
           <p>{item.lifecycle_status.replace(/_/g," ")} · {item.expires_at?new Date(item.expires_at).toLocaleDateString(locale):t("domains.expiryPending")}</p>
+          <div className="domainPrivacyRow">
+            <span>{t("domains.privacy")}</span>
+            {item.privacy_supported
+              ?<label className="privacySwitch">
+                <input type="checkbox" checked={item.privacy_protected===true} onChange={event=>updatePrivacy(item.id,event.target.checked)}/>
+                <span aria-hidden="true"></span>
+                <b>{item.privacy_protected?t("domains.privacyOn"):t("domains.privacyOff")}</b>
+              </label>
+              :<span className="privacyUnavailable">{t("domains.privacyUnavailable")}</span>}
+          </div>
           {codes[item.id]&&<div className="codeBox">{codes[item.id]}</div>}
         </div>
         <div className="actions">

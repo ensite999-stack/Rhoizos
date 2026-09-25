@@ -76,6 +76,7 @@ export async function domainDetails(input:string){
   return (await spaceshipRequest<{
     expirationDate?:string;registrationDate?:string;lifecycleStatus?:string;
     eppStatuses?:string[];nameservers?:{hosts?:string[]};
+    privacyProtection?:{contactForm?:boolean;level?:"public"|"high"};
   }>("GET",`/domains/${encodeURIComponent(domain)}`)).body;
 }
 export async function createContact(c:ContactInput){
@@ -110,6 +111,15 @@ export async function deleteDnsRecord(input:string,record:DnsRecord){
   const payload={...record} as Partial<DnsRecord>;delete payload.ttl;
   await spaceshipRequest("DELETE",`/dns/records/${encodeURIComponent(domain)}`,payload);
 }
+export async function setDomainPrivacy(input:string,enabled:boolean){
+  const domain=normalizeDomain(input);
+  await spaceshipRequest("PUT",`/domains/${encodeURIComponent(domain)}/privacy/preference`,{
+    privacyLevel:enabled?"high":"public",
+    userConsent:true
+  });
+  return {enabled};
+}
+
 export async function setTransferLock(input:string,isLocked:boolean){
   const domain=normalizeDomain(input);
   await spaceshipRequest("PUT",`/domains/${encodeURIComponent(domain)}/transfer/lock`,{isLocked});

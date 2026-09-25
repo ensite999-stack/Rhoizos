@@ -3,6 +3,7 @@ import {openSecret} from "./crypto";
 import {liveRegistration} from "./env";
 import {createContact,domainAvailability,domainDetails,spaceshipRequest} from "./spaceship";
 import type {ContactInput} from "./domain";
+import {retailFromCost} from "./pricing";
 
 function contacts(id:string){return {registrant:id,admin:id,tech:id,billing:id};}
 
@@ -22,7 +23,11 @@ export async function startProvisioning(orderId:string){
     let response:{body:unknown;headers:Headers};
     if(kind==="register"){
       const a=await domainAvailability(domain);
-      if(!a.available||a.premium) throw new Error("Domain is no longer available for normal registration.");
+      if(!a.available) throw new Error("Domain is no longer available for registration.");
+      if(a.registerPrice){
+        const latest=await retailFromCost(a.registerPrice,"register");
+        if(latest>Number(order.amount_usd)+0.009) throw new Error("The live premium price increased after payment. Manual review is required.");
+      }
       const contact=(order.request as {contact:ContactInput}).contact;
       const contactId=await createContact(contact);
       response=await spaceshipRequest("POST",`/domains/${encodeURIComponent(domain)}`,{
