@@ -8,36 +8,53 @@ export const metadata:Metadata={
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
+  const year=new Date().getFullYear();
+
   return <html lang="en"><body>
     <header className="siteHeader">
       <div className="headerInner">
-        <Link className="brand" href="/"><img src="/assets/rhoizos-mark.svg" alt=""/><span>Rhoizos</span></Link>
+        <Link className="brand" href="/">
+          <img src="/assets/rhoizos-mark.svg" alt=""/>
+          <span>Rhoizos<sup className="tmMark">™</sup></span>
+        </Link>
+
         <nav className="mainNav" aria-label="Primary">
           <Link href="/">Domains</Link>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/transfer">Transfer</Link>
           <Link href="/rdap">RDAP</Link>
         </nav>
+
         <nav className="accountNav" aria-label="Account">
-          <Link className="supportLink" href="/support">Support</Link>
+          <Link href="/support">Support</Link>
           <span className="languageLabel">EN</span>
-          <Link className="loginLink" href="/login">Log in</Link>
+          <Link href="/login">Log in</Link>
           <Link className="accountButton" href="/domains">My domains</Link>
         </nav>
       </div>
     </header>
+
     <main>{children}</main>
+
     <footer className="siteFooter">
-      <div className="footerGrid">
-        <div className="footerBrand">
-          <Link className="footerLogo" href="/"><img src="/assets/rhoizos-mark.svg" alt=""/><strong>Rhoizos</strong></Link>
-          <p>Simple domain infrastructure for people who want control without clutter.</p>
-        </div>
-        <div className="footerColumn"><strong>Domains</strong><Link href="/">Search</Link><Link href="/transfer">Transfer in</Link><Link href="/rdap">RDAP lookup</Link></div>
-        <div className="footerColumn"><strong>Account</strong><Link href="/domains">My domains</Link><Link href="/login">Log in</Link><Link href="/signup">Create account</Link></div>
-        <div className="footerColumn"><strong>Rhoizos</strong><Link href="/support">Support</Link><Link href="/policies">Privacy & terms</Link><span>English</span></div>
+      <div className="footerStack">
+        <Link className="footerLogo" href="/">
+          <img src="/assets/rhoizos-mark.svg" alt=""/>
+          <strong>Rhoizos<sup className="footerTm">™</sup></strong>
+        </Link>
+
+        <nav className="footerNav" aria-label="Footer">
+          <Link href="/">Search domains</Link>
+          <Link href="/transfer">Transfer a domain</Link>
+          <Link href="/rdap">RDAP lookup</Link>
+          <Link href="/domains">My domains</Link>
+          <Link href="/support">Support</Link>
+          <a href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
+          <Link href="/policies">Privacy & terms</Link>
+        </nav>
+
+        <div className="footerCopyright">© {year} Rhoizos</div>
       </div>
-      <div className="footerBottom"><span>© 2026 Rhoizos</span><span>Search · Register · Transfer · Renew · DNS</span></div>
     </footer>
   </body></html>;
 }
