@@ -1,0 +1,5 @@
+import type {Metadata} from "next";
+import Link from "next/link";
+import "./globals.css";
+export const metadata:Metadata={title:"Rhoizos — 你的域名，你的世界。",description:"Search, register, transfer, renew and manage domains."};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="zh-CN"><body><header className="siteHeader"><Link className="brand" href="/"><img src="/assets/rhoizos-mark.svg" alt=""/><span>Rhoizos</span></Link><nav className="mainNav"><Link href="/">Search</Link><Link href="/transfer">Transfer</Link><Link href="/rdap">RDAP</Link><Link href="/domains">My domains</Link></nav><nav className="accountNav"><Link href="/login">Log in</Link></nav></header><main>{children}</main><footer className="siteFooter"><div><strong>Rhoizos</strong><span>Your domain. Your world.</span></div><div><Link href="/">Search</Link><Link href="/transfer">Transfer</Link><Link href="/rdap">RDAP</Link></div><div><Link href="/domains">My domains</Link><Link href="/policies">Privacy & terms</Link><Link href="/support">Support</Link></div></footer></body></html>}

@@ -1,0 +1,1 @@
+export default function Support(){return <article className="page"><p className="kicker">Support</p><h1 className="pageTitle">Direct support.</h1><p className="pageIntro">Configure RHOIZOS_SUPPORT_EMAIL before launch and publish the operational support and abuse contacts here.</p></article>}

@@ -1,0 +1,1 @@
+export default function Policies(){return <article className="page"><p className="kicker">Policies</p><h1 className="pageTitle">Privacy & terms.</h1><p className="pageIntro">Production launch requires the final legal operator identity, jurisdiction, refund terms, privacy notice, abuse policy and retention terms. This migration does not invent those legal details.</p></article>}
