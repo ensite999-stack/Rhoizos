@@ -25,7 +25,7 @@ Preview supports navigation, registration form validation, domain input validati
 - FOSSBilling Twig shell for native invoice and recovery screens; module storefront contains only requested domain features.
 - Automated contract/validation fixtures and GitHub Actions PHP lint/tests.
 
-The supplied PNG is used directly for the logo to preserve its exact silhouette. CSS crops the surrounding whitespace and displays a light version on the dark header. It has **not** been falsely presented as a newly traced vector; the original is at `public/assets/logo-source.png`.
+The supplied PNG is retained unchanged at `public/assets/logo-source.png`. The UI now uses `public/assets/rhoizos-mark.svg`, a contour trace derived directly from that source image so the circular brush form and both horizontal strokes scale cleanly without redesigning the mark.
 
 ## Integration target
 
