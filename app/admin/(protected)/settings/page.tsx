@@ -1,6 +1,8 @@
 import {db} from "@/lib/db";
+import {getAdminI18n} from "@/lib/i18n-server";
 
 export default async function AdminSettings(){
+  const {t,locale}=await getAdminI18n();
   const rows=await db()`
     select l.id,l.action,l.target_type,l.target_id,l.created_at,a.email
     from admin_audit_log l
@@ -16,18 +18,21 @@ export default async function AdminSettings(){
   ] as const;
 
   return <>
-    <div className="adminHeader"><div><h1>Settings</h1><p>Runtime status and recent administrative changes.</p></div></div>
+    <div className="adminHeader"><div><h1>{t("settings")}</h1><p>{t("settings.copy")}</p></div></div>
     <div className="adminPanel">
-      <div className="adminPanelHeader"><h2>Environment</h2></div>
+      <div className="adminPanelHeader"><h2>{t("environment")}</h2></div>
       <div className="adminSettingsList">
-        {env.map(([name,on])=><div className="adminSetting" key={name}><span>{name}</span><strong className={"adminStatus "+(on?"good":"warn")}>{on?"Configured / on":"Not configured / off"}</strong></div>)}
-        <div className="adminSetting"><span>Support email</span><strong>hello@rhoizos.com</strong></div>
+        {env.map(([name,on])=><div className="adminSetting" key={name}><span>{name}</span><strong className={"adminStatus "+(on?"good":"warn")}>{on?t("configured"):t("notConfigured")}</strong></div>)}
+        <div className="adminSetting"><span>{t("supportEmail")}</span><strong>hello@rhoizos.com</strong></div>
       </div>
     </div>
     <div className="adminPanel">
-      <div className="adminPanelHeader"><h2>Audit log</h2></div>
+      <div className="adminPanelHeader"><h2>{t("auditLog")}</h2></div>
       <div className="adminAudit">
-        {rows.map((row:any)=><div className="adminAuditRow" key={String(row.id)}><strong>{String(row.action)}</strong><p>{row.email?String(row.email):"system"} · {row.target_type?String(row.target_type):"—"} {row.target_id?String(row.target_id):""} · {new Date(row.created_at).toLocaleString()}</p></div>)}
+        {rows.map((row:any)=><div className="adminAuditRow" key={String(row.id)}>
+          <strong>{String(row.action)}</strong>
+          <p>{row.email?String(row.email):"system"} · {row.target_type?String(row.target_type):"—"} {row.target_id?String(row.target_id):""} · {new Date(row.created_at).toLocaleString(locale)}</p>
+        </div>)}
       </div>
     </div>
   </>;

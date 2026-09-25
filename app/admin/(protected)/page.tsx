@@ -1,8 +1,10 @@
 import {db} from "@/lib/db";
+import {getAdminI18n} from "@/lib/i18n-server";
 
 export default async function AdminOverview(){
+  const {t,locale}=await getAdminI18n();
   const sql=db();
-  const [users,domains,orders,attention,ops]=await Promise.all([
+  const [users,domains,orders,attention,operations]=await Promise.all([
     sql`select count(*)::int as count from users`,
     sql`select count(*)::int as count from domains`,
     sql`select count(*)::int as count from orders`,
@@ -16,18 +18,23 @@ export default async function AdminOverview(){
   `;
 
   return <>
-    <div className="adminHeader"><div><h1>Overview</h1><p>Current Rhoizos operations at a glance.</p></div></div>
+    <div className="adminHeader"><div><h1>{t("overview")}</h1><p>{t("overview.copy")}</p></div></div>
     <div className="adminCards">
-      <div className="adminCard"><span>Users</span><strong>{Number(users[0]?.count||0)}</strong></div>
-      <div className="adminCard"><span>Domains</span><strong>{Number(domains[0]?.count||0)}</strong></div>
-      <div className="adminCard"><span>Orders</span><strong>{Number(orders[0]?.count||0)}</strong></div>
-      <div className="adminCard"><span>Needs attention</span><strong>{Number(attention[0]?.count||0)}</strong></div>
-      <div className="adminCard"><span>Open operations</span><strong>{Number(ops[0]?.count||0)}</strong></div>
+      <div className="adminCard"><span>{t("users")}</span><strong>{Number(users[0]?.count||0)}</strong></div>
+      <div className="adminCard"><span>{t("domains")}</span><strong>{Number(domains[0]?.count||0)}</strong></div>
+      <div className="adminCard"><span>{t("orders")}</span><strong>{Number(orders[0]?.count||0)}</strong></div>
+      <div className="adminCard"><span>{t("needsAttention")}</span><strong>{Number(attention[0]?.count||0)}</strong></div>
+      <div className="adminCard"><span>{t("openOperations")}</span><strong>{Number(operations[0]?.count||0)}</strong></div>
     </div>
     <div className="adminPanel">
-      <div className="adminPanelHeader"><h2>Recent orders</h2></div>
-      <div className="adminTableWrap"><table className="adminTable"><thead><tr><th>Domain</th><th>Customer</th><th>Type</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead><tbody>
-        {recent.map((r:any)=><tr key={String(r.id)}><td>{String(r.domain)}</td><td>{String(r.email)}</td><td>{String(r.kind)}</td><td>{"$"+Number(r.amount_usd).toFixed(2)}</td><td>{String(r.payment_status)}</td><td>{String(r.status)}</td></tr>)}
+      <div className="adminPanelHeader"><h2>{t("recentOrders")}</h2></div>
+      <div className="adminTableWrap"><table className="adminTable"><thead><tr>
+        <th>{t("domains")}</th><th>{t("customer")}</th><th>{t("type")}</th><th>{t("amount")}</th><th>{t("payment")}</th><th>{t("status")}</th>
+      </tr></thead><tbody>
+        {recent.map((row:any)=><tr key={String(row.id)}>
+          <td>{String(row.domain)}</td><td>{String(row.email)}</td><td>{String(row.kind)}</td>
+          <td>{"$"+Number(row.amount_usd).toFixed(2)}</td><td>{String(row.payment_status)}</td><td>{String(row.status)}</td>
+        </tr>)}
       </tbody></table></div>
     </div>
   </>;
