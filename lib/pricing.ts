@@ -1,4 +1,4 @@
-import {requiredEnv} from "./env";
+
 import {tldOf} from "./domain";
 
 export type PriceKind="register"|"renew"|"transfer";
