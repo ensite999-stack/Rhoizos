@@ -15,7 +15,16 @@ async function preferences(){
 
 export async function generateMetadata():Promise<Metadata>{
   const {locale}=await preferences();
-  return {title:translate(locale,"meta.title"),description:translate(locale,"meta.description")};
+  const title=translate(locale,"meta.title");
+  const description=translate(locale,"meta.description");
+  return {
+    title,
+    description,
+    applicationName:"Rhoizos",
+    openGraph:{title,description,siteName:"Rhoizos",type:"website"},
+    twitter:{title,description,card:"summary"},
+    other:{google:"notranslate"}
+  };
 }
 
 export default async function RootLayout({children}:{children:React.ReactNode}){

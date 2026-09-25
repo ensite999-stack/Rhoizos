@@ -14,7 +14,7 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
   return <>
     <header className="siteHeader">
       <div className="headerInner">
-        <Link className="brand" href="/"><img src="/assets/rhoizos-mark.svg" alt=""/><span>Rhoizos</span></Link>
+        <Link className="brand notranslate" href="/" translate="no"><img src="/assets/rhoizos-mark.svg" alt=""/><span>Rhoizos</span></Link>
         <nav className="mainNav" aria-label="Primary">
           <Link href="/">{t("nav.domain")}</Link>
           <Link href="/#pricing">{t("nav.pricing")}</Link>
@@ -36,7 +36,7 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
 
     <footer className="siteFooter">
       <div className="footerStack">
-        <Link className="footerLogo" href="/"><img src="/assets/rhoizos-mark.svg" alt=""/><strong>Rhoizos<sup className="footerTm">™</sup></strong></Link>
+        <Link className="footerLogo notranslate" href="/" translate="no"><img src="/assets/rhoizos-mark.svg" alt=""/><strong>Rhoizos<sup className="footerTm">™</sup></strong></Link>
         <nav className="footerNav" aria-label="Footer">
           <Link href="/">{t("footer.search")}</Link>
           <Link href="/transfer">{t("footer.transfer")}</Link>
@@ -50,7 +50,7 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
         <div className="footerPreferences">
           <ThemeToggle initialTheme={theme}/>
         </div>
-        <div className="footerCopyright">© {year} Rhoizos</div>
+        <div className="footerCopyright">© {year} <span className="notranslate" translate="no">Rhoizos</span></div>
       </div>
     </footer>
   </>;

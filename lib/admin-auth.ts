@@ -28,22 +28,43 @@ async function provisionConfiguredAdmin(email:string,password:string){
   if(!configuredEmail||!configuredPassword) return;
   if(!secureTextEqual(email,configuredEmail)||!secureTextEqual(password,configuredPassword)) return;
 
-  const existing=await db()`select count(*)::int as count from admin_users`;
-  if(Number(existing[0]?.count||0)>0) return;
-
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(configuredEmail)){
     throw new Error("Configured administrator email is invalid.");
   }
 
   const rows=await db()`
-    insert into admin_users (email,password_hash,display_name)
-    values (${configuredEmail},${hashPassword(configuredPassword)},${"Administrator"})
-    on conflict (email) do nothing
-    returning id
+    select id,password_hash,active
+    from admin_users
+    where email=${configuredEmail}
+    limit 1
   `;
-  if(rows[0]){
-    const adminId=String(rows[0].id);
+  const row=rows[0];
+
+  if(!row){
+    const created=await db()`
+      insert into admin_users (email,password_hash,display_name,active)
+      values (${configuredEmail},${hashPassword(configuredPassword)},${"Administrator"},true)
+      returning id
+    `;
+    const adminId=String(created[0].id);
     await audit(adminId,"admin.bootstrap.env","admin_user",adminId,{email:configuredEmail});
+    return;
+  }
+
+  const passwordChanged=!verifyPassword(configuredPassword,String(row.password_hash));
+  const reactivated=!Boolean(row.active);
+  if(passwordChanged||reactivated){
+    const nextHash=passwordChanged?hashPassword(configuredPassword):String(row.password_hash);
+    await db()`
+      update admin_users
+      set password_hash=${nextHash},active=true
+      where id=${String(row.id)}
+    `;
+    await audit(String(row.id),"admin.sync.env","admin_user",String(row.id),{
+      email:configuredEmail,
+      passwordUpdated:passwordChanged,
+      reactivated
+    });
   }
 }
 
@@ -94,22 +115,13 @@ export async function destroyAdminSession(){
 
 export async function loginAdmin(email:string,password:string){
   const normalizedEmail=email.trim().toLowerCase();
-  let rows=await db()`
+  await provisionConfiguredAdmin(normalizedEmail,password);
+  const rows=await db()`
     select id,email,display_name,password_hash,active
     from admin_users
     where email=${normalizedEmail}
     limit 1
   `;
-
-  if(!rows[0]){
-    await provisionConfiguredAdmin(normalizedEmail,password);
-    rows=await db()`
-      select id,email,display_name,password_hash,active
-      from admin_users
-      where email=${normalizedEmail}
-      limit 1
-    `;
-  }
 
   const row=rows[0];
   if(!row||!row.active||!verifyPassword(password,String(row.password_hash))){
