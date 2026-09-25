@@ -54,7 +54,7 @@ function title(k,h,p){return '<p class="eyebrow">'+k+'</p><h1>'+h+'</h1>'+(p?'<p
 function shell(){
  $('#app').innerHTML=
   '<header class="site-header">'+brand()+
-  '<nav class="desktop-links" aria-label="Primary"><a href="#search">Search</a><a href="#transfer">Transfer</a><a href="#rdap">RDAP</a><a href="#domains">My domains</a></nav>'+
+  '<nav class="desktop-links" aria-label="Primary"><a href="#search">Search</a><a href="#transfer">Transfer</a><a href="#rdap">RDAP</a></nav>'+
   '<nav class="nav-actions" aria-label="Account">'+
    '<a href="#cart" aria-label="Cart">'+icon('cart')+'<span class="badge" id="cart-count">'+cart.length+'</span></a>'+
    '<a href="#'+(profile?'domains':'login')+'" aria-label="'+(profile?'Account':'Log in')+'">'+icon('user')+'</a>'+
@@ -62,14 +62,14 @@ function shell(){
   '</nav></header>'+
   '<section id="menu" '+(menuOpen?'':'hidden')+'>'+menu()+'</section>'+
   '<main id="main" tabindex="-1"></main>'+
-  '<footer><div class="wrap footer-grid"><div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div><div><a href="#search">Search</a><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div><div><a href="#domains">My domains</a><a href="#policies">Privacy & terms</a><a href="#support">Support</a></div><div class="footer-meta">Crypto payments via NOWPayments.<br>Domain provisioning via configured registrar.</div></div><div class="wrap footer-bottom">© '+new Date().getFullYear()+' Rhoizos</div></footer>';
+  '<footer><div class="wrap footer-grid"><div><strong>Rhoizos</strong><p>Your domain. Your world.</p></div><div><a href="#search">Search</a><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div><div><a href="#domains">My domains</a><a href="#policies">Privacy & terms</a><a href="#support">Support</a></div><div class="footer-meta">Domains, transfers and DNS.<br>Nothing else competing for attention.</div></div><div class="wrap footer-bottom">© '+new Date().getFullYear()+' Rhoizos</div></footer>';
  $('#menu-toggle').onclick=()=>{menuOpen=!menuOpen;$('#menu').hidden=!menuOpen;$('#menu-toggle').setAttribute('aria-expanded',String(menuOpen));};
 }
 function menu(){
  const account=profile
   ?'<a href="#domains">My domains</a><a href="#dns">DNS</a><button class="menu-link" id="logout">Log out</button>'
   :'<a href="#login">Log in</a><a href="#signup">Create account</a>';
- return '<div class="menu-panel"><div class="menu-head"><p class="eyebrow">RHOIZOS</p><h2>Menu</h2></div><div class="menu-grid">'+
+ return '<div class="menu-panel"><div class="menu-head"><span>Rhoizos</span><button type="button" class="menu-close" aria-label="Close menu">Close</button></div><div class="menu-grid">'+
   '<div><span>Services</span><a href="#search">Domain search</a><a href="#transfer">Transfer in</a><a href="#rdap">RDAP lookup</a></div>'+
   '<div><span>Domains</span><a href="#domains">My domains</a><a href="#dns">DNS management</a><a href="#cart">Checkout</a></div>'+
   '<div><span>Account</span>'+account+'<a href="#policies">Privacy & terms</a><a href="#support">Support</a></div>'+
@@ -78,17 +78,17 @@ function menu(){
 function home(){
  const prices=(live?tlds:previewPrices).slice(0,4);
  setMain(
-  '<section class="hero"><div class="hero-copy"><p class="eyebrow">DOMAIN INFRASTRUCTURE, SIMPLIFIED</p><h1>你的域名，<span>你的世界。</span></h1><p class="hero-en">Your domain. Your world.</p><p class="sub">搜索、注册、转移、续费和 DNS 管理。只保留真正需要的东西。</p></div>'+
-  '<div class="search-card"><div class="search-tabs"><button class="active">Register</button><button data-route="transfer">Transfer in</button><a href="#rdap">RDAP</a></div>'+
-  '<form id="search-form" class="searchbox">'+icon('search')+'<input id="domain" aria-label="Domain name" placeholder="yourname.com" required autocomplete="off" spellcheck="false" maxlength="253"><button class="primary">Search '+icon('arrow')+'</button></form>'+
-  '<div id="results" aria-live="polite"></div><div class="search-foot"><span>Clear pricing. Crypto checkout. Full transfer control.</span><a href="#domains">Manage domains →</a></div></div>'+
-  '<div class="price-strip">'+prices.map(t=>'<div><b>'+esc(t.tld)+'</b><span>'+money(t.price_registration)+'</span><small>/ year</small></div>').join('')+'</div>'+previewNote()+
+  '<section class="hero"><div class="hero-copy"><h1>你的域名，<br><span>你的世界。</span></h1><p class="sub">搜索、注册、转移、续费和 DNS 管理。一个安静、直接的域名控制台。</p></div>'+
+  '<div class="search-area"><div class="search-mode"><span>Register a domain</span><a href="#transfer">Transfer in</a><a href="#rdap">RDAP</a></div>'+
+  '<form id="search-form" class="searchbox">'+icon('search')+'<input id="domain" aria-label="Domain name" placeholder="yourname.com" required autocomplete="off" spellcheck="false" maxlength="253"><button class="primary">Search</button></form>'+
+  '<div id="results" aria-live="polite"></div></div>'+
+  '<div class="price-strip">'+prices.map(t=>'<div><b>'+esc(t.tld)+'</b><span>'+money(t.price_registration)+'</span><small>per year</small></div>').join('')+'</div>'+previewNote()+
   '</section>'+
-  '<section class="quiet-grid"><article><span>01</span><h2>Register</h2><p>Search, confirm the price, pay, and register.</p></article><article><span>02</span><h2>Transfer & renew</h2><p>Bring domains in, renew them, or unlock and leave.</p></article><article><span>03</span><h2>DNS + private notes</h2><p>Manage records and add notes that never enter public DNS.</p></article></section>','home'
+  '<section class="quiet-grid"><article><span>01</span><h2>Register</h2><p>Find a name, confirm the price, and register it.</p></article><article><span>02</span><h2>Transfer & renew</h2><p>Move domains in, renew them, or unlock and move them out.</p></article><article><span>03</span><h2>DNS + notes</h2><p>Manage records and keep private notes beside each one.</p></article></section>','home'
  );
  $('#search-form').onsubmit=search;
 }
-
+function splitDomain(
 function splitDomain(raw){
  let domain=raw.trim().toLowerCase();
  if(/[:/\s@?#]/.test(domain))throw Error('Enter a domain name without URL, path, email, or spaces.');
@@ -197,7 +197,7 @@ function requireLogin(){
 }
 
 async function cartPage(){
- setMain('<div class="narrow">'+title('CHECKOUT','Confirm. Pay. Done.','Registration and transfer orders are paid through the configured crypto checkout.')+'<div id="cart-body"><p class="loading">Loading cart…</p></div>'+previewNote()+'</div>');
+ setMain('<div class="narrow">'+title('CHECKOUT','Confirm and pay.','Review the order before continuing to payment.')+'<div id="cart-body"><p class="loading">Loading cart…</p></div>'+previewNote()+'</div>');
  if(!live){
   $('#cart-body').innerHTML='<div class="panel"><div class="empty-state"><h2>Checkout preview</h2><p>Add-to-cart and payment are intentionally disabled until the live backend is connected.</p></div></div>';
   return;
@@ -223,7 +223,7 @@ async function cartPage(){
 
 async function domains(){
  if(requireLogin())return;
- setMain('<div class="page-head"><div>'+title('MY DOMAINS','Everything you own.','Register, renew, manage DNS, or take a domain with you.')+'</div><a href="#search" class="secondary inline">Register a domain</a></div><div id="domain-list"><p class="loading">Loading domains…</p></div>'+previewNote());
+ setMain('<div class="page-head"><div>'+title('MY DOMAINS','Your domains.','Register, renew, manage DNS, or transfer out when you need to.')+'</div><a href="#search" class="secondary inline">Register a domain</a></div><div id="domain-list"><p class="loading">Loading domains…</p></div>'+previewNote());
  try{
   const data=live?await api('client','order/get_list',{type:'domain',per_page:100,page:1}):{list:[{id:1,title:'example.com',status:'active',expires_at:'2027-09-25'}]};
   orders=data.list||[];
