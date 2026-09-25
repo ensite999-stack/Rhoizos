@@ -104,6 +104,22 @@ export async function retailFromCost(cost:number,kind:PriceKind){
   return money(cost);
 }
 
+export async function retailFromCosts(costs:number[],kind:PriceKind){
+  if(costs.some(cost=>!Number.isFinite(cost)||cost<=0)) throw new Error("Invalid provider price.");
+  if(!costs.length)return [];
+  if(process.env.DATABASE_URL){
+    const {settings}=await databasePricing();
+    const markup=kind==="register"
+      ?Number(settings.default_register_markup_pct||0)
+      :kind==="renew"
+        ?Number(settings.default_renew_markup_pct||0)
+        :Number(settings.default_transfer_markup_pct||0);
+    const minimumMargin=Number(settings.minimum_margin||0);
+    return costs.map(cost=>effective(cost,markup,null,null,minimumMargin));
+  }
+  return costs.map(money);
+}
+
 export async function publicPrices():Promise<PublicPrice[]>{
   if(process.env.DATABASE_URL){
     const {settings,rows}=await databasePricing();

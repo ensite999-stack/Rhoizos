@@ -3,7 +3,11 @@ import Link from "next/link";
 import {useEffect,useRef,useState} from "react";
 import {useI18n} from "./I18nProvider";
 
-function Chevron(){return <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;}
+function MenuIcon(){
+  return <svg viewBox="0 0 22 18" aria-hidden="true">
+    <path d="M2 3h18M2 9h18M2 15h18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+  </svg>;
+}
 
 export default function AccountMenu(){
   const {t}=useI18n();
@@ -24,8 +28,15 @@ export default function AccountMenu(){
   }
 
   return <div className="accountMenu" ref={ref}>
-    <button className="accountMenuTrigger" type="button" onClick={()=>setOpen(v=>!v)} aria-expanded={open}>
-      <span>{t("nav.myDomains")}</span><Chevron/>
+    <button
+      className="accountMenuTrigger"
+      type="button"
+      onClick={()=>setOpen(v=>!v)}
+      aria-expanded={open}
+      aria-label={t("nav.myDomains")}
+      title={t("nav.myDomains")}
+    >
+      <MenuIcon/>
     </button>
     {open&&<div className="accountPopover">
       <Link href="/domains" onClick={()=>setOpen(false)}><strong>{t("accountMenu.domains")}</strong><span>{t("accountMenu.domainsHint")}</span></Link>

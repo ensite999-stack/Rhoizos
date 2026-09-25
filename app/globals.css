@@ -1324,3 +1324,45 @@ svg{display:block}
   .accountListRow>div:last-child{text-align:left}
   .accountStatus{justify-self:start}
 }
+
+
+/* Compact top-bar controls */
+.localeTrigger{
+  width:32px;
+  min-height:36px;
+  padding:0;
+  border-radius:6px;
+}
+.localeTriangle{display:grid;place-items:center}
+.localeTriangle svg{width:15px;height:11px}
+.localeGlobe,.localeChevron{display:none!important}
+.accountMenuTrigger{
+  width:36px;
+  height:36px;
+  min-height:36px;
+  justify-content:center;
+  padding:0;
+  border-radius:6px;
+}
+.accountMenuTrigger:hover{background:rgba(255,255,255,.07)}
+.accountMenuTrigger svg{width:20px;height:17px;opacity:.92}
+@media(max-width:640px){
+  .headerInner{
+    height:72px;
+    padding:0;
+    align-items:center;
+  }
+  .accountNav{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:7px;
+  }
+  .accountNav>.localeMenu{justify-self:auto}
+  .accountMenu{grid-area:auto}
+  .localeMenu.header .localeTrigger{width:30px;min-height:34px;padding:0}
+  .accountMenuTrigger{width:34px;height:34px;min-height:34px}
+  .localePopover,.accountPopover{top:72px}
+  .homeHero{padding-top:110px}
+  .overlayHeader+main .detailSearchBand{padding-top:96px}
+}

@@ -3,10 +3,9 @@ import {useEffect,useRef,useState} from "react";
 import {localeOptions,type Locale} from "@/lib/i18n";
 import {useI18n} from "./I18nProvider";
 
-function GlobeIcon(){
-  return <svg viewBox="0 0 24 24" aria-hidden="true">
-    <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.6"/>
-    <path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.3 5.1 3.3 8.5S14.2 18.2 12 20.5M12 3.5C9.8 5.8 8.7 8.6 8.7 12s1.1 6.2 3.3 8.5" fill="none" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round"/>
+function OpenTriangle(){
+  return <svg viewBox="0 0 16 12" aria-hidden="true">
+    <path d="M2.5 3.25 8 8.75l5.5-5.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>;
 }
 
@@ -17,9 +16,7 @@ export default function LocaleMenu({variant="header"}:{variant?:"header"|"footer
   const current=localeOptions.find(item=>item.value===locale)!;
 
   useEffect(()=>{
-    function outside(event:PointerEvent){
-      if(ref.current&&!ref.current.contains(event.target as Node)) setOpen(false);
-    }
+    function outside(event:PointerEvent){if(ref.current&&!ref.current.contains(event.target as Node))setOpen(false);}
     function escape(event:KeyboardEvent){if(event.key==="Escape")setOpen(false);}
     document.addEventListener("pointerdown",outside);
     document.addEventListener("keydown",escape);
@@ -44,8 +41,7 @@ export default function LocaleMenu({variant="header"}:{variant?:"header"|"footer
       aria-label={t("locale.change")+" — "+current.label}
       title={current.label}
     >
-      <span className="localeGlobe"><GlobeIcon/></span>
-      <span className="localeChevron" aria-hidden="true">⌄</span>
+      <span className="localeTriangle"><OpenTriangle/></span>
     </button>
     {open&&<div className="localePopover" role="menu">
       <div className="localeMenuTitle">{t("locale.change")}</div>

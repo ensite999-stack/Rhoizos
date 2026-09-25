@@ -1,10 +1,11 @@
 import {NextRequest,NextResponse} from "next/server";
 import {fail,ok} from "@/lib/http";
 import {normalizeDomain} from "@/lib/domain";
-import {publicPrices,retailFromCost,retailPrice} from "@/lib/pricing";
+import {publicPrices,retailFromCost,retailFromCosts,retailPrice} from "@/lib/pricing";
 import {domainAvailability,domainsAvailability} from "@/lib/spaceship";
 
 export const runtime="nodejs";
+export const maxDuration=30;
 
 const PAGE_SIZE=60;
 const COMMON_TLDS=[
@@ -73,20 +74,26 @@ export async function GET(request:NextRequest){
 
       const availability=await domainsAvailability(domains);
       const availabilityMap=new Map(availability.map(item=>[item.domain,item]));
+
+      const liveEntries=domains.flatMap((domain,index)=>{
+        const cost=availabilityMap.get(domain)?.registerPrice;
+        return typeof cost==="number"&&Number.isFinite(cost)&&cost>0?[{index,cost}]:[];
+      });
+      const livePrices=await retailFromCosts(liveEntries.map(entry=>entry.cost),"register");
+      const livePriceMap=new Map(liveEntries.map((entry,index)=>[entry.index,livePrices[index]]));
+
       return ok({
         query:label,
         page,
         total:uniqueRequested.length?uniqueRequested.length:allTlds.length,
         hasMore,
         tlds:allTlds.map(tld=>"."+tld),
-        items:await Promise.all(domains.map(async (domain,index)=>{
+        items:domains.map((domain,index)=>{
           const state=availabilityMap.get(domain);
           const available=state?.available??null;
           const premium=state?.premium??false;
           const configured=priceMap.get(tlds[index])?.register??null;
-          const live=state?.registerPrice
-            ?await retailFromCost(state.registerPrice,"register")
-            :configured;
+          const live=livePriceMap.get(index)??configured;
           return {
             domain,
             available,
@@ -94,7 +101,7 @@ export async function GET(request:NextRequest){
             price:available===true?live:null,
             preview:false
           };
-        }))
+        })
       });
     }
 

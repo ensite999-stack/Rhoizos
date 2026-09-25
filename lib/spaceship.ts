@@ -61,14 +61,19 @@ export async function domainsAvailability(inputs:string[]){
     batches.push(domains.slice(offset,offset+20));
   }
 
-  const responses=await Promise.all(batches.map(async batch=>{
+  const responses=await Promise.allSettled(batches.map(async batch=>{
     const {body}=await spaceshipRequest<{domains?:AvailabilityBody[]}>(
       "POST","/domains/available",{domains:batch}
     );
     return (body.domains||[]).map(item=>normalizeAvailability(item));
   }));
 
-  return responses.flat();
+  const items=[];
+  for(const response of responses){
+    if(response.status==="fulfilled")items.push(...response.value);
+    else console.error("Spaceship availability batch failed",response.reason);
+  }
+  return items;
 }
 
 export async function domainDetails(input:string){
