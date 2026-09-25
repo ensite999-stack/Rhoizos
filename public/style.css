@@ -349,3 +349,240 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px}
  .dns-row{padding:15px 0}
  .footer-grid{grid-template-columns:1fr;gap:26px}
 }
+
+
+/* 2026-09-25 — registrar-first homepage refinement inspired by INWX structure */
+.site-header{
+  width:min(calc(100% - 56px),1280px);
+  height:72px;
+  border-bottom:0;
+}
+.desktop-links{gap:30px;color:#aab2bf}
+.nav-actions>a,.nav-actions>button{color:#d5d9e1}
+
+.wrap.home{width:100%;max-width:none;padding:0}
+.home{padding:0;background:#090f19}
+
+.hero{
+  min-height:auto;
+  padding:96px max(28px,calc((100vw - 1180px)/2)) 64px;
+  background:
+    radial-gradient(900px 460px at 82% -10%,rgba(112,38,147,.16),transparent 66%),
+    linear-gradient(180deg,#0b121d 0%,#090f19 100%);
+  border-bottom:0;
+}
+.hero::after{content:none}
+.hero-inner{max-width:1180px}
+.hero-copy{max-width:900px;padding-top:0}
+.hero-kicker{
+  margin:0 0 18px;
+  color:#9ba4b3;
+  font-size:11px;
+  font-weight:560;
+  letter-spacing:.04em;
+  text-transform:none;
+}
+.hero h1{
+  max-width:950px;
+  margin:0;
+  font-size:clamp(66px,8.2vw,118px);
+  line-height:.94;
+  letter-spacing:-.07em;
+  font-weight:560;
+}
+.hero h1 span{color:#f4f2f7}
+.hero .sub{
+  max-width:620px;
+  margin:28px 0 0;
+  color:#9ca5b3;
+  font-size:16px;
+  line-height:1.72;
+}
+
+.search-area{
+  max-width:980px;
+  margin-top:54px;
+}
+.searchbox{
+  min-height:74px;
+  padding:8px 8px 8px 20px;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:14px;
+  background:#101824;
+  border:1px solid #2d3948;
+  border-radius:6px;
+}
+.searchbox>.icon{width:21px;height:21px;color:#7f8998}
+.searchbox input{
+  padding:13px 0;
+  font-size:20px;
+  letter-spacing:-.02em;
+  color:#fff;
+}
+.searchbox input::placeholder{color:#6f7988}
+.searchbox .primary{
+  min-height:56px;
+  padding:0 24px;
+  border-radius:4px;
+  background:#702693;
+  border-color:#702693;
+  font-size:12px;
+}
+.searchbox .primary:hover{background:#7e35a0}
+
+.search-links{
+  display:flex;
+  gap:24px;
+  margin-top:16px;
+  color:#8f98a7;
+  font-size:11px;
+}
+.search-links a:hover{color:#fff}
+
+.price-strip{
+  display:flex;
+  flex-wrap:wrap;
+  gap:28px;
+  margin-top:38px;
+  border:0;
+}
+.price-strip>div,
+.price-strip>div+div{
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  min-width:auto;
+  padding:0;
+  border:0;
+}
+.price-strip b{
+  font-size:14px;
+  font-weight:620;
+  color:#f4f2f7;
+}
+.price-strip span:not(.price-index){
+  justify-self:auto;
+  color:#c5cbd4;
+  font-size:12px;
+}
+.price-strip small{
+  grid-column:auto;
+  justify-self:auto;
+  color:#667181;
+  font-size:9px;
+}
+.preview-note{
+  margin-top:20px;
+  color:#596474;
+  text-align:left;
+  font-size:9px;
+}
+
+.hero .result-card{
+  margin-top:18px;
+  padding:22px 0 4px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#fff;
+}
+.hero .result-card p{color:#8f98a7}
+.hero .result-card .primary{
+  background:#702693;
+  border-color:#702693;
+  color:#fff;
+}
+
+/* homepage services: whitespace and typography instead of cards, numbering, or heavy dividers */
+.services{
+  width:min(calc(100% - 56px),1180px);
+  margin:0 auto;
+  padding:108px 0 126px;
+}
+.services-intro{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  gap:48px;
+  align-items:start;
+  margin-bottom:72px;
+}
+.services-intro .eyebrow{
+  margin:7px 0 0;
+  color:#697485;
+  font-size:9px;
+}
+.services-intro h2{
+  max-width:760px;
+  margin:0;
+  font-size:clamp(42px,5.3vw,72px);
+  line-height:.98;
+  letter-spacing:-.055em;
+  font-weight:540;
+}
+.service-list{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:56px;
+  padding-left:268px;
+}
+.service-list a{display:block;min-width:0}
+.service-list h3{
+  margin:0 0 14px;
+  font-size:22px;
+  letter-spacing:-.035em;
+  font-weight:560;
+}
+.service-list p{
+  max-width:300px;
+  margin:0 0 22px;
+  color:#8e97a5;
+  font-size:12px;
+  line-height:1.72;
+}
+.service-list span{
+  color:#b58ac9;
+  font-size:11px;
+}
+.service-list a:hover h3{color:#d9b8e7}
+.service-list a:hover span{color:#fff}
+
+/* keep the rest of the console professional and quiet */
+.panel{border-radius:4px}
+input,select{border-radius:4px}
+dialog{border-radius:6px}
+.domain-card{border-radius:0}
+.toolbar{border-radius:0}
+.dns-list{border-radius:0}
+
+@media(max-width:900px){
+  .hero{padding-top:76px}
+  .services-intro{grid-template-columns:1fr;gap:18px}
+  .service-list{padding-left:0;gap:34px}
+}
+@media(max-width:640px){
+  .site-header{width:calc(100% - 30px)}
+  .hero{padding:58px 15px 46px}
+  .hero h1{font-size:clamp(54px,16vw,74px)}
+  .hero .sub{font-size:14px}
+  .search-area{margin-top:38px}
+  .searchbox{
+    grid-template-columns:auto minmax(0,1fr);
+    min-height:0;
+    padding:12px 12px 12px 15px;
+  }
+  .searchbox input{font-size:17px}
+  .searchbox .primary{
+    grid-column:1/-1;
+    width:100%;
+    min-height:48px;
+    margin-top:2px;
+  }
+  .price-strip{gap:16px 22px;margin-top:28px}
+  .services{
+    width:calc(100% - 30px);
+    padding:72px 0 90px;
+  }
+  .services-intro{margin-bottom:50px}
+  .services-intro h2{font-size:44px}
+  .service-list{grid-template-columns:1fr;gap:44px}
+}
