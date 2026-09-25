@@ -1,25 +1,28 @@
 {
-  "name":"rhoizos",
-  "version":"0.2.0",
-  "private":true,
-  "scripts":{
-    "dev":"next dev",
-    "build":"next build",
-    "start":"next start",
-    "typecheck":"tsc --noEmit",
-    "check":"npm run typecheck && npm run build"
+  "name": "rhoizos",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build"
   },
-  "dependencies":{
-    "next":"^15.5.0",
-    "postgres":"^3.4.7",
-    "react":"^19.1.0",
-    "react-dom":"^19.1.0"
+  "dependencies": {
+    "next": "^15.5.0",
+    "postgres": "^3.4.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
-  "devDependencies":{
-    "@types/node":"^24.0.0",
-    "@types/react":"^19.0.0",
-    "@types/react-dom":"^19.0.0",
-    "typescript":"^5.9.0"
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.0",
+    "@netlify/functions": "^4.2.5"
   },
-  "engines":{"node":">=22"}
+  "engines": {
+    "node": ">=22"
+  }
 }
