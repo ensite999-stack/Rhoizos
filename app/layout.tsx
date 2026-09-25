@@ -1,67 +1,30 @@
 import type {Metadata} from "next";
-import Link from "next/link";
+import {cookies} from "next/headers";
 import "./globals.css";
+import {I18nProvider} from "@/components/I18nProvider";
+import SiteChrome from "@/components/SiteChrome";
+import {htmlLanguage,normalizeLocale,translate} from "@/lib/i18n";
+import type {Theme} from "@/components/ThemeToggle";
 
-export const metadata:Metadata={
-  title:"Rhoizos — Your Domain. Your World!",
-  description:"A simple, focused place to search, register, transfer, renew and manage Domains."
-};
-
-function CartIcon(){
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l1.4 9.1a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 1.9-1.4L20 7H6.2M9 20h.01M17 20h.01" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+async function preferences(){
+  const store=await cookies();
+  const locale=normalizeLocale(store.get("rhoizos_locale")?.value);
+  const theme:Theme=store.get("rhoizos_theme")?.value==="dark"?"dark":"light";
+  return {locale,theme};
 }
 
-export default function RootLayout({children}:{children:React.ReactNode}){
-  const year=new Date().getFullYear();
+export async function generateMetadata():Promise<Metadata>{
+  const {locale}=await preferences();
+  return {title:translate(locale,"meta.title"),description:translate(locale,"meta.description")};
+}
 
-  return <html lang="en"><body>
-    <header className="siteHeader">
-      <div className="headerInner">
-        <Link className="brand" href="/">
-          <img src="/assets/rhoizos-mark.svg" alt=""/>
-          <span>Rhoizos</span>
-        </Link>
-
-        <nav className="mainNav" aria-label="Primary">
-          <Link href="/">Domain</Link>
-          <Link href="/#pricing">Pricing</Link>
-          <Link href="/transfer">Transfer</Link>
-          <Link href="/#learn">Learn</Link>
-          <Link href="/rdap">RDAP</Link>
-        </nav>
-
-        <nav className="accountNav" aria-label="Account">
-          <Link href="/support" className="desktopUtility">Support</Link>
-          <span className="languageLabel">EN</span>
-          <Link href="/login" className="desktopUtility">Log in</Link>
-          <Link href="/cart" className="cartLink" aria-label="Cart"><CartIcon/></Link>
-          <Link href="/domains" className="domainsLink">My Domains</Link>
-        </nav>
-      </div>
-    </header>
-
-    <main>{children}</main>
-
-    <footer className="siteFooter">
-      <div className="footerStack">
-        <Link className="footerLogo" href="/">
-          <img src="/assets/rhoizos-mark.svg" alt=""/>
-          <strong>Rhoizos<sup className="footerTm">™</sup></strong>
-        </Link>
-
-        <nav className="footerNav" aria-label="Footer">
-          <Link href="/">Search Domains</Link>
-          <Link href="/transfer">Transfer a Domain</Link>
-          <Link href="/rdap">RDAP lookup</Link>
-          <Link href="/domains">My Domains</Link>
-          <Link href="/#learn">Learn about Domains</Link>
-          <Link href="/support">Support</Link>
-          <a href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
-          <Link href="/policies">Privacy & terms</Link>
-        </nav>
-
-        <div className="footerCopyright">© {year} Rhoizos</div>
-      </div>
-    </footer>
-  </body></html>;
+export default async function RootLayout({children}:{children:React.ReactNode}){
+  const {locale,theme}=await preferences();
+  return <html lang={htmlLanguage(locale)} data-theme={theme} suppressHydrationWarning>
+    <body>
+      <I18nProvider locale={locale}>
+        <SiteChrome year={new Date().getFullYear()} theme={theme}>{children}</SiteChrome>
+      </I18nProvider>
+    </body>
+  </html>;
 }
