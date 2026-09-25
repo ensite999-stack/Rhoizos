@@ -356,7 +356,7 @@ svg{display:block}
 .textAction:hover{text-decoration:underline}
 
 /* Why Rhoizos */
-.whySection{padding:84px 0 88px;background:#702963;color:#fff}
+.whySection{padding:84px 0 88px;background:#702693;color:#fff}
 .whyEditorial{
   display:grid;
   grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);
