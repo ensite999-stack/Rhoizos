@@ -7,13 +7,13 @@ Rhoizos is a focused domain registrar storefront: search, register, transfer, re
 
 ## Current architecture
 
-The primary application is now **Vercel-native**.
+The primary application is now **Netlify + Next.js**.
 
 ```text
 Browser
   |
   v
-Next.js on Vercel
+Next.js on Netlify
   |-- storefront + account UI
   |-- API Routes / Server Functions
   |-- NOWPayments IPN webhook
@@ -24,7 +24,7 @@ Next.js on Vercel
   |------> NOWPayments API
 ```
 
-A traditional VPS is not required for the new runtime. Persistent state lives in Postgres and server-side work runs in Vercel Functions.
+A traditional VPS is not required for the new runtime. Persistent state lives in Postgres and server-side work runs in Netlify Functions.
 
 The previous FOSSBilling 0.7.2 implementation is intentionally retained in `fossbilling/`, `scripts/`, and the PHP tests during migration. It is a rollback/reference implementation, not the primary runtime.
 
@@ -77,23 +77,16 @@ npm run check
 
 The legacy PHP validation remains in GitHub Actions during migration.
 
-## Vercel deployment
+## Netlify deployment
 
-1. Create a Postgres database using Neon or Supabase.
-2. Run `db/schema.sql`.
-3. Import this GitHub repository into Vercel.
-4. Configure every required environment variable from `.env.example`.
-5. Generate `RHOIZOS_DATA_KEY` as 32 random bytes encoded in base64.
-6. Configure `CRON_SECRET`.
-7. Point NOWPayments IPN to:
-   `/api/payments/nowpayments/webhook`
-8. Keep:
-   `RHOIZOS_LIVE_PAYMENTS=0`
-   and
-   `RHOIZOS_LIVE_REGISTRATION=0`
-   during controlled acceptance testing.
-9. Verify account isolation, domain search/pricing, payment callbacks, reconciliation, registration, transfer, renewal, transfer-out and DNS.
-10. Enable live fences only after acceptance succeeds.
+1. Use the existing Netlify project `rhoizos-preview`.
+2. Connect the GitHub repository `ensite999-stack/Rhoizos` to that Netlify project.
+3. Framework detection should resolve to Next.js. The build command is defined in `netlify.toml`.
+4. The hourly reconciliation worker is `netlify/functions/reconcile.mts`.
+5. Configure the required environment variables from `.env.example`.
+6. Keep `RHOIZOS_LIVE_PAYMENTS=0` and `RHOIZOS_LIVE_REGISTRATION=0` during acceptance testing.
+7. Verify `/api/health` after deployment.
+8. Test account isolation, domain search, payment callbacks, reconciliation, registration, transfer, renewal, transfer-out and DNS before enabling live fences.
 
 ## Required environment
 
