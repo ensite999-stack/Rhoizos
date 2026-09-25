@@ -14,7 +14,7 @@ const en:Record<string,string>={
   "adminEmail":"Admin email","password":"Password","signIn":"Sign in","signingIn":"Signing in…","loginFailed":"Login failed.",
   "loadingPricing":"Loading pricing…","fixedMarkup":"Fixed margin","pricingFormula":"Retail price = provider cost + fixed margin.","pricingPriority":"Provider cost + fixed margin","registerMarkup":"Register markup %","renewMarkup":"Renew markup %","transferMarkup":"Transfer markup %",
   "minimumMargin":"Minimum margin","saveGlobal":"Save global","saving":"Saving…","tldPricing":"TLD pricing",
-  "pricingPriority":"Override → custom markup → global markup","costRegister":"Cost register","costRenew":"Cost renew","costTransfer":"Cost transfer",
+  "costRegister":"Cost register","costRenew":"Cost renew","costTransfer":"Cost transfer",
   "markupRegister":"Markup R","markupRenew":"Markup N","markupTransfer":"Markup T","overrideRegister":"Override R","overrideRenew":"Override N","overrideTransfer":"Override T",
   "featured":"Featured","effective":"Effective / Save","save":"Save","global":"global","none":"none","loadPricingFailed":"Could not load pricing.","saveFailed":"Save failed."
 };
@@ -31,7 +31,7 @@ const zhCN={...en,
   "adminEmail":"管理员邮箱","password":"密码","signIn":"登录","signingIn":"正在登录…","loginFailed":"登录失败。",
   "loadingPricing":"正在加载价格…","fixedMarkup":"固定加价","pricingFormula":"实际售价 = 上游成本 + 固定加价。","pricingPriority":"上游成本 + 固定加价","registerMarkup":"注册加价 %","renewMarkup":"续费加价 %","transferMarkup":"转入加价 %",
   "minimumMargin":"最低利润","saveGlobal":"保存全局设置","saving":"正在保存…","tldPricing":"TLD 价格",
-  "pricingPriority":"固定售价 → 单 TLD 加价 → 全局加价","costRegister":"注册成本","costRenew":"续费成本","costTransfer":"转入成本",
+  "costRegister":"注册成本","costRenew":"续费成本","costTransfer":"转入成本",
   "markupRegister":"注册加价","markupRenew":"续费加价","markupTransfer":"转入加价","overrideRegister":"注册固定价","overrideRenew":"续费固定价","overrideTransfer":"转入固定价",
   "featured":"首页展示","effective":"实际售价 / 保存","save":"保存","global":"全局","none":"无","loadPricingFailed":"无法加载价格。","saveFailed":"保存失败。"
 };
@@ -47,7 +47,7 @@ const zhTW={...zhCN,
   "adminEmail":"管理員信箱","password":"密碼","signIn":"登入","signingIn":"正在登入…","loginFailed":"登入失敗。",
   "loadingPricing":"正在載入價格…","fixedMarkup":"固定加價","pricingFormula":"實際售價 = 上游成本 + 固定加價。","pricingPriority":"上游成本 + 固定加價","registerMarkup":"註冊加價 %","renewMarkup":"續費加價 %","transferMarkup":"轉入加價 %",
   "minimumMargin":"最低利潤","saveGlobal":"儲存全域設定","saving":"正在儲存…","tldPricing":"TLD 價格",
-  "pricingPriority":"固定售價 → 單 TLD 加價 → 全域加價","costRegister":"註冊成本","costRenew":"續費成本","costTransfer":"轉入成本",
+  "costRegister":"註冊成本","costRenew":"續費成本","costTransfer":"轉入成本",
   "markupRegister":"註冊加價","markupRenew":"續費加價","markupTransfer":"轉入加價","overrideRegister":"註冊固定價","overrideRenew":"續費固定價","overrideTransfer":"轉入固定價",
   "featured":"首頁顯示","effective":"實際售價 / 儲存","save":"儲存","global":"全域","none":"無","loadPricingFailed":"無法載入價格。","saveFailed":"儲存失敗。"
 };
@@ -63,7 +63,7 @@ const fr={...en,
   "adminEmail":"E-mail administrateur","password":"Mot de passe","signIn":"Connexion","signingIn":"Connexion…","loginFailed":"Échec de la connexion.",
   "loadingPricing":"Chargement des tarifs…","fixedMarkup":"Marge fixe","pricingFormula":"Prix public = coût fournisseur + marge fixe.","pricingPriority":"Coût fournisseur + marge fixe","registerMarkup":"Marge enregistrement %","renewMarkup":"Marge renouvellement %","transferMarkup":"Marge transfert %",
   "minimumMargin":"Marge minimale","saveGlobal":"Enregistrer global","saving":"Enregistrement…","tldPricing":"Tarifs TLD",
-  "pricingPriority":"Prix fixe → marge TLD → marge globale","costRegister":"Coût enregistrement","costRenew":"Coût renouvellement","costTransfer":"Coût transfert",
+  "costRegister":"Coût enregistrement","costRenew":"Coût renouvellement","costTransfer":"Coût transfert",
   "markupRegister":"Marge R","markupRenew":"Marge N","markupTransfer":"Marge T","overrideRegister":"Prix fixe R","overrideRenew":"Prix fixe N","overrideTransfer":"Prix fixe T",
   "featured":"Mis en avant","effective":"Prix effectif / Enregistrer","save":"Enregistrer","global":"global","none":"aucun","loadPricingFailed":"Impossible de charger les tarifs.","saveFailed":"Échec de l’enregistrement."
 };
@@ -79,7 +79,7 @@ const es={...en,
   "adminEmail":"Correo administrador","password":"Contraseña","signIn":"Iniciar sesión","signingIn":"Iniciando sesión…","loginFailed":"Error al iniciar sesión.",
   "loadingPricing":"Cargando precios…","fixedMarkup":"Margen fijo","pricingFormula":"Precio final = coste del proveedor + margen fijo.","pricingPriority":"Coste del proveedor + margen fijo","registerMarkup":"Margen registro %","renewMarkup":"Margen renovación %","transferMarkup":"Margen transferencia %",
   "minimumMargin":"Margen mínimo","saveGlobal":"Guardar global","saving":"Guardando…","tldPricing":"Precios TLD",
-  "pricingPriority":"Precio fijo → margen TLD → margen global","costRegister":"Coste registro","costRenew":"Coste renovación","costTransfer":"Coste transferencia",
+  "costRegister":"Coste registro","costRenew":"Coste renovación","costTransfer":"Coste transferencia",
   "markupRegister":"Margen R","markupRenew":"Margen N","markupTransfer":"Margen T","overrideRegister":"Precio fijo R","overrideRenew":"Precio fijo N","overrideTransfer":"Precio fijo T",
   "featured":"Destacado","effective":"Precio efectivo / Guardar","save":"Guardar","global":"global","none":"ninguno","loadPricingFailed":"No se pudieron cargar los precios.","saveFailed":"Error al guardar."
 };
