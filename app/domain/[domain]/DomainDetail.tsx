@@ -42,6 +42,11 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
   const [error,setError]=useState("");
   const [busy,setBusy]=useState(true);
   const [carted,setCarted]=useState<Set<string>>(new Set());
+  const [searchLabel,setSearchLabel]=useState("");
+  const [resultsTotal,setResultsTotal]=useState(0);
+  const [resultsPage,setResultsPage]=useState(0);
+  const [hasMore,setHasMore]=useState(false);
+  const [loadingMore,setLoadingMore]=useState(false);
 
   useEffect(()=>{
     const sync=()=>setCarted(new Set(readCart().map(item=>item.domain)));
@@ -98,14 +103,22 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     setSuggestions([]);
     setRdap(null);
     setRdapState("idle");
+    setSearchLabel("");
+    setResultsTotal(0);
+    setResultsPage(0);
+    setHasMore(false);
 
     try{
       const bareLabel=!value.includes(".")&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value);
       if(bareLabel){
-        const response=await fetch("/api/domain/search?q="+encodeURIComponent(value),{cache:"no-store"});
+        const response=await fetch("/api/domain/search?q="+encodeURIComponent(value)+"&page=0",{cache:"no-store"});
         const data=await response.json();
         if(!response.ok)throw new Error(data.error||"Domain search failed.");
         setSuggestions(data.items||[]);
+        setSearchLabel(value);
+        setResultsTotal(Number(data.total||0));
+        setResultsPage(Number(data.page||0));
+        setHasMore(Boolean(data.hasMore));
         setQuery(value);
         return;
       }
@@ -132,6 +145,29 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
   function add(item:SearchResult){
     if(item.available!==true||item.premium||item.price===null)return;
     addCart({domain:item.domain,price:item.price,kind:"register"});
+  }
+
+  async function loadMore(){
+    if(!searchLabel||!hasMore||loadingMore)return;
+    setLoadingMore(true);
+    setError("");
+    try{
+      const nextPage=resultsPage+1;
+      const response=await fetch("/api/domain/search?q="+encodeURIComponent(searchLabel)+"&page="+nextPage,{cache:"no-store"});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.error||"Domain search failed.");
+      setSuggestions(current=>{
+        const seen=new Set(current.map(item=>item.domain));
+        return [...current,...(data.items||[]).filter((item:SearchResult)=>!seen.has(item.domain))];
+      });
+      setResultsTotal(Number(data.total||resultsTotal));
+      setResultsPage(Number(data.page||nextPage));
+      setHasMore(Boolean(data.hasMore));
+    }catch(error){
+      setError(error instanceof Error?error.message:"Domain search failed.");
+    }finally{
+      setLoadingMore(false);
+    }
   }
 
   async function loadRdap(){
@@ -168,7 +204,7 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
 
         {!!suggestions.length&&<>
           <div className="domainResultsHeader">
-            <strong>{suggestions.length}</strong>
+            <strong>{suggestions.length}{resultsTotal>suggestions.length?" / "+resultsTotal:""}</strong>
             <span>{t("detail.resultsFound")}</span>
           </div>
           <div className="domainSuggestions">
@@ -189,6 +225,11 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
               </div>
             </div>)}
           </div>
+          {hasMore&&<div className="domainLoadMore">
+            <button className="secondary" type="button" onClick={loadMore} disabled={loadingMore}>
+              {loadingMore?t("detail.loadingMore"):t("detail.loadMore")}
+            </button>
+          </div>}
         </>}
 
         {result&&<div className="domainSummary">

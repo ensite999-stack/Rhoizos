@@ -51,12 +51,22 @@ export async function domainAvailability(input:string){
 }
 
 export async function domainsAvailability(inputs:string[]){
-  const domains=inputs.map(normalizeDomain).slice(0,20);
+  const domains=inputs.map(normalizeDomain);
   if(!domains.length)return [];
-  const {body}=await spaceshipRequest<{domains?:AvailabilityBody[]}>(
-    "POST","/domains/available",{domains}
-  );
-  return (body.domains||[]).map(item=>normalizeAvailability(item));
+
+  const batches:string[][]=[];
+  for(let offset=0;offset<domains.length;offset+=20){
+    batches.push(domains.slice(offset,offset+20));
+  }
+
+  const responses=await Promise.all(batches.map(async batch=>{
+    const {body}=await spaceshipRequest<{domains?:AvailabilityBody[]}>(
+      "POST","/domains/available",{domains:batch}
+    );
+    return (body.domains||[]).map(item=>normalizeAvailability(item));
+  }));
+
+  return responses.flat();
 }
 
 export async function domainDetails(input:string){

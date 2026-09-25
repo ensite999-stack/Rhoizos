@@ -693,6 +693,8 @@ svg{display:block}
 .domainSuggestionAction small{margin-left:4px;color:var(--muted);font-size:10px;font-weight:500}
 .domainSuggestionAction .primary,.domainSuggestionAction .secondary{min-height:40px;padding:0 14px}
 .pricePending{color:var(--muted);font-size:12px;white-space:nowrap}
+.domainLoadMore{display:flex;justify-content:center;padding:28px 0 4px}
+.domainLoadMore .secondary{min-width:150px}
 .domainSummary{
   display:flex;
   justify-content:space-between;
