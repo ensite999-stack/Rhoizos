@@ -3,6 +3,7 @@ import {FormEvent,useEffect,useState} from "react";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
+import RdapDetails,{type RdapInfo} from "@/components/RdapDetails";
 import {addCart,onCartChange,readCart} from "@/lib/cart-client";
 
 type SearchResult={
@@ -12,17 +13,6 @@ type SearchResult={
   price:number|null;
   preview?:boolean;
 };
-type RdapInfo={
-  domain:string;
-  registrar:string|null;
-  registeredAt:string|null;
-  expiresAt:string|null;
-  updatedAt:string|null;
-  statuses:string[];
-  nameservers:string[];
-  dnssec:boolean;
-};
-type RdapState="idle"|"loading"|"loaded"|"unavailable";
 
 function SearchIcon(){
   return <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -32,21 +22,23 @@ function SearchIcon(){
 }
 
 export default function DomainDetail({initialDomain}:{initialDomain:string}){
-  const {t,locale}=useI18n();
+  const {t}=useI18n();
   const router=useRouter();
   const [query,setQuery]=useState(initialDomain);
   const [result,setResult]=useState<SearchResult|null>(null);
   const [suggestions,setSuggestions]=useState<SearchResult[]>([]);
-  const [rdap,setRdap]=useState<RdapInfo|null>(null);
-  const [rdapState,setRdapState]=useState<RdapState>("idle");
-  const [error,setError]=useState("");
-  const [busy,setBusy]=useState(true);
-  const [carted,setCarted]=useState<Set<string>>(new Set());
   const [searchLabel,setSearchLabel]=useState("");
+  const [tlds,setTlds]=useState<string[]>([]);
+  const [selectedTld,setSelectedTld]=useState("");
   const [resultsTotal,setResultsTotal]=useState(0);
   const [resultsPage,setResultsPage]=useState(0);
   const [hasMore,setHasMore]=useState(false);
+  const [rdap,setRdap]=useState<RdapInfo|null>(null);
+  const [rdapState,setRdapState]=useState<"idle"|"loading"|"loaded"|"unavailable">("idle");
+  const [error,setError]=useState("");
+  const [busy,setBusy]=useState(true);
   const [loadingMore,setLoadingMore]=useState(false);
+  const [carted,setCarted]=useState<Set<string>>(new Set());
 
   useEffect(()=>{
     const sync=()=>setCarted(new Set(readCart().map(item=>item.domain)));
@@ -54,44 +46,48 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     return onCartChange(sync);
   },[]);
 
-  function formatDate(value:string|null){
-    if(!value)return t("common.notPublished");
-    const date=new Date(value);
-    return Number.isNaN(date.getTime())
-      ?t("common.notPublished")
-      :date.toLocaleDateString(locale,{year:"numeric",month:"short",day:"numeric"});
-  }
-
-  function friendlyStatus(status:string){
-    const value=status.toLowerCase();
-    if(value.includes("client transfer prohibited"))return t("status.transferLock");
-    if(value.includes("server transfer prohibited"))return t("status.registryTransferLock");
-    if(value.includes("client delete prohibited"))return t("status.deleteProtected");
-    if(value.includes("client update prohibited"))return t("status.updateProtected");
-    if(value==="active"||value.endsWith(" active"))return t("status.active");
-    return status.replace(/[_-]+/g," ");
-  }
-
   function statusKey(item:SearchResult){
+    if(item.available===false)return "registered";
     if(item.premium)return "premium";
     if(item.available===true)return "available";
-    if(item.available===false)return "registered";
     return "unknown";
   }
-
   function statusText(item:SearchResult){
+    if(item.available===false)return t("detail.registeredLabel");
     if(item.premium)return t("detail.premiumLabel");
     if(item.available===true)return t("detail.availableLabel");
-    if(item.available===false)return t("detail.registeredLabel");
     return t("detail.resultLabel");
   }
+  function canBuy(item:SearchResult){
+    return item.available===true&&item.price!==null;
+  }
 
-  function go(name:string){
-    const value=name.trim().toLowerCase();
-    if(!value)return;
-    const target="/domain/"+encodeURIComponent(value);
-    if(value===initialDomain.toLowerCase())load(value);
-    else router.push(target);
+  async function loadSuggestions(label:string,page=0,append=false,tld=""){
+    append?setLoadingMore(true):setBusy(true);
+    setError("");
+    try{
+      const params=new URLSearchParams({q:label,page:String(page)});
+      if(tld)params.set("tld",tld);
+      const response=await fetch("/api/domain/search?"+params.toString(),{cache:"no-store"});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.error||"Domain search failed.");
+      const incoming=(data.items||[]) as SearchResult[];
+      setSuggestions(current=>append
+        ?[...current,...incoming.filter(item=>!current.some(existing=>existing.domain===item.domain))]
+        :incoming
+      );
+      setSearchLabel(label);
+      setTlds(Array.isArray(data.tlds)?data.tlds:[]);
+      setSelectedTld(tld);
+      setResultsTotal(Number(data.total||incoming.length));
+      setResultsPage(Number(data.page||page));
+      setHasMore(Boolean(data.hasMore));
+      setQuery(label);
+    }catch(error){
+      setError(error instanceof Error?error.message:"Domain search failed.");
+    }finally{
+      append?setLoadingMore(false):setBusy(false);
+    }
   }
 
   async function load(name:string){
@@ -101,28 +97,22 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     setError("");
     setResult(null);
     setSuggestions([]);
-    setRdap(null);
-    setRdapState("idle");
     setSearchLabel("");
+    setTlds([]);
+    setSelectedTld("");
     setResultsTotal(0);
     setResultsPage(0);
     setHasMore(false);
+    setRdap(null);
+    setRdapState("idle");
+
+    const bare=!value.includes(".")&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value);
+    if(bare){
+      await loadSuggestions(value,0,false,"");
+      return;
+    }
 
     try{
-      const bareLabel=!value.includes(".")&&/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value);
-      if(bareLabel){
-        const response=await fetch("/api/domain/search?q="+encodeURIComponent(value)+"&page=0",{cache:"no-store"});
-        const data=await response.json();
-        if(!response.ok)throw new Error(data.error||"Domain search failed.");
-        setSuggestions(data.items||[]);
-        setSearchLabel(value);
-        setResultsTotal(Number(data.total||0));
-        setResultsPage(Number(data.page||0));
-        setHasMore(Boolean(data.hasMore));
-        setQuery(value);
-        return;
-      }
-
       const response=await fetch("/api/domain/search?domain="+encodeURIComponent(value),{cache:"no-store"});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Domain search failed.");
@@ -137,37 +127,34 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
 
   useEffect(()=>{load(initialDomain);},[initialDomain]);
 
+  function go(name:string){
+    const value=name.trim().toLowerCase();
+    if(!value)return;
+    const target="/domain/"+encodeURIComponent(value);
+    if(value===initialDomain.toLowerCase())load(value);
+    else router.push(target);
+  }
+
   function submit(event:FormEvent){
     event.preventDefault();
     go(query);
   }
 
   function add(item:SearchResult){
-    if(item.available!==true||item.premium||item.price===null)return;
-    addCart({domain:item.domain,price:item.price,kind:"register"});
+    if(!canBuy(item))return;
+    addCart({domain:item.domain,price:item.price!,kind:"register"});
   }
 
   async function loadMore(){
     if(!searchLabel||!hasMore||loadingMore)return;
-    setLoadingMore(true);
-    setError("");
-    try{
-      const nextPage=resultsPage+1;
-      const response=await fetch("/api/domain/search?q="+encodeURIComponent(searchLabel)+"&page="+nextPage,{cache:"no-store"});
-      const data=await response.json();
-      if(!response.ok)throw new Error(data.error||"Domain search failed.");
-      setSuggestions(current=>{
-        const seen=new Set(current.map(item=>item.domain));
-        return [...current,...(data.items||[]).filter((item:SearchResult)=>!seen.has(item.domain))];
-      });
-      setResultsTotal(Number(data.total||resultsTotal));
-      setResultsPage(Number(data.page||nextPage));
-      setHasMore(Boolean(data.hasMore));
-    }catch(error){
-      setError(error instanceof Error?error.message:"Domain search failed.");
-    }finally{
-      setLoadingMore(false);
-    }
+    await loadSuggestions(searchLabel,resultsPage+1,true,selectedTld);
+  }
+
+  async function filter(next:string){
+    if(!searchLabel)return;
+    setSuggestions([]);
+    setSelectedTld(next);
+    await loadSuggestions(searchLabel,0,false,next);
   }
 
   async function loadRdap(){
@@ -176,7 +163,7 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
     try{
       const response=await fetch("/api/rdap?domain="+encodeURIComponent(result.domain),{cache:"no-store"});
       const data=await response.json();
-      if(!response.ok){setRdapState("unavailable");return;}
+      if(!response.ok)throw new Error(data.error||"RDAP lookup failed.");
       setRdap(data);
       setRdapState("loaded");
     }catch{
@@ -202,11 +189,18 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
         {busy&&!result&&!suggestions.length&&<div className="detailLoading">{t("detail.checking")}</div>}
         {error&&<div className="detailError">{error}</div>}
 
+        {!!searchLabel&&<div className="domainFilterBar">
+          <label>
+            <span>{t("detail.filterExtension")}</span>
+            <select value={selectedTld} onChange={event=>filter(event.target.value)} disabled={busy}>
+              <option value="">{t("detail.allExtensions")}</option>
+              {tlds.map(tld=><option value={tld.replace(/^\./,"")} key={tld}>{tld}</option>)}
+            </select>
+          </label>
+          <div><strong>{suggestions.length}{resultsTotal>suggestions.length?" / "+resultsTotal:""}</strong> {t("detail.resultsFound")}</div>
+        </div>}
+
         {!!suggestions.length&&<>
-          <div className="domainResultsHeader">
-            <strong>{suggestions.length}{resultsTotal>suggestions.length?" / "+resultsTotal:""}</strong>
-            <span>{t("detail.resultsFound")}</span>
-          </div>
           <div className="domainSuggestions">
             {suggestions.map(item=><div className="domainSuggestion" key={item.domain}>
               <button className="domainSuggestionName" type="button" onClick={()=>go(item.domain)}>
@@ -214,14 +208,15 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
                 <span className={"domainStatus "+statusKey(item)}>{statusText(item)}</span>
               </button>
               <div className="domainSuggestionAction">
-                {item.available===true&&!item.premium&&item.price!==null&&<strong>{"$"+item.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>}
-                {item.available===true&&!item.premium&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
-                {item.premium&&<span className="pricePending">{t("detail.premiumShort")}</span>}
-                {item.available===true&&!item.premium&&item.price!==null
-                  ?<button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>
+                {canBuy(item)&&<strong>{"$"+item.price!.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>}
+                {item.available===true&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
+                {canBuy(item)&&<>
+                  <button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>
                     {carted.has(item.domain)?t("cart.added"):t("cart.add")}
                   </button>
-                  :<button className="secondary" type="button" onClick={()=>go(item.domain)}>{t("detail.view")}</button>}
+                  <Link className="secondaryLink" href={"/checkout/guest?domain="+encodeURIComponent(item.domain)}>{t("cart.buyGuest")}</Link>
+                </>}
+                {!canBuy(item)&&<button className="secondary" type="button" onClick={()=>go(item.domain)}>{t("detail.view")}</button>}
               </div>
             </div>)}
           </div>
@@ -239,13 +234,16 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
             <p>{result.preview?t("detail.preview"):result.premium?t("detail.premium"):result.available?t("detail.available"):t("detail.registered")}</p>
           </div>
 
-          {result.available===true&&!result.premium&&<div className="availabilityAction">
+          {result.available===true&&<div className="availabilityAction">
             {result.price!==null
               ?<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>
               :<span className="pricePending">{t("detail.priceUnavailable")}</span>}
-            {result.price!==null&&(carted.has(result.domain)
-              ?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>
-              :<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>)}
+            {result.price!==null&&<>
+              {carted.has(result.domain)
+                ?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>
+                :<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>}
+              <Link className="secondaryLink" href={"/checkout/guest?domain="+encodeURIComponent(result.domain)}>{t("cart.buyGuest")}</Link>
+            </>}
           </div>}
 
           {registered&&<div className="availabilityAction registeredAction">
@@ -255,27 +253,7 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
           </div>}
         </div>}
 
-        {rdapState==="loaded"&&rdap&&<div className="rdapFriendly">
-          <div className="rdapIntro"><h2>{t("detail.rdapTitle")}</h2><p>{t("detail.rdapCopy")}</p></div>
-          <dl className="rdapFacts">
-            <div><dt>{t("detail.registrar")}</dt><dd>{rdap.registrar||t("common.notPublished")}</dd></div>
-            <div><dt>{t("detail.registeredSince")}</dt><dd>{formatDate(rdap.registeredAt)}</dd></div>
-            <div><dt>{t("detail.expires")}</dt><dd>{formatDate(rdap.expiresAt)}</dd></div>
-            <div><dt>{t("detail.updated")}</dt><dd>{formatDate(rdap.updatedAt)}</dd></div>
-            <div><dt>{t("detail.dnssec")}</dt><dd>{rdap.dnssec?t("detail.enabled"):t("detail.notEnabled")}</dd></div>
-          </dl>
-
-          {!!rdap.nameservers.length&&<div className="rdapSection">
-            <h3>{t("detail.nameservers")}</h3>
-            <div className="nameserverList">{rdap.nameservers.map(nameserver=><span key={nameserver}>{nameserver}</span>)}</div>
-          </div>}
-
-          {!!rdap.statuses.length&&<div className="rdapSection">
-            <h3>{t("detail.status")}</h3>
-            <div className="statusTextList">{rdap.statuses.map(status=><p key={status}>{friendlyStatus(status)}</p>)}</div>
-          </div>}
-        </div>}
-
+        {rdapState==="loaded"&&rdap&&<RdapDetails data={rdap}/>}
         {rdapState==="unavailable"&&<div className="detailNotice">
           <h2>{t("detail.unavailableTitle")}</h2>
           <p>{t("detail.unavailable")}</p>

@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {fail,ok} from "@/lib/http";
 import {normalizeDomain} from "@/lib/domain";
-import {publicPrices,retailPrice} from "@/lib/pricing";
+import {publicPrices,retailFromCost,retailPrice} from "@/lib/pricing";
 import {domainAvailability,domainsAvailability} from "@/lib/spaceship";
 
 export const runtime="nodejs";
@@ -43,18 +43,23 @@ export async function GET(request:NextRequest){
         ...COMMON_TLDS
       ];
       const allTlds=[...new Set(ordered)];
-      const page=Math.max(0,Number.parseInt(request.nextUrl.searchParams.get("page")||"0",10)||0);
+      const requestedTld=(request.nextUrl.searchParams.get("tld")||"").replace(/^\./,"").trim().toLowerCase();
+      if(requestedTld&&!/^[a-z0-9-]{2,63}$/.test(requestedTld)){
+        return NextResponse.json({error:"Invalid domain extension."},{status:400});
+      }
+      const page=requestedTld?0:Math.max(0,Number.parseInt(request.nextUrl.searchParams.get("page")||"0",10)||0);
       const start=page*PAGE_SIZE;
-      const tlds=allTlds.slice(start,start+PAGE_SIZE);
+      const tlds=requestedTld?[requestedTld]:allTlds.slice(start,start+PAGE_SIZE);
       const domains=tlds.map(tld=>label+"."+tld);
-      const hasMore=start+tlds.length<allTlds.length;
+      const hasMore=!requestedTld&&start+tlds.length<allTlds.length;
 
       if(!process.env.SPACESHIP_API_KEY||!process.env.SPACESHIP_API_SECRET){
         return ok({
           query:label,
           page,
-          total:allTlds.length,
+          total:requestedTld?1:allTlds.length,
           hasMore,
+          tlds:allTlds.map(tld=>"."+tld),
           items:domains.map((domain,index)=>{
             const price=priceMap.get(tlds[index]);
             return {domain,available:null,premium:false,price:price?.register??null,preview:true};
@@ -67,21 +72,25 @@ export async function GET(request:NextRequest){
       return ok({
         query:label,
         page,
-        total:allTlds.length,
+        total:requestedTld?1:allTlds.length,
         hasMore,
-        items:domains.map((domain,index)=>{
+        tlds:allTlds.map(tld=>"."+tld),
+        items:await Promise.all(domains.map(async (domain,index)=>{
           const state=availabilityMap.get(domain);
           const available=state?.available??null;
           const premium=state?.premium??false;
-          const price=priceMap.get(tlds[index]);
+          const configured=priceMap.get(tlds[index])?.register??null;
+          const live=state?.registerPrice
+            ?await retailFromCost(state.registerPrice,"register")
+            :configured;
           return {
             domain,
             available,
             premium,
-            price:available===true&&!premium?(price?.register??null):null,
+            price:available===true?live:null,
             preview:false
           };
-        })
+        }))
       });
     }
 
@@ -95,9 +104,12 @@ export async function GET(request:NextRequest){
     }
 
     const result=await domainAvailability(domain);
+    const live=result.registerPrice
+      ?await retailFromCost(result.registerPrice,"register")
+      :price;
     return ok({
       ...result,
-      price:result.available&&!result.premium?price:null,
+      price:result.available?live:null,
       preview:false
     });
   }catch(error){

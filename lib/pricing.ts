@@ -90,6 +90,20 @@ export async function retailPrice(domain:string,kind:PriceKind){
   return money(value);
 }
 
+export async function retailFromCost(cost:number,kind:PriceKind){
+  if(!Number.isFinite(cost)||cost<=0) throw new Error("Invalid provider price.");
+  if(process.env.DATABASE_URL){
+    const {settings}=await databasePricing();
+    const markup=kind==="register"
+      ?Number(settings.default_register_markup_pct||0)
+      :kind==="renew"
+        ?Number(settings.default_renew_markup_pct||0)
+        :Number(settings.default_transfer_markup_pct||0);
+    return effective(cost,markup,null,null,Number(settings.minimum_margin||0));
+  }
+  return money(cost);
+}
+
 export async function publicPrices():Promise<PublicPrice[]>{
   if(process.env.DATABASE_URL){
     const {settings,rows}=await databasePricing();

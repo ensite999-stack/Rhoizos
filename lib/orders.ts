@@ -3,7 +3,7 @@ import {db} from "./db";
 import {normalizeDomain,validateContact,type ContactInput} from "./domain";
 import {appUrl,livePayments} from "./env";
 import {createInvoice} from "./nowpayments";
-import {retailPrice} from "./pricing";
+import {retailFromCost,retailPrice} from "./pricing";
 import {domainAvailability,domainDetails} from "./spaceship";
 import {sealSecret} from "./crypto";
 
@@ -29,9 +29,10 @@ async function insertOrder(userId:string,kind:"register"|"transfer"|"renew",doma
 
 export async function createRegisterOrder(userId:string,input:string){
   const domain=normalizeDomain(input),a=await domainAvailability(domain);
-  if(a.premium) throw new Error("Premium domains require a separate quote.");
   if(!a.available) throw new Error("Domain is not available.");
-  const amount=await retailPrice(domain,"register");
+  const amount=a.registerPrice
+    ?await retailFromCost(a.registerPrice,"register")
+    :await retailPrice(domain,"register");
   return insertOrder(userId,"register",domain,amount,{years:1,contact:await contactSnapshot(userId)});
 }
 

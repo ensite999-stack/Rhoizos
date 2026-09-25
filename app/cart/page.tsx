@@ -25,7 +25,7 @@ export default function Cart(){
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({domain:item.domain})
       });
-      if(response.status===401){location.href="/login";return;}
+      if(response.status===401){location.href="/checkout/guest?domain="+encodeURIComponent(item.domain);return;}
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||t("cart.checkoutFailed"));
       location.href=data.checkoutUrl;

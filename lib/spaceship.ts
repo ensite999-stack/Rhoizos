@@ -12,14 +12,16 @@ type AvailabilityBody={
 };
 
 function normalizeAvailability(body:AvailabilityBody){
-  const premium=Array.isArray(body.premiumPricing)&&body.premiumPricing.some(item=>
-    (item?.operation==="register"||!item?.operation)&&Number(item?.price)>0
-  );
+  const registerPrice=Array.isArray(body.premiumPricing)
+    ?body.premiumPricing.find(item=>(item?.operation==="register"||!item?.operation)&&Number(item?.price)>0)
+    :undefined;
+  const premium=Boolean(registerPrice);
   return {
     domain:normalizeDomain(body.domain),
     available:body.result==="available"?true:body.result==="taken"?false:null,
     taken:body.result==="taken",
     premium,
+    registerPrice:registerPrice?Number(registerPrice.price):null,
     premiumPricing:premium?body.premiumPricing||[]:[]
   };
 }
