@@ -249,7 +249,7 @@ create table if not exists marketplace_events (
   details jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
-create index if not exists marketplace_events_deal_idx on marketplace_events(deal_id,created_at desc);
+create index if not exists marketplace_events_deal_idx on marketplace_events(deal_id,created_at desc);\ncreate index if not exists marketplace_events_actor_idx on marketplace_events(actor_user_id);
 
 alter table marketplace_listings enable row level security;
 alter table marketplace_deals enable row level security;
