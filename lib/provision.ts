@@ -213,7 +213,7 @@ export async function reconcileOperation(operationId:string){
 
 export async function reconcileAll(limit=50){
   const sql=db();
-  const paid=await sql`select id from orders where payment_status='paid' and status='paid' order by updated_at asc limit ${limit}`;
+  const paid=await sql`select id from orders where payment_status='paid' and status='paid' and kind<>'dropcatch' order by updated_at asc limit ${limit}`;
   for(const row of paid){try{await startProvisioning(String(row.id));}catch{}}
   const ops=await sql`select id from operations where status='pending' order by updated_at asc limit ${limit}`;
   for(const row of ops){try{await reconcileOperation(String(row.id));}catch{}}
