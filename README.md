@@ -31,7 +31,7 @@ The previous FOSSBilling 0.7.2 implementation is retained only as a limited migr
 ## Product scope
 
 - Domain availability and retail pricing.
-- Register -> NOWPayments -> verified payment -> NameSilo registration using a stored verified-card payment ID.
+- Register -> NOWPayments -> verified payment -> NameSilo registration using account funds when sufficient, otherwise an optional verified card.
 - Transfer in with EPP/Auth Code -> payment -> async registrar transfer.
 - Transfer out with lock/unlock and Auth Code retrieval.
 - Renewal with a normal-renewal eligibility check before checkout.
@@ -99,7 +99,6 @@ Core variables:
 - `RHOIZOS_DATA_KEY`
 - `RHOIZOS_TLD_PRICES_JSON`
 - `NAMESILO_API_KEY`
-- `NAMESILO_PAYMENT_ID`
 - `NOWPAYMENTS_API_KEY`
 - `NOWPAYMENTS_IPN_SECRET`
 - `CRON_SECRET`
@@ -113,4 +112,4 @@ Do not run the Vercel-native app and the legacy FOSSBilling runtime against the 
 
 ## Registrar
 
-NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes and DNS management. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price.
+NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes and DNS management. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price. For registrar charges, Rhoizos checks the NameSilo account-funds balance first; if it covers the provider cost, account funds are used. Otherwise, an optional `NAMESILO_PAYMENT_ID` is used for a verified card.
