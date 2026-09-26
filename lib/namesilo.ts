@@ -196,51 +196,81 @@ export async function namesiloStandardCost(domain:string,kind:"register"|"renew"
   return kind==="register"?item.registration:kind==="renew"?item.renew:item.transfer;
 }
 
+export async function namesiloAccountBalance(){
+  const reply=await command("getAccountBalance");
+  const balance=Number(reply.balance);
+  if(!Number.isFinite(balance)||balance<0)throw new Error("NameSilo returned an invalid account-funds balance.");
+  return balance;
+}
+
+async function paymentParams(cost:number){
+  const paymentId=process.env.NAMESILO_PAYMENT_ID?.trim();
+  try{
+    const balance=await namesiloAccountBalance();
+    if(balance+0.0001>=cost)return {payment_id:undefined,paymentSource:"account_funds" as const};
+    if(paymentId)return {payment_id:paymentId,paymentSource:"verified_card" as const};
+    throw new Error("NameSilo account funds are insufficient and no verified card payment ID is configured.");
+  }catch(error){
+    if(error instanceof Error&&error.message.includes("insufficient"))throw error;
+    if(paymentId)return {payment_id:paymentId,paymentSource:"verified_card" as const};
+    return {payment_id:undefined,paymentSource:"account_funds" as const};
+  }
+}
+
 export async function namesiloRegisterDomain(input:{
   domain:string;
   years:number;
   contact:ContactInput;
+  cost:number;
 }){
   const domain=normalizeDomain(input.domain);
   const years=Math.max(1,Math.min(10,Math.trunc(input.years||1)));
+  const payment=await paymentParams(input.cost);
   const reply=await command("registerDomain",{
     domain,
     years,
-    payment_id:requiredEnv("NAMESILO_PAYMENT_ID"),
+    payment_id:payment.payment_id,
     private:1,
     auto_renew:0,
     ...contactParams(input.contact)
   });
-  return {domain:normalizeDomain(String(reply.domain||domain)),orderAmount:amount(reply.order_amount)};
+  return {
+    domain:normalizeDomain(String(reply.domain||domain)),
+    orderAmount:amount(reply.order_amount),
+    paymentSource:payment.paymentSource
+  };
 }
 
 export async function namesiloTransferDomain(input:{
   domain:string;
   authCode:string;
   contact:ContactInput;
+  cost:number;
 }){
   const domain=normalizeDomain(input.domain);
   const auth="base64:"+Buffer.from(input.authCode,"utf8").toString("base64");
+  const payment=await paymentParams(input.cost);
   const reply=await command("transferDomain",{
     domain,
-    payment_id:requiredEnv("NAMESILO_PAYMENT_ID"),
+    payment_id:payment.payment_id,
     auth,
     private:1,
     auto_renew:0,
     ...contactParams(input.contact)
   });
-  return {domain,orderAmount:amount(reply.order_amount)};
+  return {domain,orderAmount:amount(reply.order_amount),paymentSource:payment.paymentSource};
 }
 
-export async function namesiloRenewDomain(input:{domain:string;years:number}){
+export async function namesiloRenewDomain(input:{domain:string;years:number;cost:number}){
   const domain=normalizeDomain(input.domain);
   const years=Math.max(1,Math.min(10,Math.trunc(input.years||1)));
+  const payment=await paymentParams(input.cost);
   const reply=await command("renewDomain",{
     domain,
     years,
-    payment_id:requiredEnv("NAMESILO_PAYMENT_ID")
+    payment_id:payment.payment_id
   });
-  return {domain,orderAmount:amount(reply.order_amount)};
+  return {domain,orderAmount:amount(reply.order_amount),paymentSource:payment.paymentSource};
 }
 
 export async function namesiloTransferStatus(input:string){
