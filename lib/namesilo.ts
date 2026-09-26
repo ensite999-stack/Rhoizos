@@ -455,8 +455,9 @@ export async function namesiloListEmailForwards(input:string):Promise<NameSiloEm
   for(const value of rows){
     if(!value||typeof value!=="object")continue;
     const row=value as Record<string,unknown>;
-    const email=String(row.email??row.address??"").trim().toLowerCase();
-    if(!email)continue;
+    const rawEmail=String(row.email??row.address??"").trim().toLowerCase();
+    if(!rawEmail)continue;
+    const email=rawEmail.endsWith("@"+domain)?rawEmail.slice(0,-(domain.length+1)):rawEmail;
     const rawTargets=row.forwards_to??row.forwardsTo??row.forward_to??row.forward;
     const forwardsTo=asArray(rawTargets as string|string[])
       .flatMap(item=>String(item).split(","))
