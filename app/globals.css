@@ -2141,7 +2141,8 @@ html[data-theme="dark"] .accountPopover{
     height:100dvh;
     background:var(--bg);
     color:#f4f7fa;
-    animation:drawerSlideIn .22s cubic-bezier(.2,.75,.25,1);\n    transition:background .18s ease,color .18s ease;
+    animation:drawerSlideIn .22s cubic-bezier(.2,.75,.25,1);
+    transition:background .18s ease,color .18s ease;
   }
   .mobileDrawerHeader{
     flex:0 0 76px;
@@ -2378,3 +2379,62 @@ html[data-theme="dark"] .accountPopover{
 
 
 html[data-theme="dark"] .mobileDrawerBrand img{filter:brightness(0) invert(1)}
+
+
+/* Theme-synced mobile drawer */
+@media(max-width:900px){
+  .mobileNavDrawer{
+    background:var(--bg);
+    color:var(--text);
+  }
+  .mobileDrawerHeader{
+    background:var(--surface);
+    border-bottom-color:var(--line);
+  }
+  .mobileDrawerScroll{background:var(--bg)}
+  .mobileDrawerBrand strong,
+  .mobileDrawerClose,
+  .mobileDrawerBack,
+  .mobileAccountEntry,
+  .mobileDrawerRow,
+  .accountSubTitle,
+  .mobileAccountPanel .accountMenuItem,
+  .mobileAccountPanel .accountMenuItemCopy strong{
+    color:var(--text);
+  }
+  .mobileDrawerClose:active,
+  .mobileDrawerBack:active,
+  .mobileDrawerRow:active,
+  .mobileAccountPanel .accountMenuItem:hover,
+  .mobileAccountPanel .accountMenuItem:active{
+    background:var(--surface-soft)!important;
+  }
+  .mobileAccountEntry .accountItemIcon{
+    border-color:var(--line);
+    background:var(--surface-soft);
+    color:var(--text);
+  }
+  .mobileDrawerSection,
+  .mobileDrawerRow,
+  .mobileAccountPanel .accountMenuItem,
+  .mobileAccountLogout{
+    border-color:var(--line);
+  }
+  .mobileAccountEntry small,
+  .mobileAccountEntry>b,
+  .mobileDrawerLabel,
+  .mobileDrawerChevron,
+  .mobileAccountPanel .accountMenuItemCopy small,
+  .mobileAccountPanel .accountMenuArrow{
+    color:var(--muted);
+  }
+  .mobileDrawerIcon,
+  .accountSubTitle .accountItemIcon,
+  .mobileAccountPanel .accountItemIcon{
+    color:var(--text-soft);
+  }
+  .mobileDrawerBrand img{filter:none}
+}
+@media(max-width:900px){
+  html[data-theme="dark"] .mobileDrawerBrand img{filter:brightness(0) invert(1)}
+}
