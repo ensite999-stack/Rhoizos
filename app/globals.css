@@ -1632,3 +1632,97 @@ svg{display:block}
   .homeServiceGrid{grid-template-columns:1fr;margin-top:30px}
   .homeServiceCard{min-height:245px}
 }
+
+
+/* White-label peer marketplace */
+.marketHeroRow{display:flex;align-items:flex-end;justify-content:space-between;gap:28px}
+.marketHeroRow>div:first-child{min-width:0}
+.marketTrustStrip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:22px;
+  margin-top:34px;
+  padding:18px 20px;
+  border:1px solid rgba(112,41,99,.22);
+  border-radius:10px;
+  background:rgba(112,41,99,.06);
+}
+.marketTrustStrip strong{font-size:14px;color:var(--text)}
+.marketTrustStrip span{color:var(--muted);font-size:12px;line-height:1.55;text-align:right}
+.marketSearch{display:grid;gap:8px;margin-top:26px;max-width:520px;color:var(--muted);font-size:11px;font-weight:750}
+.marketSearch input{
+  height:50px;
+  padding:0 14px;
+  border:1px solid var(--line-strong);
+  border-radius:7px;
+  background:var(--surface-raised);
+  color:var(--text);
+}
+.marketDescription{
+  margin:0 0 24px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.65;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.marketDomainTitle{word-break:break-word}
+.marketListingSummary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1px;
+  margin-top:36px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--line);
+}
+.marketListingSummary>div{padding:20px;background:var(--surface-raised)}
+.marketListingSummary span{display:block;color:var(--muted);font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.05em}
+.marketListingSummary strong{display:block;margin-top:8px;font-size:18px}
+.marketListingDescription{margin:28px 0;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.marketListingDescription p{margin:0;color:var(--text-soft);font-size:14px;line-height:1.75;white-space:pre-wrap}
+.marketOfferForm{max-width:680px}
+.marketOfferForm h2{margin:0 0 2px;font-size:25px;letter-spacing:-.03em}
+.marketDeals{display:grid;gap:14px;margin-top:42px}
+.marketDealCard{
+  padding:24px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-raised);
+}
+.marketDealHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.marketDealHeading span{color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.marketDealHeading h2{margin:6px 0 0;font-size:26px;letter-spacing:-.035em;word-break:break-word}
+.dealStatus{display:inline-flex;padding:6px 9px;border-radius:999px;background:var(--surface-soft);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.dealStatus.accepted{background:rgba(180,120,20,.13);color:#a77420}
+.dealStatus.released{background:rgba(57,117,72,.12);color:var(--success)}
+.dealStatus.rejected,.dealStatus.cancelled{background:rgba(183,70,70,.09);color:var(--danger)}
+.marketDealCard dl{display:flex;gap:28px;flex-wrap:wrap;margin:22px 0 0}
+.marketDealCard dl>div{display:grid;gap:4px}
+.marketDealCard dt{color:var(--muted);font-size:10px}
+.marketDealCard dd{margin:0;font-size:15px;font-weight:700}
+.marketDealMessage{margin:20px 0 0;padding-top:18px;border-top:1px solid var(--line);color:var(--text-soft);font-size:13px;line-height:1.65;white-space:pre-wrap}
+.marketContact{
+  display:grid;
+  gap:5px;
+  margin-top:20px;
+  padding:16px;
+  border-radius:8px;
+  background:var(--surface-soft);
+}
+.marketContact span{color:var(--muted);font-size:10px;font-weight:750;text-transform:uppercase}
+.marketContact a{color:var(--purple);font-size:15px;font-weight:700;word-break:break-all}
+.marketContact small{color:var(--muted);font-size:11px;line-height:1.5}
+.marketDealActions{margin-top:20px}
+.featureStatus a{color:var(--purple);font-size:12px;font-weight:700}
+@media(max-width:640px){
+  .marketHeroRow{align-items:flex-start;flex-direction:column}
+  .marketTrustStrip{align-items:flex-start;flex-direction:column}
+  .marketTrustStrip span{text-align:left}
+  .marketListingSummary{grid-template-columns:1fr}
+  .marketDealHeading{align-items:flex-start;flex-direction:column}
+}
