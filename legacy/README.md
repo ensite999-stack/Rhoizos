@@ -1,7 +1,7 @@
 # Legacy FOSSBilling runtime
 
-The files under `fossbilling/`, `scripts/`, and the PHP portions of `tests/` are the previous FOSSBilling 0.7.2 implementation.
+The files under `fossbilling/`, `scripts/`, and the PHP portions of `tests/` are retained only as migration/reference material.
 
-They are intentionally retained during the Vercel-native migration so the existing Spaceship and NOWPayments behavior remains auditable and recoverable.
+The legacy registrar adapter has been removed. The active domain registrar integration lives in the Next.js runtime and uses NameSilo exclusively.
 
-Do not run both runtimes against the same live provider credentials unless shared idempotency and ownership state have been explicitly designed.
+Do not run the legacy payment runtime against the same live payment credentials unless shared idempotency has been explicitly designed.
