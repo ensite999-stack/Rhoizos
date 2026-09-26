@@ -1,7 +1,7 @@
 import {requireRecentAuth,requireUser} from "@/lib/auth";
 import {ownedDomain} from "@/lib/dns";
 import {fail,ok} from "@/lib/http";
-import {getAuthCode} from "@/lib/spaceship";
+import {namesiloGetAuthCode} from "@/lib/namesilo";
 import {appUrl} from "@/lib/env";
 import {safeSendTemplateEmail} from "@/lib/email";
 
@@ -10,7 +10,7 @@ export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){
   try{
     const user=await requireUser();requireRecentAuth(user);
     const {id}=await params,domain=await ownedDomain(user.id,id);
-    const authCode=await getAuthCode(String(domain.name));
+    const authCode=await namesiloGetAuthCode(String(domain.name));
     await safeSendTemplateEmail(
       user.email,
       "rhoizos-auth-code-accessed",
