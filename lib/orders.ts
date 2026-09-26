@@ -4,7 +4,7 @@ import {normalizeDomain,validateContact,type ContactInput} from "./domain";
 import {appUrl,livePayments} from "./env";
 import {createInvoice} from "./nowpayments";
 import {retailFromCost,retailPrice} from "./pricing";
-import {domainAvailability,domainDetails} from "./spaceship";
+import {namesiloAvailability,namesiloDomainDetails,namesiloStandardCost} from "./namesilo";
 import {sealSecret} from "./crypto";
 
 async function contactSnapshot(userId:string):Promise<ContactInput>{
@@ -28,20 +28,21 @@ async function insertOrder(userId:string,kind:"register"|"transfer"|"renew",doma
 }
 
 export async function createRegisterOrder(userId:string,input:string){
-  const domain=normalizeDomain(input),a=await domainAvailability(domain);
+  const domain=normalizeDomain(input);
+  const [a]=await namesiloAvailability([domain]);
   if(!a.available) throw new Error("Domain is not available.");
-  const amount=a.registerPrice
-    ?await retailFromCost(a.registerPrice,"register")
-    :await retailPrice(domain,"register");
+  const cost=a.quotedPrice??(a.premium?null:await namesiloStandardCost(domain,"register"));
+  if(!cost) throw new Error("Premium pricing is unavailable for this domain. Contact support.");
+  const amount=await retailFromCost(cost,"register");
   return insertOrder(userId,"register",domain,amount,{years:1,contact:await contactSnapshot(userId)});
 }
 
 export async function createTransferOrder(userId:string,input:string,authCode:string){
   const domain=normalizeDomain(input);
   if(!authCode.trim()||authCode.length>80) throw new Error("A valid EPP/Auth Code is required.");
-  const a=await domainAvailability(domain);
-  if(a.premium) throw new Error("Premium transfers require manual review.");
-  if(!a.taken) throw new Error("Domain does not appear eligible for transfer.");
+  const [a]=await namesiloAvailability([domain]);
+  if(a.available===true) throw new Error("Domain is not registered and cannot be transferred.");
+  if(a.available===null) throw new Error("Transfer eligibility could not be confirmed.");
   const amount=await retailPrice(domain,"transfer");
   return insertOrder(userId,"transfer",domain,amount,{
     contact:await contactSnapshot(userId),authCode:sealSecret(authCode.trim())
@@ -51,7 +52,7 @@ export async function createTransferOrder(userId:string,input:string,authCode:st
 export async function createRenewOrder(userId:string,domainId:string){
   const rows=await db()`select name from domains where id=${domainId} and user_id=${userId} limit 1`;
   if(!rows[0]) throw new Error("Domain not found.");
-  const domain=normalizeDomain(String(rows[0].name)),details=await domainDetails(domain);
+  const domain=normalizeDomain(String(rows[0].name)),details=await namesiloDomainDetails(domain);
   if(details.lifecycleStatus!=="registered") throw new Error("This domain is outside the normal renewal path. Contact support.");
   const amount=await retailPrice(domain,"renew");
   return insertOrder(userId,"renew",domain,amount,{years:1,domainId});

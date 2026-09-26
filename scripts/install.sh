@@ -12,7 +12,6 @@ if [[ -e "$foss_root/modules/Rhoizos" || -e "$foss_root/themes/rhoizos" ]]; then
 fi
 cp -R "$project_root/fossbilling/modules/Rhoizos" "$foss_root/modules/"
 cp -R "$project_root/fossbilling/library/Rhoizos" "$foss_root/library/"
-cp "$project_root/fossbilling/library/Registrar/Adapter/Spaceship.php" "$foss_root/library/Registrar/Adapter/"
 cp "$project_root/fossbilling/library/Payment/Adapter/Nowpayments.php" "$foss_root/library/Payment/Adapter/"
 mkdir -p "$foss_root/rhoizos-assets"
 cp -R "$project_root/public/." "$foss_root/rhoizos-assets/"

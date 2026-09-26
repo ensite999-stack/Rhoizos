@@ -76,7 +76,7 @@ export default function Dns(){
       <label className="field">{t("dns.type")}<select name="type"><option>A</option><option>AAAA</option><option>CNAME</option><option>TXT</option><option>MX</option></select></label>
       <label className="field">{t("dns.host")}<input name="name" defaultValue="@" required/></label>
       <label className="field">{t("dns.value")}<input name="value" required/></label>
-      <label className="field">{t("dns.ttl")}<input name="ttl" type="number" defaultValue="3600" min="60" max="3600"/></label>
+      <label className="field">{t("dns.ttl")}<input name="ttl" type="number" defaultValue="3600" min="60" max="86400"/></label>
       <label className="field">{t("dns.priority")}<input name="preference" type="number" defaultValue="10"/></label>
       <label className="field">{t("dns.note")}<input name="note" maxLength={80}/></label>
       <button className="primary">{t("dns.add")}</button>

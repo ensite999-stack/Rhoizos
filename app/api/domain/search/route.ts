@@ -2,8 +2,7 @@ import {NextRequest,NextResponse} from "next/server";
 import {fail,ok} from "@/lib/http";
 import {normalizeDomain} from "@/lib/domain";
 import {publicPrices,retailFromCost,retailFromCosts,retailPrice} from "@/lib/pricing";
-import {domainAvailability,domainsAvailability} from "@/lib/spaceship";
-import {namesiloAvailability} from "@/lib/namesilo";
+import {namesiloAvailability,namesiloPrices} from "@/lib/namesilo";
 
 export const runtime="nodejs";
 export const maxDuration=30;
@@ -59,7 +58,7 @@ export async function GET(request:NextRequest){
       const domains=tlds.map(tld=>label+"."+tld);
       const hasMore=!uniqueRequested.length&&start+tlds.length<allTlds.length;
 
-      if(!process.env.SPACESHIP_API_KEY||!process.env.SPACESHIP_API_SECRET){
+      if(!process.env.NAMESILO_API_KEY){
         return ok({
           query:label,
           page,
@@ -73,33 +72,18 @@ export async function GET(request:NextRequest){
         });
       }
 
-      let availability:
-        {domain:string;available:boolean|null;premium:boolean;registerPrice?:number|null}[];
-      if(process.env.NAMESILO_API_KEY){
-        try{
-          const namesilo=await namesiloAvailability(domains);
-          const premiumDomains=namesilo.filter(item=>item.available===true&&item.premium).map(item=>item.domain);
-          let premiumPricing=new Map<string,{premium:boolean;registerPrice:number|null}>();
-          if(premiumDomains.length){
-            const provider=await domainsAvailability(premiumDomains);
-            premiumPricing=new Map(provider.map(item=>[item.domain,{premium:item.premium,registerPrice:item.registerPrice}]));
-          }
-          availability=namesilo.map(item=>{
-            const provider=premiumPricing.get(item.domain);
-            return {
-              domain:item.domain,
-              available:item.available,
-              premium:provider?.premium??item.premium,
-              registerPrice:provider?.registerPrice??null
-            };
-          });
-        }catch(error){
-          console.error("NameSilo availability query failed; using registrar fallback.",error instanceof Error?error.message:"unknown");
-          availability=await domainsAvailability(domains);
-        }
-      }else{
-        availability=await domainsAvailability(domains);
-      }
+      const namesilo=await namesiloAvailability(domains);
+      const providerPrices=await namesiloPrices();
+      const availability=namesilo.map(item=>{
+        const standard=providerPrices.get(item.domain.split(".").at(-1)!);
+        const registerPrice=item.quotedPrice??(item.premium?null:standard?.registration??null);
+        return {
+          domain:item.domain,
+          available:item.available,
+          premium:item.premium,
+          registerPrice
+        };
+      });
       const availabilityMap=new Map(availability.map(item=>[item.domain,item]));
 
       const liveEntries=domains.flatMap((domain,index)=>{
@@ -111,7 +95,7 @@ export async function GET(request:NextRequest){
 
       return ok({
         query:label,
-        availabilityProvider:process.env.NAMESILO_API_KEY?"namesilo":"spaceship",
+        availabilityProvider:"namesilo",
         page,
         total:uniqueRequested.length?uniqueRequested.length:allTlds.length,
         hasMore,
@@ -121,7 +105,9 @@ export async function GET(request:NextRequest){
           const available=state?.available??null;
           const premium=state?.premium??false;
           const configured=priceMap.get(tlds[index])?.register??null;
-          const live=livePriceMap.get(index)??configured;
+          const live=premium
+            ?livePriceMap.get(index)??null
+            :livePriceMap.get(index)??configured;
           return {
             domain,
             available,
@@ -138,16 +124,20 @@ export async function GET(request:NextRequest){
     const domain=normalizeDomain(input);
     const price=await retailPrice(domain,"register").catch(()=>null);
 
-    if(!process.env.SPACESHIP_API_KEY||!process.env.SPACESHIP_API_SECRET){
+    if(!process.env.NAMESILO_API_KEY){
       return ok({domain,available:null,premium:false,price,preview:true});
     }
 
-    const result=await domainAvailability(domain);
-    const live=result.registerPrice
-      ?await retailFromCost(result.registerPrice,"register")
-      :price;
+    const [result]=await namesiloAvailability([domain]);
+    const standard=(await namesiloPrices()).get(domain.split(".").at(-1)!);
+    const providerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
+    const live=providerCost
+      ?await retailFromCost(providerCost,"register")
+      :result.premium?null:price;
     return ok({
-      ...result,
+      domain:result.domain,
+      available:result.available,
+      premium:result.premium,
       price:result.available?live:null,
       preview:false
     });

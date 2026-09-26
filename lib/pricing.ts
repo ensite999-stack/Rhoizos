@@ -1,5 +1,6 @@
 import {db} from "./db";
 import {tldOf} from "./domain";
+import {namesiloPrices,namesiloStandardCost} from "./namesilo";
 
 export type PriceKind="register"|"renew"|"transfer";
 export type PublicPrice={
@@ -58,6 +59,16 @@ async function fixedMarkup(){
 export async function retailPrice(domain:string,kind:PriceKind){
   const tld=tldOf(domain);
 
+  if(process.env.NAMESILO_API_KEY){
+    if(process.env.DATABASE_URL){
+      const {settings,rows}=await databasePricing();
+      const row=rows.find(r=>String(r.tld)===tld&&Boolean(r.active));
+      if(!row) throw new Error("This extension is not currently offered.");
+      return effective(await namesiloStandardCost(domain,kind),Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP));
+    }
+    return effective(await namesiloStandardCost(domain,kind),DEFAULT_FIXED_MARKUP);
+  }
+
   if(process.env.DATABASE_URL){
     const {settings,rows}=await databasePricing();
     const row=rows.find(r=>String(r.tld)===tld&&Boolean(r.active));
@@ -89,6 +100,31 @@ export async function retailFromCosts(costs:number[],_kind:PriceKind){
 }
 
 export async function publicPrices():Promise<PublicPrice[]>{
+  if(process.env.NAMESILO_API_KEY){
+    const provider=await namesiloPrices();
+    if(process.env.DATABASE_URL){
+      const {settings,rows}=await databasePricing();
+      const markup=Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP);
+      return rows.filter(r=>Boolean(r.active)).flatMap(row=>{
+        const item=provider.get(String(row.tld));
+        if(!item)return [];
+        return [{
+          tld:"."+String(row.tld),
+          register:effective(item.registration,markup),
+          renew:effective(item.renew,markup),
+          transfer:effective(item.transfer,markup),
+          featured:Boolean(row.featured)
+        }];
+      });
+    }
+    return [...provider.values()].map(item=>({
+      tld:"."+item.tld,
+      register:effective(item.registration,DEFAULT_FIXED_MARKUP),
+      renew:effective(item.renew,DEFAULT_FIXED_MARKUP),
+      transfer:effective(item.transfer,DEFAULT_FIXED_MARKUP)
+    }));
+  }
+
   if(process.env.DATABASE_URL){
     const {settings,rows}=await databasePricing();
     const markup=Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP);
