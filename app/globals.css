@@ -338,14 +338,6 @@ svg{display:block}
 .searchButton:hover{background:var(--purple-hover);transform:translateY(-1px)}
 .searchButton svg{width:28px;height:28px}
 .searchPromos{
-
-.cryptoOnlyNote{
-  margin-top:12px;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.09em;
-}
   display:flex;
   justify-content:center;
   gap:12px;
@@ -353,6 +345,13 @@ svg{display:block}
   margin-top:20px;
   color:#aab6c5;
   font-size:13px;
+}
+.cryptoOnlyNote{
+  margin-top:12px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.09em;
 }
 .searchPromos span{display:inline-flex;align-items:center}
 .searchPromos i{margin-right:12px;color:#526277;font-style:normal}
