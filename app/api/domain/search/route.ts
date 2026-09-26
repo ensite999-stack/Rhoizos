@@ -70,8 +70,6 @@ export async function GET(request:NextRequest){
             return {
               domain,available:null,premium:false,
               price:price?.register??null,
-              firstYearPrice:price?.firstYear??null,
-              promoPrice:price?.promo??null,
               renewPrice:price?.renew??null,
               preview:true
             };
@@ -103,12 +101,11 @@ export async function GET(request:NextRequest){
       });
       const registerRetail=await retailFromCosts(registerEntries.map(entry=>entry.cost),"register");
       const renewRetail=await retailFromCosts(renewEntries.map(entry=>entry.cost),"renew");
-      const firstYearMap=new Map(registerEntries.map((entry,index)=>[entry.index,registerRetail[index]]));
+      const registerPriceMap=new Map(registerEntries.map((entry,index)=>[entry.index,registerRetail[index]]));
       const renewMap=new Map(renewEntries.map((entry,index)=>[entry.index,renewRetail[index]]));
 
       return ok({
         query:label,
-        availabilityProvider:"namesilo",
         page,
         total:uniqueRequested.length?uniqueRequested.length:allTlds.length,
         hasMore,
@@ -118,26 +115,13 @@ export async function GET(request:NextRequest){
           const available=state?.available??null;
           const premium=state?.premium??false;
           const configured=priceMap.get(tlds[index]);
-          const liveRegister=firstYearMap.get(index)??configured?.register??null;
-          const firstYear=premium
-            ?liveRegister
-            :configured?.firstYear??liveRegister;
-          const promoCandidates=!premium
-            ?[configured?.promo,liveRegister!==null&&firstYear!==null&&liveRegister<firstYear?liveRegister:null]
-              .filter((value):value is number=>typeof value==="number"&&Number.isFinite(value)&&value>0)
-            :[];
-          const promo=promoCandidates.length?Math.min(...promoCandidates):null;
-          const renew=premium
-            ?renewMap.get(index)??null
-            :renewMap.get(index)??configured?.renew??null;
-          const price=promo??firstYear;
+          const price=registerPriceMap.get(index)??configured?.register??null;
+          const renew=renewMap.get(index)??configured?.renew??null;
           return {
             domain,
             available,
             premium,
             price:available===true?price:null,
-            firstYearPrice:available===true?firstYear:null,
-            promoPrice:available===true?promo:null,
             renewPrice:available===true?renew:null,
             preview:false
           };
@@ -155,8 +139,6 @@ export async function GET(request:NextRequest){
       return ok({
         domain,available:null,premium:false,
         price:configured?.register??null,
-        firstYearPrice:configured?.firstYear??null,
-        promoPrice:configured?.promo??null,
         renewPrice:configured?.renew??null,
         preview:true
       });
@@ -166,27 +148,16 @@ export async function GET(request:NextRequest){
     const standard=(await namesiloPrices()).get(tld);
     const registerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
     const renewCost=result.quotedRenew??(result.premium?null:standard?.renew??null);
-    const liveRegister=registerCost?await retailFromCost(registerCost,"register"):configured?.register??null;
-    const firstYear=result.premium
-      ?liveRegister
-      :configured?.firstYear??liveRegister;
+    const price=registerCost?await retailFromCost(registerCost,"register"):configured?.register??null;
     const renew=renewCost
       ?await retailFromCost(renewCost,"renew")
-      :result.premium?null:configured?.renew??null;
-    const promoCandidates=!result.premium
-      ?[configured?.promo,liveRegister!==null&&firstYear!==null&&liveRegister<firstYear?liveRegister:null]
-        .filter((value):value is number=>typeof value==="number"&&Number.isFinite(value)&&value>0)
-      :[];
-    const promo=promoCandidates.length?Math.min(...promoCandidates):null;
-    const price=promo??firstYear;
+      :configured?.renew??null;
 
     return ok({
       domain:result.domain,
       available:result.available,
       premium:result.premium,
       price:result.available?price:null,
-      firstYearPrice:result.available?firstYear:null,
-      promoPrice:result.available?promo:null,
       renewPrice:result.available?renew:null,
       preview:false
     });

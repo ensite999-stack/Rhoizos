@@ -3,7 +3,7 @@ import Link from "next/link";
 import {FormEvent,useEffect,useState} from "react";
 import {useI18n} from "@/components/I18nProvider";
 
-type Price={tld:string;register:number;firstYear:number;renew:number;transfer:number;featured?:boolean};
+type Price={tld:string;register:number;renew:number;transfer:number;featured?:boolean};
 
 function SearchIcon(){
   return <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -87,7 +87,6 @@ export default function Home(){
             <div className="offerTop"><strong>{item.tld}</strong><span>{"$"+item.register.toFixed(2)}</span></div>
             <p>{t("home.registrationYear")}</p>
             <div className="offerDetails">
-              <span>{t("detail.firstYearPrice")} <b>{"$"+item.firstYear.toFixed(2)}</b></span>
               <span>{t("home.renew")} <b>{"$"+item.renew.toFixed(2)}</b></span>
               <span>{t("home.transfer")} <b>{"$"+item.transfer.toFixed(2)}</b></span>
             </div>

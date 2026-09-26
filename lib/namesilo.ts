@@ -92,8 +92,17 @@ function localPhone(phone:string){
   const local=phone.includes(".")?phone.split(".").at(-1)!:phone;
   return local.replace(/\D/g,"");
 }
+function neutralRegistrarMessage(value:unknown){
+  return String(value||"")
+    .replace(/namesilo(?:\.com)?/gi,"registrar")
+    .replace(/\s+/g," ")
+    .trim();
+}
 function successful(reply:ReplyBase,operation:string){
-  if(Number(reply.code)!==300)throw new Error(reply.detail||reply.message||`NameSilo rejected ${operation}.`);
+  if(Number(reply.code)!==300){
+    const message=neutralRegistrarMessage(reply.detail||reply.message);
+    throw new Error(message||`Registrar rejected ${operation}.`);
+  }
 }
 function contactParams(c:ContactInput){
   return {
@@ -129,7 +138,7 @@ async function namesiloGet<T>(
     cache:"no-store",
     signal:AbortSignal.timeout(15000)
   });
-  if(!response.ok)throw new Error(`NameSilo ${operation} request failed (HTTP ${response.status}).`);
+  if(!response.ok)throw new Error(`Registrar request failed (HTTP ${response.status}).`);
   return response.json() as Promise<T>;
 }
 
@@ -229,14 +238,14 @@ export async function namesiloRetailPrices(force=false){
 
 export async function namesiloStandardCost(domain:string,kind:"register"|"renew"|"transfer"){
   const item=(await namesiloPrices()).get(tldOf(domain));
-  if(!item)throw new Error("This extension is not currently offered by NameSilo.");
+  if(!item)throw new Error("This extension is not currently offered.");
   return kind==="register"?item.registration:kind==="renew"?item.renew:item.transfer;
 }
 
 export async function namesiloAccountBalance(){
   const reply=await command("getAccountBalance");
   const balance=Number(reply.balance);
-  if(!Number.isFinite(balance)||balance<0)throw new Error("NameSilo returned an invalid account-funds balance.");
+  if(!Number.isFinite(balance)||balance<0)throw new Error("Registrar returned an invalid account-funds balance.");
   return balance;
 }
 
@@ -246,7 +255,7 @@ async function paymentParams(cost:number){
     const balance=await namesiloAccountBalance();
     if(balance+0.0001>=cost)return {payment_id:undefined,paymentSource:"account_funds" as const};
     if(paymentId)return {payment_id:paymentId,paymentSource:"verified_card" as const};
-    throw new Error("NameSilo account funds are insufficient and no verified card payment ID is configured.");
+    throw new Error("Registrar account funds are insufficient and no verified card payment method is configured.");
   }catch(error){
     if(error instanceof Error&&error.message.includes("insufficient"))throw error;
     if(paymentId)return {payment_id:paymentId,paymentSource:"verified_card" as const};
@@ -374,7 +383,7 @@ export async function namesiloGetAuthCode(input:string){
   const domain=normalizeDomain(input);
   const reply=await command("retrieveAuthCode",{domain});
   const value=String(reply.auth_code??reply.authCode??reply.authorization_code??"");
-  if(!value)throw new Error("NameSilo did not return an authorization code.");
+  if(!value)throw new Error("Registrar did not return an authorization code.");
   return value;
 }
 
