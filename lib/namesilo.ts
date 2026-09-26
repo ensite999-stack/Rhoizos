@@ -1,8 +1,13 @@
-import {normalizeDomain} from "./domain";
+import {normalizeDomain,tldOf,type ContactInput} from "./domain";
 import {requiredEnv} from "./env";
+
+const API_BASE="https://www.namesilo.com/api";
+const BATCH_BASE="https://www.namesilo.com/apibatch";
+const PRICE_CACHE_MS=5*60*1000;
 
 type RawAvailable={
   domain?:string;
+  "#text"?:string;
   price?:string|number;
   renew?:string|number;
   premium?:string|number|boolean;
@@ -12,10 +17,20 @@ type RawAvailable={
 export type NameSiloAvailability={
   domain:string;
   available:boolean|null;
+  taken:boolean;
   premium:boolean;
   quotedPrice:number|null;
   quotedRenew:number|null;
 };
+
+export type NameSiloTldPrice={
+  tld:string;
+  registration:number;
+  renew:number;
+  transfer:number;
+};
+
+let priceCache:{expires:number;items:Map<string,NameSiloTldPrice>}|null=null;
 
 function asArray<T>(value:T|T[]|null|undefined):T[]{
   if(value===null||value===undefined)return [];
@@ -28,58 +43,158 @@ function amount(value:unknown){
   const n=Number(value);
   return Number.isFinite(n)&&n>0?n:null;
 }
+function itemDomain(item:RawAvailable|string){
+  if(typeof item==="string")return item;
+  return item.domain||item["#text"]||"";
+}
+function localPhone(phone:string){
+  const local=phone.includes(".")?phone.split(".").at(-1)!:phone;
+  return local.replace(/\D/g,"");
+}
+
+async function namesiloGet<T>(
+  base:string,
+  operation:string,
+  params:Record<string,string|number|boolean|undefined>={}
+):Promise<T>{
+  const query=new URLSearchParams({
+    version:"1",
+    type:"json",
+    key:requiredEnv("NAMESILO_API_KEY")
+  });
+  for(const [key,value] of Object.entries(params)){
+    if(value!==undefined)query.set(key,String(value));
+  }
+  const response=await fetch(`${base}/${operation}?${query.toString()}`,{
+    method:"GET",
+    headers:{Accept:"application/json"},
+    cache:"no-store",
+    signal:AbortSignal.timeout(15000)
+  });
+  if(!response.ok)throw new Error(`NameSilo ${operation} request failed (HTTP ${response.status}).`);
+  return response.json() as Promise<T>;
+}
 
 export async function namesiloAvailability(inputs:string[]):Promise<NameSiloAvailability[]>{
   const domains=[...new Set(inputs.map(normalizeDomain))].slice(0,200);
   if(!domains.length)return [];
 
-  const params=new URLSearchParams({
-    version:"1",
-    type:"json",
-    key:requiredEnv("NAMESILO_API_KEY"),
-    domains:domains.join(",")
-  });
-  const response=await fetch("https://www.namesilo.com/apibatch/checkRegisterAvailability?"+params.toString(),{
-    method:"GET",
-    headers:{Accept:"application/json"},
-    cache:"no-store",
-    signal:AbortSignal.timeout(12000)
-  });
-  if(!response.ok)throw new Error("NameSilo availability request failed.");
-
-  const payload=await response.json() as {
+  const payload=await namesiloGet<{
     reply?:{
       code?:string|number;
       detail?:string;
-      available?:RawAvailable|RawAvailable[]|string|string[];
-      unavailable?:RawAvailable|RawAvailable[]|string|string[];
+      available?:RawAvailable|RawAvailable[]|string|string[]|{domain?:RawAvailable|RawAvailable[]|string|string[]};
+      unavailable?:RawAvailable|RawAvailable[]|string|string[]|{domain?:RawAvailable|RawAvailable[]|string|string[]};
       invalid?:RawAvailable|RawAvailable[]|string|string[];
     }
-  };
+  }>(BATCH_BASE,"checkRegisterAvailability",{domains:domains.join(",")});
+
   const reply=payload.reply||{};
-  if(Number(reply.code)!==300)throw new Error("NameSilo rejected the availability request.");
+  if(Number(reply.code)!==300)throw new Error(reply.detail||"NameSilo rejected the availability request.");
 
   const map=new Map<string,NameSiloAvailability>();
-  for(const item of asArray(reply.available as RawAvailable|RawAvailable[]|string|string[])){
+  const normalizeBucket=(bucket:unknown)=>{
+    if(bucket&&typeof bucket==="object"&&!Array.isArray(bucket)&&"domain" in bucket){
+      return asArray((bucket as {domain?:RawAvailable|RawAvailable[]|string|string[]}).domain);
+    }
+    return asArray(bucket as RawAvailable|RawAvailable[]|string|string[]);
+  };
+
+  for(const item of normalizeBucket(reply.available)){
     const raw=typeof item==="string"?{domain:item}:item;
-    if(!raw?.domain)continue;
-    const domain=normalizeDomain(raw.domain);
+    const name=itemDomain(raw);
+    if(!name)continue;
+    const domain=normalizeDomain(name);
     map.set(domain,{
       domain,
       available:true,
+      taken:false,
       premium:flag(raw.premium),
       quotedPrice:amount(raw.price),
       quotedRenew:amount(raw.renew)
     });
   }
-  for(const item of asArray(reply.unavailable as RawAvailable|RawAvailable[]|string|string[])){
+  for(const item of normalizeBucket(reply.unavailable)){
     const raw=typeof item==="string"?{domain:item}:item;
-    if(!raw?.domain)continue;
-    const domain=normalizeDomain(raw.domain);
-    map.set(domain,{domain,available:false,premium:false,quotedPrice:null,quotedRenew:null});
+    const name=itemDomain(raw);
+    if(!name)continue;
+    const domain=normalizeDomain(name);
+    map.set(domain,{domain,available:false,taken:true,premium:false,quotedPrice:null,quotedRenew:null});
   }
   for(const domain of domains){
-    if(!map.has(domain))map.set(domain,{domain,available:null,premium:false,quotedPrice:null,quotedRenew:null});
+    if(!map.has(domain))map.set(domain,{domain,available:null,taken:false,premium:false,quotedPrice:null,quotedRenew:null});
   }
   return domains.map(domain=>map.get(domain)!);
+}
+
+export async function namesiloPrices(force=false):Promise<Map<string,NameSiloTldPrice>>{
+  if(!force&&priceCache&&priceCache.expires>Date.now())return priceCache.items;
+
+  const payload=await namesiloGet<{reply?:Record<string,unknown>}>(BATCH_BASE,"getPrices");
+  const reply=payload.reply||{};
+  if(Number(reply.code)!==300)throw new Error(String(reply.detail||"NameSilo rejected the pricing request."));
+
+  const items=new Map<string,NameSiloTldPrice>();
+  for(const [rawTld,value] of Object.entries(reply)){
+    if(rawTld==="code"||rawTld==="detail"||!value||typeof value!=="object")continue;
+    const row=value as {registration?:unknown;renew?:unknown;transfer?:unknown};
+    const registration=amount(row.registration),renew=amount(row.renew),transfer=amount(row.transfer);
+    if(registration===null||renew===null||transfer===null)continue;
+    const tld=rawTld.replace(/^\./,"").toLowerCase();
+    items.set(tld,{tld,registration,renew,transfer});
+  }
+  priceCache={expires:Date.now()+PRICE_CACHE_MS,items};
+  return items;
+}
+
+export async function namesiloStandardCost(domain:string,kind:"register"|"renew"|"transfer"){
+  const item=(await namesiloPrices()).get(tldOf(domain));
+  if(!item)throw new Error("This extension is not currently offered by NameSilo.");
+  return kind==="register"?item.registration:kind==="renew"?item.renew:item.transfer;
+}
+
+export async function namesiloRegisterDomain(input:{
+  domain:string;
+  years:number;
+  contact:ContactInput;
+}){
+  const domain=normalizeDomain(input.domain);
+  const years=Math.max(1,Math.min(10,Math.trunc(input.years||1)));
+  const c=input.contact;
+  const paymentId=requiredEnv("NAMESILO_PAYMENT_ID");
+
+  const payload=await namesiloGet<{
+    reply?:{
+      code?:number|string;
+      detail?:string;
+      message?:string;
+      domain?:string;
+      order_amount?:number|string;
+    }
+  }>(API_BASE,"registerDomain",{
+    domain,
+    years,
+    payment_id:paymentId,
+    private:1,
+    auto_renew:0,
+    fn:c.firstName,
+    ln:c.lastName,
+    ad:c.address1,
+    cy:c.city,
+    st:c.state,
+    zp:c.postcode,
+    ct:c.country,
+    em:c.email,
+    ph:localPhone(c.phone),
+    cp:c.company||undefined
+  });
+
+  const reply=payload.reply||{};
+  if(Number(reply.code)!==300){
+    throw new Error(reply.detail||reply.message||"NameSilo rejected the registration request.");
+  }
+  return {
+    domain:normalizeDomain(reply.domain||domain),
+    orderAmount:amount(reply.order_amount)
+  };
 }
