@@ -1,5 +1,5 @@
 import {db} from "@/lib/db";
-import {hashPassword} from "@/lib/auth";
+import {createSession,hashPassword} from "@/lib/auth";
 import {validateContact,type ContactInput} from "@/lib/domain";
 import {fail,ok} from "@/lib/http";
 import {appUrl} from "@/lib/env";
@@ -29,6 +29,7 @@ export async function POST(request:Request){
       {DOMAINS_URL:appUrl()+"/domains"},
       "rhoizos:account-created:"+String(rows[0].id)
     );
-    return ok({created:true},201);
+    await createSession(String(rows[0].id));
+    return ok({created:true,authenticated:true},201);
   }catch(error){return fail(error);}
 }
