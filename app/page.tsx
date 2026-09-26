@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {FormEvent,useEffect,useState} from "react";
 import {useI18n} from "@/components/I18nProvider";
 
@@ -93,6 +94,58 @@ export default function Home(){
             </div>
             <button className="textAction" onClick={()=>{location.href="/domain/example"+item.tld}}>{t("home.check")}</button>
           </div>)}
+        </div>
+      </div>
+    </section>
+
+    <section className="lightSection homeServicesSection">
+      <div className="lightInner">
+        <div className="sectionHeading">
+          <div>
+            <span className="sectionLabel">{t("home.servicesLabel")}</span>
+            <h2>{t("home.servicesTitle")}</h2>
+          </div>
+          <p>{t("home.servicesCopy")}</p>
+        </div>
+
+        <div className="homeServiceGrid">
+          <Link className="homeServiceCard" href="/marketplace">
+            <div className="homeServiceMeta">
+              <span>{t("home.marketplaceEyebrow")}</span>
+            </div>
+            <h3>{t("home.marketplaceTitle")}</h3>
+            <p>{t("home.marketplaceCopy")}</p>
+            <strong>{t("home.marketplaceAction")}</strong>
+          </Link>
+
+          <Link className="homeServiceCard" href="/dropcatch">
+            <div className="homeServiceMeta">
+              <span>{t("home.dropcatchEyebrow")}</span>
+            </div>
+            <h3>{t("home.dropcatchTitle")}</h3>
+            <p>{t("home.dropcatchCopy")}</p>
+            <strong>{t("home.dropcatchAction")}</strong>
+          </Link>
+
+          <Link className="homeServiceCard" href="/domains">
+            <div className="homeServiceMeta">
+              <span>{t("home.forwardingEyebrow")}</span>
+              <b>{t("home.freeBadge")}</b>
+            </div>
+            <h3>{t("home.forwardingTitle")}</h3>
+            <p>{t("home.forwardingCopy")}</p>
+            <strong>{t("home.forwardingAction")}</strong>
+          </Link>
+
+          <Link className="homeServiceCard" href="/domains">
+            <div className="homeServiceMeta">
+              <span>{t("home.emailForwardEyebrow")}</span>
+              <b>{t("home.freeBadge")}</b>
+            </div>
+            <h3>{t("home.emailForwardTitle")}</h3>
+            <p>{t("home.emailForwardCopy")}</p>
+            <strong>{t("home.emailForwardAction")}</strong>
+          </Link>
         </div>
       </div>
     </section>
