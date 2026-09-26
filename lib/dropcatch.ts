@@ -154,6 +154,7 @@ async function processOne(id:string){
 
 export async function processDropcatchBatch(limit=3){
   if(!liveDropcatch())return {processed:0,reason:"disabled"};
+  if(!livePayments())return {processed:0,reason:"payments_disabled"};
   if(!dropWindow())return {processed:0,reason:"outside_window"};
 
   const rows=await db()`
