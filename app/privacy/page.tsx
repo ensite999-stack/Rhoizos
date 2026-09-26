@@ -7,7 +7,7 @@ const en={
   sections:[
     ["Information we collect","Account and contact details you provide; domain names you search, register, transfer or manage; DNS configuration and private DNS notes; order and payment status; security and operational logs; and support communications."],
     ["Domain registration data","Domain registries and registrars require accurate registrant contact information. When needed to register, renew, transfer or manage a domain, required contact data is sent to our registrar provider. Eligible domains may use privacy protection, but registry rules can limit or prevent privacy masking."],
-    ["Domain searches","Domain names you search may be sent from our servers to NameSilo and/or Spaceship to check availability and pricing. Availability checks are intended to contain the domain name being queried, not your full account profile."],
+    ["Domain searches","Domain names you search may be sent from our servers to NameSilo to check availability and pricing. Availability checks are intended to contain the domain name being queried, not your full account profile."],
     ["Payments","Rhoizos uses NOWPayments for cryptocurrency payment processing. We receive payment identifiers, quoted amounts, status and transaction-related metadata needed to reconcile an order. We do not control the public nature of blockchain transactions."],
     ["Email","Transactional email is delivered through Resend. Your email address and the variables needed to render a message may be sent to Resend for delivery."],
     ["Infrastructure","Rhoizos uses service infrastructure including Vercel and Supabase to host the application and store operational data. These providers may process technical logs and data as necessary to provide their services."],
@@ -25,7 +25,7 @@ const zh={
   sections:[
     ["我们收集的信息","包括您提供的账户和联系资料；您搜索、注册、转入或管理的域名；DNS 配置与私有 DNS 备注；订单和付款状态；安全与运行日志；以及支持沟通记录。"],
     ["域名注册资料","注册局和注册商通常要求真实、准确的域名持有人联系信息。为完成注册、续费、转入或域名管理，必要联系资料会发送给上游注册商。符合条件的域名可使用隐私保护，但部分后缀会受到注册局规则限制。"],
-    ["域名搜索","您搜索的域名可能由 Rhoizos 服务器发送给 NameSilo 和/或 Spaceship，用于查询可用性与价格。可用性查询仅需要待查询域名，不会主动附带完整账户资料。"],
+    ["域名搜索","您搜索的域名可能由 Rhoizos 服务器发送给 NameSilo，用于查询可用性与价格。可用性查询仅需要待查询域名，不会主动附带完整账户资料。"],
     ["付款","Rhoizos 使用 NOWPayments 处理加密货币付款。我们会接收用于核对订单的付款编号、报价金额、付款状态和相关交易元数据。区块链交易本身可能公开，这不由 Rhoizos 控制。"],
     ["邮件","事务邮件通过 Resend 发送。为完成邮件投递，您的邮箱地址以及渲染邮件所需的模板变量可能发送给 Resend。"],
     ["基础设施","Rhoizos 使用包括 Vercel 和 Supabase 在内的基础设施托管应用和存储运营数据。这些服务商可能为提供服务而处理必要的技术日志和数据。"],
