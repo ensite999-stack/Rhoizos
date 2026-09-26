@@ -28,7 +28,8 @@ function fallbackTable():Table{
 }
 
 function moneyUp(value:number){
-  return Math.ceil((value-Number.EPSILON)*100)/100;
+  const cents=Number((value*100).toFixed(8));
+  return Math.ceil(cents)/100;
 }
 
 function paymentFeeRate(){
@@ -61,15 +62,19 @@ async function databasePricing(){
   return {settings,rows};
 }
 
+async function assertDomainOffered(domain:string){
+  if(!process.env.DATABASE_URL)return;
+  const {rows}=await databasePricing();
+  const tld=tldOf(domain);
+  const row=rows.find(r=>String(r.tld)===tld);
+  if(row&&!Boolean(row.active))throw new Error("This extension is not currently offered.");
+}
+
 export async function retailPrice(domain:string,kind:PriceKind){
   const tld=tldOf(domain);
+  await assertDomainOffered(domain);
 
   if(process.env.NAMESILO_API_KEY){
-    if(process.env.DATABASE_URL){
-      const {rows}=await databasePricing();
-      const row=rows.find(r=>String(r.tld)===tld);
-      if(row&&!Boolean(row.active))throw new Error("This extension is not currently offered.");
-    }
     return customerPrice(await namesiloStandardCost(domain,kind));
   }
 
@@ -91,6 +96,11 @@ export async function retailPrice(domain:string,kind:PriceKind){
 }
 
 export async function retailFromCost(cost:number,_kind:PriceKind){
+  return customerPrice(cost);
+}
+
+export async function retailFromDomainCost(domain:string,cost:number,_kind:PriceKind){
+  await assertDomainOffered(domain);
   return customerPrice(cost);
 }
 

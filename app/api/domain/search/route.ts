@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {fail,ok} from "@/lib/http";
 import {normalizeDomain} from "@/lib/domain";
-import {publicPrices,retailFromCost,retailFromCosts} from "@/lib/pricing";
+import {publicPrices,retailFromDomainCost,retailFromCosts} from "@/lib/pricing";
 import {namesiloAvailability,namesiloPrices} from "@/lib/namesilo";
 
 export const runtime="nodejs";
@@ -80,13 +80,19 @@ export async function GET(request:NextRequest){
       const namesilo=await namesiloAvailability(domains);
       const providerPrices=await namesiloPrices();
       const availability=namesilo.map(item=>{
-        const standard=providerPrices.get(item.domain.split(".").at(-1)!);
+        const tld=item.domain.split(".").at(-1)!;
+        const standard=providerPrices.get(tld);
+        const offered=priceMap.has(tld);
         return {
           domain:item.domain,
           available:item.available,
           premium:item.premium,
-          registerCost:item.quotedPrice??(item.premium?null:standard?.registration??null),
-          renewCost:item.quotedRenew??(item.premium?null:standard?.renew??null)
+          registerCost:offered
+            ?item.premium?item.quotedPrice:standard?.registration??null
+            :null,
+          renewCost:offered
+            ?item.premium?item.quotedRenew:standard?.renew??null
+            :null
         };
       });
       const availabilityMap=new Map(availability.map(item=>[item.domain,item]));
@@ -114,9 +120,8 @@ export async function GET(request:NextRequest){
           const state=availabilityMap.get(domain);
           const available=state?.available??null;
           const premium=state?.premium??false;
-          const configured=priceMap.get(tlds[index]);
-          const price=registerPriceMap.get(index)??configured?.register??null;
-          const renew=renewMap.get(index)??configured?.renew??null;
+          const price=registerPriceMap.get(index)??null;
+          const renew=renewMap.get(index)??null;
           return {
             domain,
             available,
@@ -146,12 +151,14 @@ export async function GET(request:NextRequest){
 
     const [result]=await namesiloAvailability([domain]);
     const standard=(await namesiloPrices()).get(tld);
-    const registerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
-    const renewCost=result.quotedRenew??(result.premium?null:standard?.renew??null);
-    const price=registerCost?await retailFromCost(registerCost,"register"):configured?.register??null;
+    const registerCost=result.premium?result.quotedPrice:standard?.registration??null;
+    const renewCost=result.premium?result.quotedRenew:standard?.renew??null;
+    const price=registerCost
+      ?await retailFromDomainCost(domain,registerCost,"register")
+      :null;
     const renew=renewCost
-      ?await retailFromCost(renewCost,"renew")
-      :configured?.renew??null;
+      ?await retailFromDomainCost(domain,renewCost,"renew")
+      :null;
 
     return ok({
       domain:result.domain,
