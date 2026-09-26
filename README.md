@@ -56,7 +56,9 @@ There is no hosting, paid mailbox bundle, site builder, general invoice dashboar
 - Transfer/Auth Codes are AES-256-GCM encrypted at rest using `RHOIZOS_DATA_KEY`.
 - Auth Code reveal and transfer lock changes require a recent login session.
 - Private DNS notes stay in Rhoizos Postgres and are never sent to the registrar.
-- Premium domains do not auto-purchase.\n- Marketplace payments are strictly buyer-to-seller; Rhoizos does not collect, hold or verify marketplace funds.\n- Marketplace Domain release is seller-confirmed and recorded before local account control moves to the buyer.
+- Premium domains do not auto-purchase.
+- Marketplace payments are strictly buyer-to-seller; Rhoizos does not collect, hold or verify marketplace funds.
+- Marketplace Domain release is seller-confirmed and recorded before local account control moves to the buyer.
 - Non-normal expiry/redemption renewal paths stop and require support handling.
 
 ## Local development
