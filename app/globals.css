@@ -1435,7 +1435,7 @@ svg{display:block}
 .publicPriceRow span:not(:first-child){text-align:right}
 .pricingTerms{margin-top:52px}
 .adminPricingFormula{margin:0;color:var(--muted);font-size:12px;align-self:end}
-.adminPriceRow.fixed{grid-template-columns:90px repeat(4,105px) 70px 70px minmax(250px,1fr)}
+.adminPriceRow.fixed{grid-template-columns:90px repeat(3,105px) 70px 70px minmax(300px,1fr)}
 @media(max-width:720px){
   .legalSections section{grid-template-columns:1fr;gap:10px}
   .policyLinks{grid-template-columns:1fr}
@@ -2437,4 +2437,23 @@ html[data-theme="dark"] .mobileDrawerBrand img{filter:brightness(0) invert(1)}
 }
 @media(max-width:900px){
   html[data-theme="dark"] .mobileDrawerBrand img{filter:brightness(0) invert(1)}
+}
+
+.adminPricingPolicy{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:28px;
+  padding:20px;
+}
+.adminPricingPolicy>div:first-child{display:grid;gap:6px}
+.adminPricingPolicy>div:first-child span{color:var(--muted);font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.06em}
+.adminPricingPolicy>div:first-child strong{font-size:15px}
+.adminPricingPolicy dl{display:flex;gap:28px;margin:0;flex-wrap:wrap}
+.adminPricingPolicy dl>div{display:grid;gap:4px}
+.adminPricingPolicy dt{color:var(--muted);font-size:10px}
+.adminPricingPolicy dd{margin:0;font-size:15px;font-weight:750}
+.adminPriceRow.pricingPolicyRow{grid-template-columns:90px repeat(3,105px) 70px 70px minmax(300px,1fr)}
+@media(max-width:760px){
+  .adminPricingPolicy{align-items:flex-start;flex-direction:column}
 }
