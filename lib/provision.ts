@@ -100,7 +100,7 @@ export async function startProvisioning(orderId:string){
       if(latest>Number(order.amount_usd)+0.009) throw new Error("The live registration price increased after payment. Manual review is required.");
 
       const request=order.request as {contact:ContactInput;years?:number};
-      await namesiloRegisterDomain({domain,years:Number(request.years||1),contact:request.contact});
+      await namesiloRegisterDomain({domain,years:Number(request.years||1),contact:request.contact,cost:providerCost});
       await syncOwnedDomain(row);
       await sql`update operations set provider_operation_id=${"namesilo-register:"+domain} where order_id=${orderId}`;
       await markSuccess(orderId,row);
@@ -116,7 +116,8 @@ export async function startProvisioning(orderId:string){
       await namesiloTransferDomain({
         domain,
         authCode:openSecret(request.authCode),
-        contact:request.contact
+        contact:request.contact,
+        cost:providerCost
       });
       await sql`update operations set provider_operation_id=${"namesilo-transfer:"+domain},status='pending',updated_at=now() where order_id=${orderId}`;
       await sql`update orders set status='transferring',updated_at=now() where id=${orderId}`;
@@ -139,7 +140,8 @@ export async function startProvisioning(orderId:string){
 
     await namesiloRenewDomain({
       domain,
-      years:Number((order.request as {years?:number}).years||1)
+      years:Number((order.request as {years?:number}).years||1),
+      cost:providerCost
     });
     await syncOwnedDomain(row);
     await sql`update operations set provider_operation_id=${"namesilo-renew:"+domain} where order_id=${orderId}`;
