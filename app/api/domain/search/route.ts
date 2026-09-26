@@ -105,7 +105,9 @@ export async function GET(request:NextRequest){
           const available=state?.available??null;
           const premium=state?.premium??false;
           const configured=priceMap.get(tlds[index])?.register??null;
-          const live=livePriceMap.get(index)??configured;
+          const live=premium
+            ?livePriceMap.get(index)??null
+            :livePriceMap.get(index)??configured;
           return {
             domain,
             available,
@@ -131,7 +133,7 @@ export async function GET(request:NextRequest){
     const providerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
     const live=providerCost
       ?await retailFromCost(providerCost,"register")
-      :price;
+      :result.premium?null:price;
     return ok({
       domain:result.domain,
       available:result.available,
