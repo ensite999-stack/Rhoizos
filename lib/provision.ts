@@ -1,7 +1,8 @@
 import {db} from "./db";
 import {openSecret} from "./crypto";
 import {appUrl,liveRegistration} from "./env";
-import {createContact,domainAvailability,domainDetails,spaceshipRequest} from "./spaceship";
+import {createContact,domainDetails,spaceshipRequest} from "./spaceship";
+import {namesiloAvailability,namesiloRegisterDomain,namesiloStandardCost} from "./namesilo";
 import type {ContactInput} from "./domain";
 import {retailFromCost} from "./pricing";
 import {safeSendUserTemplate,sendExpiryReminders} from "./email";
@@ -23,18 +24,33 @@ export async function startProvisioning(orderId:string){
     const domain=String(order.domain),kind=String(order.kind);
     let response:{body:unknown;headers:Headers};
     if(kind==="register"){
-      const a=await domainAvailability(domain);
+      const [a]=await namesiloAvailability([domain]);
       if(!a.available) throw new Error("Domain is no longer available for registration.");
-      if(a.registerPrice){
-        const latest=await retailFromCost(a.registerPrice,"register");
-        if(latest>Number(order.amount_usd)+0.009) throw new Error("The live premium price increased after payment. Manual review is required.");
-      }
-      const contact=(order.request as {contact:ContactInput}).contact;
-      const contactId=await createContact(contact);
-      response=await spaceshipRequest("POST",`/domains/${encodeURIComponent(domain)}`,{
-        autoRenew:false,privacyProtection:{level:"high",userConsent:true},contacts:contacts(contactId),
-        years:Number((order.request as {years?:number}).years||1)
-      });
+      const providerCost=a.quotedPrice??(a.premium?null:await namesiloStandardCost(domain,"register"));
+      if(!providerCost) throw new Error("Current premium pricing is unavailable. Manual review is required.");
+      const latest=await retailFromCost(providerCost,"register");
+      if(latest>Number(order.amount_usd)+0.009) throw new Error("The live registration price increased after payment. Manual review is required.");
+
+      const request=order.request as {contact:ContactInput;years?:number};
+      const years=Number(request.years||1);
+      await namesiloRegisterDomain({domain,years,contact:request.contact});
+
+      await sql`
+        insert into domains (user_id,name,registrar,lifecycle_status,transfer_locked)
+        values (${String(order.user_id)},${domain},'namesilo','registered',true)
+        on conflict (name) do update set
+          user_id=excluded.user_id,registrar='namesilo',lifecycle_status='registered',
+          transfer_locked=true,updated_at=now()
+      `;
+      await sql`update operations set provider_operation_id=${"namesilo:"+domain},status='success',updated_at=now() where order_id=${orderId}`;
+      await sql`update orders set status='active',updated_at=now() where id=${orderId}`;
+      await safeSendUserTemplate(
+        String(order.user_id),
+        "rhoizos-registration-complete",
+        {DOMAIN:domain,DOMAIN_URL:appUrl()+"/domains"},
+        "rhoizos:registration-complete:"+orderId
+      );
+      return;
     }else if(kind==="transfer"){
       const req=order.request as {contact:ContactInput;authCode:string};
       const contactId=await createContact(req.contact);
