@@ -32,14 +32,14 @@ async function current(domainName:string,input:Partial<DnsRecord>):Promise<NameS
 }
 
 export async function addRecord(userId:string,domainId:string,input:Partial<DnsRecord>,note=""){
-  if(note.length>80) throw new Error("Private notes may contain up to 80 characters.");
+  if(note.length>80) throw new Error("DNS labels may contain up to 80 characters.");
   const domain=await ownedDomain(userId,domainId),record=validateRecord(input);
   await namesiloAddDnsRecord(String(domain.name),record);
   await saveNote(userId,domainId,record,note);
 }
 
 export async function saveNote(userId:string,domainId:string,input:Partial<DnsRecord>,note:string){
-  if(note.length>80) throw new Error("Private notes may contain up to 80 characters.");
+  if(note.length>80) throw new Error("DNS labels may contain up to 80 characters.");
   const domain=await ownedDomain(userId,domainId);
   const record=await current(String(domain.name),input);
   const clean=validateRecord(record);

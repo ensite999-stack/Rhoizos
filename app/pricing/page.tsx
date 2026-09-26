@@ -26,8 +26,8 @@ export default function Pricing(){
     <div className="pricingNotice">
       <strong>{zh?"价格说明":"Price notes"}</strong>
       <p>{zh
-        ?"所有价格以美元显示。注册局费用或高级域名实时价格发生变化时，最终价格可能相应调整；付款前会重新检查可用性和价格。"
-        :"Prices are shown in USD. Registry fees and live premium-domain pricing can change; availability and the applicable price are rechecked before payment."}</p>
+        ?"所有价格以美元计价显示，但结账仅支持加密货币，不支持法币、银行卡或银行转账。注册局费用或高级域名实时价格变化时，付款前会重新检查可用性和最终价格。"
+        :"Prices are displayed in USD for reference, but checkout accepts supported cryptocurrencies only. Fiat currencies, cards and bank transfers are not supported. Registry fees and live premium-domain pricing are rechecked before payment."}</p>
     </div>
 
     <div className="publicPriceTable">

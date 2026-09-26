@@ -2,6 +2,7 @@
 import {FormEvent,useEffect,useState} from "react";
 import {useParams} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 type RecordItem={
   type:string;name:string;ttl:number;address?:string;cname?:string;value?:string;
@@ -51,7 +52,7 @@ export default function Dns(){
     load();
   }
 
-  async function saveNote(record:RecordItem,note:string){
+  async function saveLabel(record:RecordItem,note:string){
     const response=await fetch("/api/domains/"+id+"/dns",{
       method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({record,note})
     });
@@ -68,6 +69,7 @@ export default function Dns(){
   }
 
   return <div className="page wide">
+    <BackLink fallbackHref="/domains"/>
     <p className="kicker">{t("dns.kicker")}</p>
     <h1 className="pageTitle">{t("dns.title")}</h1>
     <p className="pageIntro">{t("dns.copy")}</p>
@@ -78,12 +80,12 @@ export default function Dns(){
       <label className="field">{t("dns.value")}<input name="value" required/></label>
       <label className="field">{t("dns.ttl")}<input name="ttl" type="number" defaultValue="3600" min="60" max="86400"/></label>
       <label className="field">{t("dns.priority")}<input name="preference" type="number" defaultValue="10"/></label>
-      <label className="field">{t("dns.note")}<input name="note" maxLength={80}/></label>
+      <label className="field">{t("dns.label")}<input name="note" maxLength={80} placeholder={t("dns.labelPlaceholder")}/></label>
       <button className="primary">{t("dns.add")}</button>
     </form>
 
     {error&&<p className="error">{error}</p>}
-    <div className="dnsTable">{items.map((record,index)=><DnsRow key={index} record={record} onSave={saveNote} onDelete={remove}/>)}</div>
+    <div className="dnsTable">{items.map((record,index)=><DnsRow key={index} record={record} onSave={saveLabel} onDelete={remove}/>)}</div>
   </div>;
 }
 
@@ -95,9 +97,9 @@ function DnsRow({record,onSave,onDelete}:{record:RecordItem;onSave:(record:Recor
     <span>{record.name}</span>
     <span className="dnsValue">{valueOf(record)}</span>
     <span>{record.ttl}</span>
-    <input value={note} onChange={event=>setNote(event.target.value)} maxLength={80}/>
+    <input value={note} onChange={event=>setNote(event.target.value)} maxLength={80} placeholder={t("dns.labelPlaceholder")} aria-label={t("dns.label")}/>
     <div className="actions">
-      <button className="secondary" onClick={()=>onSave(record,note)}>{t("common.save")}</button>
+      <button className="secondary" onClick={()=>onSave(record,note)}>{t("dns.saveLabel")}</button>
       <button className="secondary" onClick={()=>onDelete(record)}>{t("common.delete")}</button>
     </div>
   </div>;

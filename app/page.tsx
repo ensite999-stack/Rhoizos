@@ -71,6 +71,7 @@ export default function Home(){
               {index>0&&<i>·</i>}<b>{item.tld}</b> {"$"+item.register.toFixed(2)}
             </span>)}
           </div>}
+          <div className="cryptoOnlyNote">{t("payment.cryptoOnlyShort")}</div>
         </div>
       </div>
     </section>

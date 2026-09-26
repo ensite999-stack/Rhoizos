@@ -2,6 +2,7 @@
 import {useEffect,useState} from "react";
 import Link from "next/link";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 type Domain={
   id:string;name:string;lifecycle_status:string;expires_at:string|null;transfer_locked:boolean;
@@ -51,7 +52,7 @@ export default function Domains(){
   }
 
   if(authRequired)return <div className="page wide serviceLanding">
-    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
+    <BackLink fallbackHref="/"/>
     <p className="kicker">{t("domains.kicker")}</p>
     <h1 className="pageTitle">{t("domains.publicTitle")}</h1>
     <p className="pageIntro">{t("domains.publicCopy")}</p>
@@ -67,7 +68,7 @@ export default function Domains(){
   </div>;
 
   return <div className="page wide">
-    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
+    <BackLink fallbackHref="/"/>
     <p className="kicker">{t("domains.kicker")}</p>
     <h1 className="pageTitle">{t("domains.title")}</h1>
     <p className="pageIntro">{loading?t("common.loading"):t("domains.copy")}</p>

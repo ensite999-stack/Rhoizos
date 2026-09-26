@@ -1,7 +1,7 @@
 "use client";
 import {FormEvent,useEffect,useState} from "react";
-import Link from "next/link";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 export default function Signup(){
   const {t}=useI18n();
@@ -20,11 +20,11 @@ export default function Signup(){
     const response=await fetch("/api/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const data=await response.json();
     if(!response.ok){setError(data.error||t("signup.failed"));setBusy(false);return;}
-    location.href=next?"/login?next="+encodeURIComponent(next):"/login";
+    location.href=next||"/domains";
   }
 
   return <div className="page authPage">
-    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
+    <BackLink fallbackHref="/"/>
     <p className="kicker">{t("signup.kicker")}</p>
     <h1 className="pageTitle">{t("signup.title")}</h1>
     <p className="pageIntro">{t("signup.copy")}</p>
