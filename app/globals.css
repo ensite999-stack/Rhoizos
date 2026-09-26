@@ -71,7 +71,7 @@ svg{display:block}
   top:0;
   z-index:50;
   background:#0b1a2a;
-  color:#fff;
+  color:var(--text);
   border-bottom:1px solid rgba(255,255,255,.075);
   transform:translateY(0);
   transition:transform .22s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease;
@@ -109,7 +109,7 @@ svg{display:block}
   width:78px;
   height:50px;
   object-fit:contain;
-  filter:brightness(0) invert(1);
+  filter:none;
 }
 .mainNav{
   display:flex;
@@ -144,14 +144,14 @@ svg{display:block}
   color:#d7dde6;
   font-size:13px;
 }
-.domainsLink{color:#fff;font-weight:640;white-space:nowrap}
+.domainsLink{color:var(--text);font-weight:640;white-space:nowrap}
 .cartLink{
   position:relative;
   display:grid;
   place-items:center;
   width:36px;
   height:36px;
-  color:#fff;
+  color:var(--text);
   opacity:.9;
 }
 .cartLink:hover{opacity:1;transform:translateY(-1px)}
@@ -168,7 +168,7 @@ svg{display:block}
   border:2px solid #0b1a2a;
   border-radius:999px;
   background:var(--purple);
-  color:#fff;
+  color:var(--text);
   font-size:9px;
   font-weight:800;
   line-height:1;
@@ -255,7 +255,7 @@ svg{display:block}
     radial-gradient(900px 430px at 50% 8%,rgba(25,75,157,.22),transparent 66%),
     radial-gradient(650px 360px at 78% 22%,rgba(112,41,99,.10),transparent 72%),
     linear-gradient(145deg,#0b1d36 0%,#081625 48%,#06111e 100%);
-  color:#fff;
+  color:var(--text);
 }
 .heroInner{width:min(calc(100% - 48px),1180px);margin:auto}
 .heroLead{max-width:860px;margin:0 auto;text-align:center}
@@ -331,7 +331,7 @@ svg{display:block}
   border:0;
   border-radius:50%;
   background:var(--purple);
-  color:#fff;
+  color:var(--text);
   box-shadow:0 7px 22px rgba(112,41,99,.28);
   transition:background .15s ease,transform .15s ease;
 }
@@ -348,7 +348,7 @@ svg{display:block}
 }
 .searchPromos span{display:inline-flex;align-items:center}
 .searchPromos i{margin-right:12px;color:#526277;font-style:normal}
-.searchPromos b{color:#fff;font-weight:700}
+.searchPromos b{color:var(--text);font-weight:700}
 
 /* Shared light/dark content */
 .lightSection{background:var(--surface);color:var(--text)}
@@ -427,7 +427,7 @@ svg{display:block}
 }
 .whyTitle h2{
   margin:0;
-  color:#fff;
+  color:var(--text);
   font-size:clamp(56px,6.2vw,86px);
   line-height:.94;
   letter-spacing:-.065em;
@@ -442,13 +442,13 @@ svg{display:block}
 }
 .whyText .whyLead{
   margin-bottom:24px;
-  color:#fff;
+  color:var(--text);
   font-size:clamp(24px,2.4vw,34px);
   line-height:1.32;
   letter-spacing:-.03em;
   font-weight:570;
 }
-.whyText strong{color:#fff;font-weight:700}
+.whyText strong{color:var(--text);font-weight:700}
 
 /* Folded Domain basics */
 .learnSection{padding:112px 0 128px;background:var(--surface);color:var(--text)}
@@ -500,7 +500,7 @@ svg{display:block}
   border:1px solid var(--purple);
   border-radius:7px;
   background:var(--purple);
-  color:#fff;
+  color:var(--text);
   font-size:14px;
   font-weight:700;
   transition:background .15s ease,transform .15s ease;
@@ -626,7 +626,7 @@ svg{display:block}
   background:
     radial-gradient(700px 260px at 72% 0%,rgba(112,41,99,.07),transparent 68%),
     linear-gradient(145deg,#0b1d36,#071522);
-  color:#fff;
+  color:var(--text);
 }
 .detailInner{width:min(calc(100% - 48px),1080px);margin:auto}
 .detailSearchBand p{
@@ -663,7 +663,7 @@ svg{display:block}
   border:0;
   border-radius:50%;
   background:var(--purple);
-  color:#fff;
+  color:var(--text);
 }
 .detailSearchForm button svg{width:24px;height:24px}
 .detailContent{padding:76px 0 116px}
@@ -794,7 +794,7 @@ svg{display:block}
 .detailNotice p{margin:0}
 
 /* Footer */
-.siteFooter{background:#702963;color:#fff;border-top:1px solid rgba(255,255,255,.16)}
+.siteFooter{background:#702963;color:var(--text);border-top:1px solid rgba(255,255,255,.16)}
 .footerStack{
   width:min(calc(100% - 48px),1180px);
   margin:auto;
@@ -1080,7 +1080,7 @@ svg{display:block}
 .filterTrigger b{
   min-width:18px;height:18px;padding:0 5px;
   display:grid;place-items:center;
-  border-radius:999px;background:var(--purple);color:#fff;font-size:9px;
+  border-radius:999px;background:var(--purple);color:var(--text);font-size:9px;
 }
 .activeFilterChip{
   min-height:36px;
@@ -1285,7 +1285,7 @@ svg{display:block}
   padding:0 2px;
   border:0;
   background:transparent;
-  color:#fff;
+  color:var(--text);
   font-size:13px;
   font-weight:650;
   white-space:nowrap;
@@ -1863,12 +1863,12 @@ html[data-theme="dark"] .accountPopover{background:#172432;border-color:#314255}
 }
 .mainNav a:hover{
   background:rgba(255,255,255,.07);
-  color:#fff;
+  color:var(--text);
   transform:translateY(-1px);
 }
 .mainNav a.active{
   background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.09));
-  color:#fff;
+  color:var(--text);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 20px rgba(0,0,0,.08);
 }
 .mainNav a.active::after{
@@ -1899,7 +1899,7 @@ html[data-theme="dark"] .accountPopover{background:#172432;border-color:#314255}
 }
 .accountNav>a.desktopUtility:hover,.accountNav>a.desktopUtility.active{
   background:rgba(255,255,255,.09);
-  color:#fff;
+  color:var(--text);
 }
 .cartLink{
   width:38px;
@@ -2139,9 +2139,9 @@ html[data-theme="dark"] .accountPopover{
     flex-direction:column;
     width:100vw;
     height:100dvh;
-    background:#131c25;
-    color:#f4f7fa;
-    animation:drawerSlideIn .22s cubic-bezier(.2,.75,.25,1);
+    background:var(--bg);
+    color:var(--text);
+    animation:drawerSlideIn .22s cubic-bezier(.2,.75,.25,1);\n    transition:background .18s ease,color .18s ease;
   }
   .mobileDrawerHeader{
     flex:0 0 76px;
@@ -2163,7 +2163,7 @@ html[data-theme="dark"] .accountPopover{
     width:34px;
     height:34px;
     object-fit:contain;
-    filter:brightness(0) invert(1);
+    filter:none;
   }
   .mobileDrawerBrand strong{
     font-size:19px;
@@ -2179,7 +2179,7 @@ html[data-theme="dark"] .accountPopover{
     border:0;
     border-radius:50%;
     background:transparent;
-    color:#f4f7fa;
+    color:var(--text);
   }
   .mobileDrawerClose:active,.mobileDrawerBack:active{background:rgba(255,255,255,.08)}
   .drawerCloseGlyph{
@@ -2204,7 +2204,7 @@ html[data-theme="dark"] .accountPopover{
     overflow:auto;
     overscroll-behavior:contain;
     padding:18px 20px calc(34px + env(safe-area-inset-bottom));
-    background:#131c25;
+    background:var(--bg);
   }
   .mobileAccountEntry{
     width:100%;
@@ -2217,7 +2217,7 @@ html[data-theme="dark"] .accountPopover{
     border:0;
     border-radius:0;
     background:transparent;
-    color:#f4f7fa;
+    color:var(--text);
     text-align:left;
   }
   .mobileAccountEntry .accountItemIcon{
@@ -2225,26 +2225,26 @@ html[data-theme="dark"] .accountPopover{
     height:40px;
     border-color:rgba(255,255,255,.12);
     background:#1b2834;
-    color:#f4f7fa;
+    color:var(--text);
   }
   .mobileAccountEntry>span{display:grid;gap:4px}
   .mobileAccountEntry strong{font-size:16px;font-weight:680}
-  .mobileAccountEntry small{color:#91a0af;font-size:11px}
+  .mobileAccountEntry small{color:var(--muted);font-size:11px}
   .mobileAccountEntry>b{
-    color:#b8c3cd;
+    color:var(--muted);
     font-size:25px;
     font-weight:300;
   }
   .mobileDrawerSection{
     margin-top:18px;
     padding-top:18px;
-    border-top:1px solid rgba(255,255,255,.09);
+    border-top:1px solid var(--line);
   }
   .mobileDrawerSectionLast{padding-bottom:12px}
   .mobileDrawerLabel{
     display:block;
     margin:0 4px 10px;
-    color:#7f8d9a;
+    color:var(--muted);
     font-size:9px;
     font-weight:760;
     letter-spacing:.1em;
@@ -2257,11 +2257,11 @@ html[data-theme="dark"] .accountPopover{
     align-items:center;
     gap:12px;
     padding:0 4px;
-    color:#f4f7fa;
+    color:var(--text);
     border-bottom:1px solid rgba(255,255,255,.045);
   }
   .mobileDrawerRow:last-child{border-bottom:0}
-  .mobileDrawerRow:active{background:#1a2631}
+  .mobileDrawerRow:active{background:var(--surface-soft)}
   .mobileDrawerRow strong{
     font-size:15px;
     font-weight:640;
@@ -2272,7 +2272,7 @@ html[data-theme="dark"] .accountPopover{
     place-items:center;
     width:30px;
     height:30px;
-    color:#dfe6ec;
+    color:var(--text-soft);
   }
   .mobileDrawerIcon svg{
     width:21px;
@@ -2284,7 +2284,7 @@ html[data-theme="dark"] .accountPopover{
     stroke-linejoin:round;
   }
   .mobileDrawerChevron{
-    color:#8e9aa6;
+    color:var(--muted);
     font-size:25px;
     font-weight:300;
     line-height:1;
@@ -2307,7 +2307,7 @@ html[data-theme="dark"] .accountPopover{
     height:30px;
     border:0;
     background:transparent;
-    color:#fff;
+    color:var(--text);
   }
   .accountSubTitle strong{
     overflow:hidden;
@@ -2325,11 +2325,11 @@ html[data-theme="dark"] .accountPopover{
     padding:10px 8px!important;
     border-radius:0!important;
     border-bottom:1px solid rgba(255,255,255,.055);
-    color:#f4f7fa;
+    color:var(--text);
   }
   .mobileAccountPanel .accountMenuItem:hover,
   .mobileAccountPanel .accountMenuItem:active{
-    background:#1a2631!important;
+    background:var(--surface-soft)!important;
     transform:none;
   }
   .mobileAccountPanel .accountItemIcon{
@@ -2337,20 +2337,20 @@ html[data-theme="dark"] .accountPopover{
     height:38px;
     border:0;
     background:transparent;
-    color:#f4f7fa;
+    color:var(--text);
   }
   .mobileAccountPanel .accountItemIcon svg{width:23px;height:23px}
   .mobileAccountPanel .accountMenuItemCopy strong{
-    color:#f4f7fa;
+    color:var(--text);
     font-size:16px!important;
     font-weight:650;
   }
   .mobileAccountPanel .accountMenuItemCopy small{
-    color:#8796a4;
+    color:var(--muted);
     font-size:10px;
   }
   .mobileAccountPanel .accountMenuArrow{
-    color:#8796a4;
+    color:var(--muted);
     font-size:18px;
   }
   .mobileAccountLogout{
@@ -2359,7 +2359,7 @@ html[data-theme="dark"] .accountPopover{
     margin-top:20px;
     padding:0 8px;
     border:0;
-    border-top:1px solid rgba(255,255,255,.09);
+    border-top:1px solid var(--line);
     background:transparent;
     color:#f0b0b0;
     text-align:left;
@@ -2375,3 +2375,5 @@ html[data-theme="dark"] .accountPopover{
   .mobileDrawerHeader{flex-basis:70px;padding:0 17px}
   .mobileDrawerScroll{padding-left:17px;padding-right:17px}
 }
+
+html[data-theme="dark"] .mobileDrawerBrand img{filter:brightness(0) invert(1)}
