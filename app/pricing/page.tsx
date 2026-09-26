@@ -20,14 +20,14 @@ export default function Pricing(){
     <p className="kicker">Rhoizos</p>
     <h1 className="pageTitle">{zh?"域名定价。":"Domain pricing."}</h1>
     <p className="pageIntro">{zh
-      ?"注册、续费和转入都直接显示当前应付价格，不展示内部成本或加价结构。"
-      :"Registration, renewal and transfer show the current customer price directly, without exposing internal cost calculations."}</p>
+      ?"以下直接显示标准域名当前的注册、续费和转入价格。"
+      :"The prices below are the current registration, renewal and transfer prices for standard domains."}</p>
 
     <div className="pricingNotice">
       <strong>{zh?"价格说明":"Price notes"}</strong>
       <p>{zh
-        ?"所有价格以美元显示。注册局费用、支付处理费用或高级域名实时价格发生变化时，最终价格可能相应调整；付款前会重新检查可用性和价格。"
-        :"Prices are shown in USD. Registry costs, payment processing costs and live premium-domain pricing can change; availability and the applicable price are rechecked before payment."}</p>
+        ?"所有价格以美元显示。注册局费用或高级域名实时价格发生变化时，最终价格可能相应调整；付款前会重新检查可用性和价格。"
+        :"Prices are shown in USD. Registry fees and live premium-domain pricing can change; availability and the applicable price are rechecked before payment."}</p>
     </div>
 
     <div className="publicPriceTable">
