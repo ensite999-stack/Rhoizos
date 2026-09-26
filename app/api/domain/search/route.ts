@@ -118,8 +118,15 @@ export async function GET(request:NextRequest){
           const available=state?.available??null;
           const premium=state?.premium??false;
           const configured=priceMap.get(tlds[index]);
-          const firstYear=firstYearMap.get(index)??configured?.firstYear??null;
-          const promo=!premium&&configured?.promo&&firstYear&&configured.promo<firstYear?configured.promo:null;
+          const liveRegister=firstYearMap.get(index)??configured?.register??null;
+          const firstYear=premium
+            ?liveRegister
+            :configured?.firstYear??liveRegister;
+          const promoCandidates=!premium
+            ?[configured?.promo,liveRegister!==null&&firstYear!==null&&liveRegister<firstYear?liveRegister:null]
+              .filter((value):value is number=>typeof value==="number"&&Number.isFinite(value)&&value>0)
+            :[];
+          const promo=promoCandidates.length?Math.min(...promoCandidates):null;
           const renew=premium
             ?renewMap.get(index)??null
             :renewMap.get(index)??configured?.renew??null;
@@ -159,11 +166,18 @@ export async function GET(request:NextRequest){
     const standard=(await namesiloPrices()).get(tld);
     const registerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
     const renewCost=result.quotedRenew??(result.premium?null:standard?.renew??null);
-    const firstYear=registerCost?await retailFromCost(registerCost,"register"):configured?.firstYear??null;
+    const liveRegister=registerCost?await retailFromCost(registerCost,"register"):configured?.register??null;
+    const firstYear=result.premium
+      ?liveRegister
+      :configured?.firstYear??liveRegister;
     const renew=renewCost
       ?await retailFromCost(renewCost,"renew")
       :result.premium?null:configured?.renew??null;
-    const promo=!result.premium&&configured?.promo&&firstYear&&configured.promo<firstYear?configured.promo:null;
+    const promoCandidates=!result.premium
+      ?[configured?.promo,liveRegister!==null&&firstYear!==null&&liveRegister<firstYear?liveRegister:null]
+        .filter((value):value is number=>typeof value==="number"&&Number.isFinite(value)&&value>0)
+      :[];
+    const promo=promoCandidates.length?Math.min(...promoCandidates):null;
     const price=promo??firstYear;
 
     return ok({
