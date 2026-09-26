@@ -92,8 +92,17 @@ function localPhone(phone:string){
   const local=phone.includes(".")?phone.split(".").at(-1)!:phone;
   return local.replace(/\D/g,"");
 }
+function neutralRegistrarMessage(value:unknown){
+  return String(value||"")
+    .replace(/namesilo(?:\.com)?/gi,"registrar")
+    .replace(/\s+/g," ")
+    .trim();
+}
 function successful(reply:ReplyBase,operation:string){
-  if(Number(reply.code)!==300)throw new Error(reply.detail||reply.message||`Registrar rejected ${operation}.`);
+  if(Number(reply.code)!==300){
+    const message=neutralRegistrarMessage(reply.detail||reply.message);
+    throw new Error(message||`Registrar rejected ${operation}.`);
+  }
 }
 function contactParams(c:ContactInput){
   return {
