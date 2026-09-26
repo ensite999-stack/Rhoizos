@@ -1554,3 +1554,81 @@ svg{display:block}
   .marketGrid{grid-template-columns:1fr}
   .featureChecks{display:grid;gap:10px}
 }
+
+
+/* Homepage domain services */
+.homeServicesSection{padding-top:86px;padding-bottom:96px}
+.homeServiceGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-top:42px;
+}
+.homeServiceCard{
+  min-height:310px;
+  display:flex;
+  flex-direction:column;
+  padding:26px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-raised);
+  color:var(--text);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.homeServiceCard:hover{
+  transform:translateY(-3px);
+  border-color:rgba(112,41,99,.35);
+  box-shadow:0 18px 40px rgba(15,23,42,.08);
+}
+.homeServiceMeta{
+  min-height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.homeServiceMeta span{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.065em;
+  text-transform:uppercase;
+}
+.homeServiceMeta b{
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(112,41,99,.09);
+  color:var(--purple);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.homeServiceCard h3{
+  margin:30px 0 0;
+  max-width:260px;
+  font-size:27px;
+  line-height:1.08;
+  letter-spacing:-.035em;
+}
+.homeServiceCard p{
+  margin:16px 0 30px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.7;
+}
+.homeServiceCard>strong{
+  margin-top:auto;
+  color:var(--purple);
+  font-size:12px;
+  font-weight:760;
+}
+
+@media(max-width:1050px){
+  .homeServiceGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .homeServicesSection{padding-top:62px;padding-bottom:72px}
+  .homeServiceGrid{grid-template-columns:1fr;margin-top:30px}
+  .homeServiceCard{min-height:245px}
+}
