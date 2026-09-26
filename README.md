@@ -20,7 +20,7 @@ Next.js on Netlify
   |-- hourly reconciliation cron
   |
   |------> Postgres (Neon / Supabase compatible)
-  |------> Spaceship API
+  |------> NameSilo API
   |------> NOWPayments API
 ```
 
@@ -31,7 +31,7 @@ The previous FOSSBilling 0.7.2 implementation is intentionally retained in `foss
 ## Product scope
 
 - Domain availability and retail pricing.
-- Register -> NOWPayments -> verified payment -> Spaceship registration.
+- Register -> NOWPayments -> verified payment -> NameSilo registration using a stored verified-card payment ID.
 - Transfer in with EPP/Auth Code -> payment -> async registrar transfer.
 - Transfer out with lock/unlock and Auth Code retrieval.
 - Renewal with a normal-renewal eligibility check before checkout.
@@ -51,7 +51,7 @@ There is no hosting, email bundle, site builder, general invoice dashboard, or u
 - Ambiguous provider timeouts are not blindly retried.
 - Transfer/Auth Codes are AES-256-GCM encrypted at rest using `RHOIZOS_DATA_KEY`.
 - Auth Code reveal and transfer lock changes require a recent login session.
-- Private DNS notes stay in Rhoizos Postgres and are never sent to Spaceship DNS.
+- Private DNS notes stay in Rhoizos Postgres and are never sent to the registrar.
 - Premium domains do not auto-purchase.
 - Non-normal expiry/redemption renewal paths stop and require support handling.
 
@@ -98,8 +98,8 @@ Core variables:
 - `RHOIZOS_APP_URL`
 - `RHOIZOS_DATA_KEY`
 - `RHOIZOS_TLD_PRICES_JSON`
-- `SPACESHIP_API_KEY`
-- `SPACESHIP_API_SECRET`
+- `NAMESILO_API_KEY`
+- `NAMESILO_PAYMENT_ID`
 - `NOWPAYMENTS_API_KEY`
 - `NOWPAYMENTS_IPN_SECRET`
 - `CRON_SECRET`
@@ -109,3 +109,10 @@ Core variables:
 See `legacy/README.md`.
 
 Do not run the Vercel-native app and the legacy FOSSBilling runtime against the same live payment/registrar credentials unless shared idempotency has been deliberately designed.
+
+
+## Registrar migration status
+
+NameSilo is the primary provider for domain availability, account-specific standard TLD pricing, and new registrations. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price.
+
+Transfer, renewal, DNS, privacy, transfer-lock and auth-code operations still use the legacy Spaceship adapter while those paths are migrated. Keep live registration fenced off until `NAMESILO_PAYMENT_ID` is configured and the registration flow has been acceptance-tested.
