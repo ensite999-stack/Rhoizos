@@ -1,7 +1,7 @@
 import {requireUser} from "@/lib/auth";
 import {db} from "@/lib/db";
 import {fail,ok} from "@/lib/http";
-import {domainDetails} from "@/lib/spaceship";
+import {namesiloDomainDetails} from "@/lib/namesilo";
 
 export const runtime="nodejs";
 export async function GET(){
@@ -11,7 +11,7 @@ export async function GET(){
       where user_id=${user.id} order by name asc`;
     const items=await Promise.all(rows.map(async row=>{
       try{
-        const details=await domainDetails(String(row.name));
+        const details=await namesiloDomainDetails(String(row.name));
         return {
           ...row,
           lifecycle_status:details.lifecycleStatus||row.lifecycle_status,
