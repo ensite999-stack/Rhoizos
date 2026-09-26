@@ -21,7 +21,7 @@ export default function Signup(){
     const response=await fetch("/api/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const data=await response.json();
     if(!response.ok){setError(data.error||t("signup.failed"));setBusy(false);return;}
-    location.href=next?"/login?next="+encodeURIComponent(next):"/login";
+    location.href=next||"/domains";
   }
 
   return <div className="page authPage">
