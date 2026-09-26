@@ -6,7 +6,7 @@ import {useI18n} from "@/components/I18nProvider";
 import RdapDetails,{type RdapInfo} from "@/components/RdapDetails";
 import {addCart,onCartChange,readCart} from "@/lib/cart-client";
 
-type SearchResult={domain:string;available:boolean|null;premium:boolean;price:number|null;firstYearPrice:number|null;promoPrice:number|null;renewPrice:number|null;preview?:boolean};
+type SearchResult={domain:string;available:boolean|null;premium:boolean;price:number|null;renewPrice:number|null;preview?:boolean};
 
 function SearchIcon(){
   return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
