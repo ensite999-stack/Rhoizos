@@ -6,7 +6,7 @@ import {useI18n} from "@/components/I18nProvider";
 import RdapDetails,{type RdapInfo} from "@/components/RdapDetails";
 import {addCart,onCartChange,readCart} from "@/lib/cart-client";
 
-type SearchResult={domain:string;available:boolean|null;premium:boolean;price:number|null;preview?:boolean};
+type SearchResult={domain:string;available:boolean|null;premium:boolean;price:number|null;firstYearPrice:number|null;promoPrice:number|null;renewPrice:number|null;preview?:boolean};
 
 function SearchIcon(){
   return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m16 16 4 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
@@ -208,7 +208,11 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
                 <h2>{item.domain}</h2><span className={"domainStatus "+statusKey(item)}>{statusText(item)}</span>
               </button>
               <div className="domainSuggestionAction">
-                {canBuy(item)&&<strong>{"$"+item.price!.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>}
+                {item.available===true&&<div className="domainPriceBreakdown">
+                  <span><small>{t("detail.firstYearPrice")}</small><b>{item.firstYearPrice!==null?"$"+item.firstYearPrice.toFixed(2):"—"}</b></span>
+                  <span className={item.promoPrice!==null?"promo":""}><small>{t("detail.promoPrice")}</small><b>{item.promoPrice!==null?"$"+item.promoPrice.toFixed(2):"—"}</b></span>
+                  <span><small>{t("detail.renewPrice")}</small><b>{item.renewPrice!==null?"$"+item.renewPrice.toFixed(2):"—"}</b></span>
+                </div>}
                 {item.available===true&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
                 {canBuy(item)&&<>
                   <button className={carted.has(item.domain)?"secondary":"primary"} type="button" onClick={()=>add(item)}>{carted.has(item.domain)?t("cart.added"):t("cart.add")}</button>
@@ -226,7 +230,12 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
             <p>{result.preview?t("detail.preview"):result.premium?t("detail.premium"):result.available?t("detail.available"):t("detail.registered")}</p>
           </div>
           {result.available===true&&<div className="availabilityAction">
-            {result.price!==null?<strong>{"$"+result.price.toFixed(2)}<small>{t("detail.priceYear")}</small></strong>:<span className="pricePending">{t("detail.priceUnavailable")}</span>}
+            <div className="domainPriceBreakdown summaryPrices">
+              <span><small>{t("detail.firstYearPrice")}</small><b>{result.firstYearPrice!==null?"$"+result.firstYearPrice.toFixed(2):"—"}</b></span>
+              <span className={result.promoPrice!==null?"promo":""}><small>{t("detail.promoPrice")}</small><b>{result.promoPrice!==null?"$"+result.promoPrice.toFixed(2):"—"}</b></span>
+              <span><small>{t("detail.renewPrice")}</small><b>{result.renewPrice!==null?"$"+result.renewPrice.toFixed(2):"—"}</b></span>
+            </div>
+            {result.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
             {result.price!==null&&<>
               {carted.has(result.domain)?<Link className="secondaryLink" href="/cart">{t("cart.view")}</Link>:<button className="primary" onClick={()=>add(result)}>{t("cart.add")}</button>}
             </>}

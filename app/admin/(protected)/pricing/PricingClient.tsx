@@ -4,9 +4,9 @@ import {useI18n} from "@/components/I18nProvider";
 import {adminTranslate} from "@/lib/admin-i18n";
 
 type Item={
-  tld:string;active:boolean;featured:boolean;
+  tld:string;active:boolean;featured:boolean;promoRegister:number|null;
   cost:{register:number;renew:number;transfer:number};
-  effective:{register:number;renew:number;transfer:number};
+  effective:{register:number;firstYear:number;promo:number|null;renew:number;transfer:number};
 };
 type Data={
   settings:{fixedMarkup:number;currency:string};
@@ -53,6 +53,7 @@ export default function PricingClient(){
         costRegister:Number(form.get("costRegister")),
         costRenew:Number(form.get("costRenew")),
         costTransfer:Number(form.get("costTransfer")),
+        promoRegister:form.get("promoRegister")?Number(form.get("promoRegister")):null,
         featured:form.get("featured")==="on",
         active:form.get("active")==="on"
       })
@@ -79,17 +80,18 @@ export default function PricingClient(){
       <div className="adminTableWrap">
         <div className="adminPriceRow fixed header">
           <span>TLD</span><span>{t("costRegister")}</span><span>{t("costRenew")}</span><span>{t("costTransfer")}</span>
-          <span>{t("featured")}</span><span>{t("active")}</span><span>{t("effective")}</span>
+          <span>Promo</span><span>{t("featured")}</span><span>{t("active")}</span><span>{t("effective")}</span>
         </div>
         {data.items.map(item=><form className="adminPriceRow fixed" key={item.tld} onSubmit={event=>rowSave(item.tld,event)}>
           <strong>.{item.tld}</strong>
           <input name="costRegister" type="number" step="0.01" min="0.01" defaultValue={item.cost.register}/>
           <input name="costRenew" type="number" step="0.01" min="0.01" defaultValue={item.cost.renew}/>
           <input name="costTransfer" type="number" step="0.01" min="0.01" defaultValue={item.cost.transfer}/>
+          <input name="promoRegister" type="number" step="0.01" min="0.01" placeholder="—" defaultValue={item.promoRegister??""}/>
           <label className="adminCheck"><input name="featured" type="checkbox" defaultChecked={item.featured}/></label>
           <label className="adminCheck"><input name="active" type="checkbox" defaultChecked={item.active}/></label>
           <div className="adminEffective">
-            {"$"+item.effective.register.toFixed(2)+" / $"+item.effective.renew.toFixed(2)+" / $"+item.effective.transfer.toFixed(2)}
+            {"1st $"+item.effective.firstYear.toFixed(2)+" · Promo "+(item.effective.promo?"$"+item.effective.promo.toFixed(2):"—")+" · Renew $"+item.effective.renew.toFixed(2)}
             <br/><button className="adminSmallButton">{t("save")}</button>
           </div>
         </form>)}

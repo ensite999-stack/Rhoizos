@@ -6,6 +6,8 @@ export type PriceKind="register"|"renew"|"transfer";
 export type PublicPrice={
   tld:string;
   register:number;
+  firstYear:number;
+  promo:number|null;
   renew:number;
   transfer:number;
   featured?:boolean;
@@ -30,6 +32,10 @@ function money(value:number){return Math.round(value*100)/100;}
 function effective(cost:number,fixedMarkup:number){
   return money(cost+fixedMarkup);
 }
+function promotional(value:unknown,firstYear:number){
+  const n=Number(value);
+  return Number.isFinite(n)&&n>0&&n<firstYear?money(n):null;
+}
 
 async function databasePricing(){
   const settingsRows=await db()`
@@ -40,7 +46,7 @@ async function databasePricing(){
 
   const rows=await db()`
     select tld,register_price,renew_price,transfer_price,
-      cost_register,cost_renew,cost_transfer,
+      cost_register,cost_renew,cost_transfer,override_register,
       featured,sort_order,active
     from tld_prices
     order by featured desc,sort_order asc,tld asc
@@ -60,13 +66,13 @@ export async function retailPrice(domain:string,kind:PriceKind){
   const tld=tldOf(domain);
 
   if(process.env.NAMESILO_API_KEY){
-    if(process.env.DATABASE_URL){
-      const {settings,rows}=await databasePricing();
-      const row=rows.find(r=>String(r.tld)===tld&&Boolean(r.active));
-      if(!row) throw new Error("This extension is not currently offered.");
-      return effective(await namesiloStandardCost(domain,kind),Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP));
-    }
-    return effective(await namesiloStandardCost(domain,kind),DEFAULT_FIXED_MARKUP);
+    const standard=effective(await namesiloStandardCost(domain,kind),await fixedMarkup());
+    if(kind!=="register"||!process.env.DATABASE_URL)return standard;
+
+    const {rows}=await databasePricing();
+    const row=rows.find(r=>String(r.tld)===tld);
+    if(row&&!Boolean(row.active)) throw new Error("This extension is not currently offered.");
+    return promotional(row?.override_register,standard)??standard;
   }
 
   if(process.env.DATABASE_URL){
@@ -79,7 +85,8 @@ export async function retailPrice(domain:string,kind:PriceKind){
         ?Number(row.cost_renew??row.renew_price)
         :Number(row.cost_transfer??row.transfer_price);
     if(!Number.isFinite(cost)||cost<=0) throw new Error("This extension has no valid provider cost.");
-    return effective(cost,Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP));
+    const standard=effective(cost,Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP));
+    return kind==="register"?(promotional(row.override_register,standard)??standard):standard;
   }
 
   const cost=Number(fallbackTable()[tld]?.[kind]);
@@ -108,41 +115,61 @@ export async function publicPrices():Promise<PublicPrice[]>{
       return rows.filter(r=>Boolean(r.active)).flatMap(row=>{
         const item=provider.get(String(row.tld));
         if(!item)return [];
+        const firstYear=effective(item.registration,markup);
+        const promo=promotional(row.override_register,firstYear);
         return [{
           tld:"."+String(row.tld),
-          register:effective(item.registration,markup),
+          register:promo??firstYear,
+          firstYear,
+          promo,
           renew:effective(item.renew,markup),
           transfer:effective(item.transfer,markup),
           featured:Boolean(row.featured)
         }];
       });
     }
-    return [...provider.values()].map(item=>({
-      tld:"."+item.tld,
-      register:effective(item.registration,DEFAULT_FIXED_MARKUP),
-      renew:effective(item.renew,DEFAULT_FIXED_MARKUP),
-      transfer:effective(item.transfer,DEFAULT_FIXED_MARKUP)
-    }));
+    return [...provider.values()].map(item=>{
+      const firstYear=effective(item.registration,DEFAULT_FIXED_MARKUP);
+      return {
+        tld:"."+item.tld,
+        register:firstYear,
+        firstYear,
+        promo:null,
+        renew:effective(item.renew,DEFAULT_FIXED_MARKUP),
+        transfer:effective(item.transfer,DEFAULT_FIXED_MARKUP)
+      };
+    });
   }
 
   if(process.env.DATABASE_URL){
     const {settings,rows}=await databasePricing();
     const markup=Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP);
-    return rows.filter(r=>Boolean(r.active)).map(row=>({
-      tld:"."+String(row.tld),
-      register:effective(Number(row.cost_register??row.register_price),markup),
-      renew:effective(Number(row.cost_renew??row.renew_price),markup),
-      transfer:effective(Number(row.cost_transfer??row.transfer_price),markup),
-      featured:Boolean(row.featured)
-    }));
+    return rows.filter(r=>Boolean(r.active)).map(row=>{
+      const firstYear=effective(Number(row.cost_register??row.register_price),markup);
+      const promo=promotional(row.override_register,firstYear);
+      return {
+        tld:"."+String(row.tld),
+        register:promo??firstYear,
+        firstYear,
+        promo,
+        renew:effective(Number(row.cost_renew??row.renew_price),markup),
+        transfer:effective(Number(row.cost_transfer??row.transfer_price),markup),
+        featured:Boolean(row.featured)
+      };
+    });
   }
 
-  return Object.entries(fallbackTable()).map(([tld,p])=>({
-    tld:"."+tld,
-    register:effective(p.register,DEFAULT_FIXED_MARKUP),
-    renew:effective(p.renew,DEFAULT_FIXED_MARKUP),
-    transfer:effective(p.transfer,DEFAULT_FIXED_MARKUP)
-  }));
+  return Object.entries(fallbackTable()).map(([tld,p])=>{
+    const firstYear=effective(p.register,DEFAULT_FIXED_MARKUP);
+    return {
+      tld:"."+tld,
+      register:firstYear,
+      firstYear,
+      promo:null,
+      renew:effective(p.renew,DEFAULT_FIXED_MARKUP),
+      transfer:effective(p.transfer,DEFAULT_FIXED_MARKUP)
+    };
+  });
 }
 
 export async function adminPricing(){
@@ -151,20 +178,27 @@ export async function adminPricing(){
   const markup=Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP);
   return {
     settings:{fixedMarkup:markup,currency:String(settings.currency||"USD")},
-    items:rows.map(row=>({
-      tld:String(row.tld),
-      active:Boolean(row.active),
-      featured:Boolean(row.featured),
-      cost:{
-        register:Number(row.cost_register??row.register_price),
-        renew:Number(row.cost_renew??row.renew_price),
-        transfer:Number(row.cost_transfer??row.transfer_price)
-      },
-      effective:{
-        register:effective(Number(row.cost_register??row.register_price),markup),
-        renew:effective(Number(row.cost_renew??row.renew_price),markup),
-        transfer:effective(Number(row.cost_transfer??row.transfer_price),markup)
-      }
-    }))
+    items:rows.map(row=>{
+      const firstYear=effective(Number(row.cost_register??row.register_price),markup);
+      const promo=promotional(row.override_register,firstYear);
+      return {
+        tld:String(row.tld),
+        active:Boolean(row.active),
+        featured:Boolean(row.featured),
+        promoRegister:row.override_register===null||row.override_register===undefined?null:Number(row.override_register),
+        cost:{
+          register:Number(row.cost_register??row.register_price),
+          renew:Number(row.cost_renew??row.renew_price),
+          transfer:Number(row.cost_transfer??row.transfer_price)
+        },
+        effective:{
+          register:promo??firstYear,
+          firstYear,
+          promo,
+          renew:effective(Number(row.cost_renew??row.renew_price),markup),
+          transfer:effective(Number(row.cost_transfer??row.transfer_price),markup)
+        }
+      };
+    })
   };
 }

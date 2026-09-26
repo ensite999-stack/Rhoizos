@@ -61,19 +61,29 @@ svg{display:block}
 
 /* Header */
 .siteHeader{
-  position:relative;
+  position:sticky;
+  top:0;
   z-index:50;
   background:#081522;
   color:#fff;
   border-bottom:1px solid rgba(255,255,255,.075);
+  transform:translateY(0);
+  transition:transform .22s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease;
+  will-change:transform;
 }
 .siteHeader.overlayHeader{
-  position:absolute;
+  position:fixed;
   top:0;
   left:0;
   width:100%;
   background:transparent;
   border-bottom-color:transparent;
+}
+.siteHeader.headerHidden{transform:translateY(-105%)}
+.siteHeader.headerScrolled{
+  background:#081522;
+  border-bottom-color:rgba(255,255,255,.075);
+  box-shadow:0 10px 28px rgba(0,0,0,.16);
 }
 .headerInner{
   width:min(calc(100% - 56px),1320px);
@@ -1381,17 +1391,69 @@ svg{display:block}
 .pricingNotice strong{display:block;margin-bottom:8px;font-size:15px}
 .pricingNotice p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
 .publicPriceTable{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.publicPriceRow{display:grid;grid-template-columns:1.1fr repeat(3,1fr);gap:18px;align-items:center;min-height:62px;padding:0 6px;border-bottom:1px solid var(--line)}
+.publicPriceRow{display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:18px;align-items:center;min-height:62px;padding:0 6px;border-bottom:1px solid var(--line)}
 .publicPriceRow:last-child{border-bottom:0}
 .publicPriceRow.header{min-height:44px;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
 .publicPriceRow strong{font-size:18px}
 .publicPriceRow span:not(:first-child){text-align:right}
 .pricingTerms{margin-top:52px}
 .adminPricingFormula{margin:0;color:var(--muted);font-size:12px;align-self:end}
-.adminPriceRow.fixed{grid-template-columns:90px repeat(3,110px) 70px 70px minmax(220px,1fr)}
+.adminPriceRow.fixed{grid-template-columns:90px repeat(4,105px) 70px 70px minmax(250px,1fr)}
 @media(max-width:720px){
   .legalSections section{grid-template-columns:1fr;gap:10px}
   .policyLinks{grid-template-columns:1fr}
-  .publicPriceRow{grid-template-columns:1fr repeat(3,.8fr);gap:8px;font-size:12px}
+  .publicPriceRow{grid-template-columns:1fr repeat(4,.8fr);gap:8px;font-size:12px}
   .publicPriceRow strong{font-size:15px}
+}
+
+
+/* Multi-price domain quotes */
+.domainPriceBreakdown{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(78px,auto));
+  gap:8px;
+  align-items:stretch;
+}
+.domainPriceBreakdown span{
+  min-width:78px;
+  display:grid;
+  gap:4px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--surface-raised);
+  text-align:right;
+}
+.domainPriceBreakdown small{
+  margin:0!important;
+  color:var(--muted);
+  font-size:9px!important;
+  font-weight:700!important;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.domainPriceBreakdown b{
+  color:var(--text);
+  font-size:15px;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+}
+.domainPriceBreakdown .promo{
+  border-color:rgba(112,41,99,.28);
+  background:rgba(112,41,99,.06);
+}
+.domainPriceBreakdown .promo b{color:var(--purple)}
+.summaryPrices span{padding:10px 12px}
+.summaryPrices b{font-size:18px}
+.promoCell{color:var(--purple);font-weight:750}
+
+@media(max-width:760px){
+  .domainSuggestion{grid-template-columns:1fr;gap:14px}
+  .domainSuggestionAction{justify-content:flex-start}
+  .domainPriceBreakdown{width:100%;grid-template-columns:repeat(3,1fr)}
+  .domainPriceBreakdown span{text-align:left;min-width:0}
+  .availabilityAction{width:100%;align-items:stretch}
+  .summaryPrices{width:100%}
+  .domainSummary{align-items:flex-start;flex-direction:column;gap:28px}
 }
