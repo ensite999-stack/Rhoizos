@@ -548,7 +548,12 @@ export async function namesiloMarketplaceSales():Promise<NameSiloMarketplaceSale
       status:String(row.status??"").trim(),
       reserve:marketplaceNumber(row.reserve),
       buyNow:marketplaceNumber(row.buy_now??row.buyNow),
-      saleType:String(row.sale_type??row.saleType??"").trim(),
+      saleType:(()=>{
+        const raw=String(row.sale_type??row.saleType??"").trim().toLowerCase().replace(/[\s-]+/g,"_");
+        if(raw==="auction")return "auction";
+        if(raw==="offer_counter_offer"||raw==="offer/counter_offer"||raw==="offer_counteroffer")return "offer_counter_offer";
+        return raw;
+      })(),
       paymentPlanOffered:flag(row.pay_plan_offered??row.payment_plan_offered),
       endDate:String(row.end_date??"").trim()||null,
       timeRemaining:String(row.time_remaining??"").trim()||null,
