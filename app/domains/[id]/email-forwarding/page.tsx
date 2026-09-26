@@ -2,6 +2,7 @@
 import {FormEvent,useEffect,useState} from "react";
 import {useParams} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 type Forward={email:string;forwardsTo:string[]};
 
@@ -44,6 +45,7 @@ export default function EmailForwarding(){
   }
 
   return <div className="page wide">
+    <BackLink fallbackHref="/domains"/>
     <p className="kicker">{t("emailForward.kicker")}</p>
     <h1 className="pageTitle">{t("emailForward.title")}</h1>
     <p className="pageIntro">{domain||t("common.loading")}</p>
