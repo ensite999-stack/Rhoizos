@@ -49,6 +49,7 @@ export default function Cart(){
       </div>
     </>:<>
       <p className="pageIntro">{t("cart.review")}</p>
+      <div className="warningCard"><strong>{t("payment.cryptoOnlyTitle")}</strong><p>{t("payment.cryptoOnlyCopy")}</p></div>
       <div className="cartList">
         {items.map(item=><div className="cartItem" key={item.domain}>
           <div>
