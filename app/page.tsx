@@ -2,7 +2,7 @@
 import {FormEvent,useEffect,useState} from "react";
 import {useI18n} from "@/components/I18nProvider";
 
-type Price={tld:string;register:number;renew:number;transfer:number;featured?:boolean};
+type Price={tld:string;register:number;firstYear:number;promo:number|null;renew:number;transfer:number;featured?:boolean};
 
 function SearchIcon(){
   return <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -67,7 +67,7 @@ export default function Home(){
 
           {!!featured.length&&<div className="searchPromos">
             {featured.slice(0,3).map((item,index)=><span key={item.tld}>
-              {index>0&&<i>·</i>}<b>{item.tld}</b> {"$"+item.register.toFixed(2)}
+              {index>0&&<i>·</i>}<b>{item.tld}</b> {"$"+(item.promo??item.firstYear).toFixed(2)}
             </span>)}
           </div>}
         </div>
@@ -83,9 +83,11 @@ export default function Home(){
 
         <div className="offerGrid">
           {featured.map(item=><div className="offerItem" key={item.tld}>
-            <div className="offerTop"><strong>{item.tld}</strong><span>{"$"+item.register.toFixed(2)}</span></div>
+            <div className="offerTop"><strong>{item.tld}</strong><span>{"$"+(item.promo??item.firstYear).toFixed(2)}</span></div>
             <p>{t("home.registrationYear")}</p>
             <div className="offerDetails">
+              <span>{t("detail.firstYearPrice")} <b>{"$"+item.firstYear.toFixed(2)}</b></span>
+              <span>{t("detail.promoPrice")} <b>{item.promo!==null?"$"+item.promo.toFixed(2):"—"}</b></span>
               <span>{t("home.renew")} <b>{"$"+item.renew.toFixed(2)}</b></span>
               <span>{t("home.transfer")} <b>{"$"+item.transfer.toFixed(2)}</b></span>
             </div>
