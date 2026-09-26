@@ -1,6 +1,6 @@
 import {db} from "./db";
 import {tldOf} from "./domain";
-import {namesiloPrices,namesiloStandardCost} from "./namesilo";
+import {namesiloPrices,namesiloRetailPrices,namesiloStandardCost} from "./namesilo";
 
 export type PriceKind="register"|"renew"|"transfer";
 export type PublicPrice={
@@ -35,6 +35,10 @@ function effective(cost:number,fixedMarkup:number){
 function promotional(value:unknown,firstYear:number){
   const n=Number(value);
   return Number.isFinite(n)&&n>0&&n<firstYear?money(n):null;
+}
+function lowestPromo(firstYear:number,...values:(number|null|undefined)[]){
+  const promos=values.filter((value):value is number=>typeof value==="number"&&Number.isFinite(value)&&value>0&&value<firstYear);
+  return promos.length?money(Math.min(...promos)):null;
 }
 
 async function databasePricing(){
@@ -108,17 +112,20 @@ export async function retailFromCosts(costs:number[],_kind:PriceKind){
 
 export async function publicPrices():Promise<PublicPrice[]>{
   if(process.env.NAMESILO_API_KEY){
-    const provider=await namesiloPrices();
+    const [provider,retailProvider]=await Promise.all([namesiloPrices(),namesiloRetailPrices()]);
     if(process.env.DATABASE_URL){
       const {settings,rows}=await databasePricing();
       const markup=Number(settings.fixed_markup_usd||DEFAULT_FIXED_MARKUP);
       return rows.filter(r=>Boolean(r.active)).flatMap(row=>{
-        const item=provider.get(String(row.tld));
+        const tld=String(row.tld);
+        const item=provider.get(tld);
         if(!item)return [];
-        const firstYear=effective(item.registration,markup);
-        const promo=promotional(row.override_register,firstYear);
+        const retail=retailProvider.get(tld);
+        const firstYear=effective(retail?.registration??item.registration,markup);
+        const liveDiscount=effective(item.registration,markup);
+        const promo=lowestPromo(firstYear,promotional(row.override_register,firstYear),liveDiscount);
         return [{
-          tld:"."+String(row.tld),
+          tld:"."+tld,
           register:promo??firstYear,
           firstYear,
           promo,
@@ -129,12 +136,15 @@ export async function publicPrices():Promise<PublicPrice[]>{
       });
     }
     return [...provider.values()].map(item=>{
-      const firstYear=effective(item.registration,DEFAULT_FIXED_MARKUP);
+      const retail=retailProvider.get(item.tld);
+      const firstYear=effective(retail?.registration??item.registration,DEFAULT_FIXED_MARKUP);
+      const liveDiscount=effective(item.registration,DEFAULT_FIXED_MARKUP);
+      const promo=lowestPromo(firstYear,liveDiscount);
       return {
         tld:"."+item.tld,
-        register:firstYear,
+        register:promo??firstYear,
         firstYear,
-        promo:null,
+        promo,
         renew:effective(item.renew,DEFAULT_FIXED_MARKUP),
         transfer:effective(item.transfer,DEFAULT_FIXED_MARKUP)
       };

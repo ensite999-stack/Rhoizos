@@ -15,6 +15,9 @@
   --danger:#b74646;
   --success:#397548;
   --shadow:0 18px 52px rgba(15,23,42,.10);
+  --menu-bg:#f7f9fc;
+  --menu-hover:#edf2f7;
+  --menu-shadow:0 22px 60px rgba(7,20,38,.18);
 }
 html[data-theme="dark"]{
   --bg:#0b1119;
@@ -28,7 +31,10 @@ html[data-theme="dark"]{
   --line-strong:#39485b;
   --danger:#f08b8b;
   --success:#87c495;
-  --shadow:0 18px 52px rgba(0,0,0,.28);
+  --shadow:0 18px 52px rgba(7,20,38,.34);
+  --menu-bg:#172432;
+  --menu-hover:#203142;
+  --menu-shadow:0 22px 60px rgba(7,20,38,.48);
 }
 *{box-sizing:border-box}
 html{
@@ -64,7 +70,7 @@ svg{display:block}
   position:sticky;
   top:0;
   z-index:50;
-  background:#081522;
+  background:#0b1a2a;
   color:#fff;
   border-bottom:1px solid rgba(255,255,255,.075);
   transform:translateY(0);
@@ -81,7 +87,7 @@ svg{display:block}
 }
 .siteHeader.headerHidden{transform:translateY(-105%)}
 .siteHeader.headerScrolled{
-  background:#081522;
+  background:#0b1a2a;
   border-bottom-color:rgba(255,255,255,.075);
   box-shadow:0 10px 28px rgba(0,0,0,.16);
 }
@@ -113,8 +119,23 @@ svg{display:block}
   font-size:14px;
   font-weight:560;
 }
-.mainNav a,.accountNav a{transition:color .15s ease,opacity .15s ease,transform .15s ease}
-.mainNav a:hover,.accountNav a:hover{color:#fff}
+.mainNav a,.accountNav a{transition:color .15s ease,background .15s ease,opacity .15s ease,transform .15s ease}
+.mainNav a{
+  min-height:38px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 10px;
+  border-radius:7px;
+}
+.mainNav a:hover,.mainNav a.active{background:rgba(255,255,255,.08);color:#fff}
+.accountNav>a.desktopUtility{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 9px;
+  border-radius:7px;
+}
+.accountNav>a.desktopUtility:hover,.accountNav>a.desktopUtility.active{background:rgba(255,255,255,.08);color:#fff}
 .accountNav{
   justify-self:end;
   display:flex;
@@ -144,7 +165,7 @@ svg{display:block}
   padding:0 4px;
   display:grid;
   place-items:center;
-  border:2px solid #081522;
+  border:2px solid #0b1a2a;
   border-radius:999px;
   background:var(--purple);
   color:#fff;
@@ -159,19 +180,21 @@ svg{display:block}
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:4px;
-  width:42px;
+  min-width:54px;
   min-height:38px;
-  padding:0 6px;
+  padding:0 9px;
   border:0;
   border-radius:8px;
   background:transparent;
   color:inherit;
-  font-size:12px;
-  font-weight:650;
+  font-size:11px;
+  font-weight:760;
+  letter-spacing:.025em;
+  white-space:nowrap;
+  transition:background .15s ease,color .15s ease,transform .15s ease;
 }
 .localeMenu.header .localeTrigger{color:#d5dce6}
-.localeMenu.header .localeTrigger:hover{background:rgba(255,255,255,.07);color:#fff}
+.localeMenu.header .localeTrigger:hover,.localeMenu.header .localeTrigger.open{background:rgba(255,255,255,.10);color:#fff}
 .localeMenu.footer .localeTrigger{
   min-height:42px;
   padding:0 12px;
@@ -192,9 +215,11 @@ svg{display:block}
   padding:8px;
   border:1px solid var(--line);
   border-radius:12px;
-  background:var(--surface-raised);
-  box-shadow:0 22px 60px rgba(0,0,0,.22);
+  background:var(--menu-bg);
+  box-shadow:var(--menu-shadow);
   color:var(--text);
+  animation:menuIn .14s ease-out;
+  transform-origin:top right;
 }
 .localeMenu.footer .localePopover{
   top:auto;
@@ -217,7 +242,7 @@ svg{display:block}
   text-align:left;
   font-size:13px;
 }
-.localePopover button:hover{background:var(--surface-soft)}
+.localePopover button:hover,.localePopover button[aria-checked="true"]{background:var(--menu-hover)}
 .localeCode{color:var(--muted);font-size:10px;font-weight:700}
 .localeCheck{color:var(--purple);font-size:14px;font-weight:800}
 
@@ -893,8 +918,12 @@ svg{display:block}
 @media(max-width:900px){
   .headerInner{grid-template-columns:1fr auto}
   .mainNav{display:none}
-  .desktopUtility{display:none}
+  .desktopUtility{display:none!important}
   .localePopover{width:280px}
+  .mobileMenuNav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .mobileMenuNav a{min-height:42px;display:flex;align-items:center;padding:0 11px;border-radius:8px;color:var(--text-soft);font-size:13px;font-weight:680}
+  .mobileMenuNav a:hover{background:var(--menu-hover);color:var(--text)}
+  .mobileMenuDivider{display:block}
   .whyEditorial{grid-template-columns:1fr;gap:45px}
   .offerGrid{grid-template-columns:1fr 1fr}
   .offerItem:nth-child(2){border-right:0}
@@ -1260,6 +1289,7 @@ svg{display:block}
   font-size:13px;
   font-weight:650;
   white-space:nowrap;
+  transition:background .15s ease,transform .15s ease;
 }
 .accountMenuTrigger svg{width:14px;height:14px;opacity:.65}
 .accountPopover{
@@ -1267,13 +1297,17 @@ svg{display:block}
   top:calc(100% + 12px);
   right:0;
   z-index:90;
-  width:285px;
+  width:310px;
+  max-height:min(680px,calc(100vh - 110px));
+  overflow:auto;
   padding:8px;
   border:1px solid var(--line);
   border-radius:12px;
-  background:var(--surface-raised);
-  box-shadow:0 24px 70px rgba(0,0,0,.24);
+  background:var(--menu-bg);
+  box-shadow:var(--menu-shadow);
   color:var(--text);
+  animation:menuIn .14s ease-out;
+  transform-origin:top right;
 }
 .accountPopover>a{
   display:grid;
@@ -1281,7 +1315,7 @@ svg{display:block}
   padding:11px 12px;
   border-radius:8px;
 }
-.accountPopover>a:hover{background:var(--surface-soft)}
+.accountPopover>a:hover{background:var(--menu-hover)}
 .accountPopover>a strong{font-size:13px}
 .accountPopover>a span{color:var(--muted);font-size:10px;line-height:1.45}
 .accountPopoverDivider{height:1px;margin:6px 4px;background:var(--line)}
@@ -1297,8 +1331,14 @@ svg{display:block}
   font-size:13px;
   font-weight:650;
 }
-.accountLogout:hover{background:var(--surface-soft)}
+.accountLogout:hover{background:var(--menu-hover)}
 
+@keyframes menuIn{
+  from{opacity:0;transform:translateY(-6px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.mobileMenuNav{display:none}
+.mobileMenuDivider{display:none;height:1px;margin:7px 4px;background:var(--line)}
 .accountList{margin-top:38px;border-top:1px solid var(--line)}
 .accountListRow{
   min-height:86px;
@@ -1323,9 +1363,7 @@ svg{display:block}
 @media(max-width:640px){
   .accountMenuTrigger{font-size:11px}
   .accountPopover{position:fixed;top:98px;right:12px;width:min(300px,calc(100vw - 24px))}
-  .localeMenu.header .localeTrigger{width:36px;min-height:30px;padding:0 3px}
-  .localeMenu.header .localeGlobe{display:grid}
-  .localeGlobe svg{width:17px;height:17px}
+  .localeMenu.header .localeTrigger{width:auto;min-width:48px;min-height:30px;padding:0 7px}
   .filterPopover{position:fixed;left:12px;right:12px;top:112px;width:auto;max-height:calc(100vh - 130px);overflow:auto}
   .filterTldList{grid-template-columns:repeat(2,minmax(0,1fr));max-height:300px}
   .domainFilterBar{align-items:flex-start;flex-direction:column}
@@ -1338,14 +1376,13 @@ svg{display:block}
 
 /* Compact top-bar controls */
 .localeTrigger{
-  width:32px;
+  min-width:54px;
+  width:auto;
   min-height:36px;
-  padding:0;
+  padding:0 9px;
   border-radius:6px;
 }
-.localeTriangle{display:grid;place-items:center}
-.localeTriangle svg{width:15px;height:11px}
-.localeGlobe,.localeChevron{display:none!important}
+.localeCurrent{display:block}
 .accountMenuTrigger{
   width:36px;
   height:36px;
@@ -1354,7 +1391,7 @@ svg{display:block}
   padding:0;
   border-radius:6px;
 }
-.accountMenuTrigger:hover{background:rgba(255,255,255,.07)}
+.accountMenuTrigger:hover,.accountMenuTrigger.open{background:rgba(255,255,255,.10);transform:translateY(-1px)}
 .accountMenuTrigger svg{width:20px;height:17px;opacity:.92}
 @media(max-width:640px){
   .headerInner{
@@ -1370,7 +1407,7 @@ svg{display:block}
   }
   .accountNav>.localeMenu{justify-self:auto}
   .accountMenu{grid-area:auto}
-  .localeMenu.header .localeTrigger{width:30px;min-height:34px;padding:0}
+  .localeMenu.header .localeTrigger{width:auto;min-width:46px;min-height:34px;padding:0 7px}
   .accountMenuTrigger{width:34px;height:34px;min-height:34px}
   .localePopover,.accountPopover{top:72px}
   .homeHero{padding-top:110px}
@@ -1560,7 +1597,7 @@ svg{display:block}
 .homeServicesSection{padding-top:86px;padding-bottom:96px}
 .homeServiceGrid{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:14px;
   margin-top:42px;
 }
@@ -1726,3 +1763,6 @@ svg{display:block}
   .marketListingSummary{grid-template-columns:1fr}
   .marketDealHeading{align-items:flex-start;flex-direction:column}
 }
+
+html[data-theme="dark"] .localePopover,
+html[data-theme="dark"] .accountPopover{background:#172432;border-color:#314255}

@@ -71,6 +71,7 @@ export type NameSiloMarketplaceSale={
 export type NameSiloDnsRecord=DnsRecord&{recordId:string};
 
 let priceCache:{expires:number;items:Map<string,NameSiloTldPrice>}|null=null;
+let retailPriceCache:{expires:number;items:Map<string,NameSiloTldPrice>}|null=null;
 
 function asArray<T>(value:T|T[]|null|undefined):T[]{
   if(value===null||value===undefined)return [];
@@ -192,10 +193,15 @@ export async function namesiloAvailability(inputs:string[]):Promise<NameSiloAvai
   return domains.map(domain=>map.get(domain)!);
 }
 
-export async function namesiloPrices(force=false):Promise<Map<string,NameSiloTldPrice>>{
-  if(!force&&priceCache&&priceCache.expires>Date.now())return priceCache.items;
+async function loadNameSiloPrices(retail:boolean,force=false):Promise<Map<string,NameSiloTldPrice>>{
+  const cached=retail?retailPriceCache:priceCache;
+  if(!force&&cached&&cached.expires>Date.now())return cached.items;
 
-  const payload=await namesiloGet<{reply?:ReplyBase&Record<string,unknown>}>(BATCH_BASE,"getPrices");
+  const payload=await namesiloGet<{reply?:ReplyBase&Record<string,unknown>}>(
+    BATCH_BASE,
+    "getPrices",
+    retail?{retail_prices:1}:{}
+  );
   const reply=payload.reply||{};
   successful(reply,"getPrices");
 
@@ -208,8 +214,17 @@ export async function namesiloPrices(force=false):Promise<Map<string,NameSiloTld
     const tld=rawTld.replace(/^\./,"").toLowerCase();
     items.set(tld,{tld,registration,renew,transfer});
   }
-  priceCache={expires:Date.now()+PRICE_CACHE_MS,items};
+  const next={expires:Date.now()+PRICE_CACHE_MS,items};
+  if(retail)retailPriceCache=next;else priceCache=next;
   return items;
+}
+
+export async function namesiloPrices(force=false){
+  return loadNameSiloPrices(false,force);
+}
+
+export async function namesiloRetailPrices(force=false){
+  return loadNameSiloPrices(true,force);
 }
 
 export async function namesiloStandardCost(domain:string,kind:"register"|"renew"|"transfer"){

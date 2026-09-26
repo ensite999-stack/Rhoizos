@@ -43,6 +43,12 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
+  function active(path:string){
+    if(path==="/")return pathname==="/";
+    if(path.includes("#"))return false;
+    return pathname===path||pathname.startsWith(path+"/");
+  }
+
   return <>
     <header className={[
       "siteHeader",
@@ -55,18 +61,17 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <img src="/assets/rhoizos-mark.svg" alt="Rhoizos"/>
         </a>
         <nav className="mainNav" aria-label="Primary">
-          <Link href="/">{t("nav.domain")}</Link>
-          <Link href="/pricing">{t("nav.pricing")}</Link>
-          <Link href="/transfer">{t("nav.transfer")}</Link>
-          <Link href="/marketplace">{t("nav.marketplace")}</Link>
-          <Link href="/dropcatch">{t("nav.dropcatch")}</Link>
+          <Link className={active("/")?"active":""} href="/">{t("nav.domain")}</Link>
+          <Link className={active("/pricing")?"active":""} href="/pricing">{t("nav.pricing")}</Link>
+          <Link className={active("/transfer")?"active":""} href="/transfer">{t("nav.transfer")}</Link>
+          <Link className={active("/dropcatch")?"active":""} href="/dropcatch">{t("nav.dropcatch")}</Link>
           <Link href="/#learn">{t("nav.learn")}</Link>
-          <Link href="/rdap">{t("nav.rdap")}</Link>
+          <Link className={active("/rdap")?"active":""} href="/rdap">{t("nav.rdap")}</Link>
         </nav>
         <nav className="accountNav" aria-label="Account">
-          <Link href="/support" className="desktopUtility">{t("nav.support")}</Link>
+          <Link href="/support" className={"desktopUtility "+(active("/support")?"active":"")}>{t("nav.support")}</Link>
           <LocaleMenu/>
-          <Link href="/login" className="desktopUtility">{t("nav.login")}</Link>
+          <Link href="/login" className={"desktopUtility "+(active("/login")?"active":"")}>{t("nav.login")}</Link>
           <CartLink/>
           <AccountMenu/>
         </nav>
@@ -81,7 +86,6 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
         <nav className="footerNav" aria-label="Footer">
           <Link href="/">{t("footer.search")}</Link>
           <Link href="/transfer">{t("footer.transfer")}</Link>
-          <Link href="/marketplace">{t("footer.marketplace")}</Link>
           <Link href="/dropcatch">{t("footer.dropcatch")}</Link>
           <Link href="/rdap">{t("footer.rdap")}</Link>
           <Link href="/domains">{t("footer.domains")}</Link>
@@ -90,7 +94,6 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <Link href="/privacy">{t("footer.privacy")}</Link>
           <Link href="/terms">{t("footer.terms")}</Link>
           <Link href="/support">{t("footer.support")}</Link>
-          <a href="mailto:hello@rhoizos.com">hello@rhoizos.com</a>
         </nav>
         <div className="footerPreferences">
           <ThemeToggle initialTheme={theme}/>

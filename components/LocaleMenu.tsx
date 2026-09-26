@@ -3,12 +3,6 @@ import {useEffect,useRef,useState} from "react";
 import {localeOptions,type Locale} from "@/lib/i18n";
 import {useI18n} from "./I18nProvider";
 
-function OpenTriangle(){
-  return <svg viewBox="0 0 16 12" aria-hidden="true">
-    <path d="M2.5 3.25 8 8.75l5.5-5.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>;
-}
-
 export default function LocaleMenu({variant="header"}:{variant?:"header"|"footer"}){
   const {locale,t}=useI18n();
   const [open,setOpen]=useState(false);
@@ -34,14 +28,14 @@ export default function LocaleMenu({variant="header"}:{variant?:"header"|"footer
 
   return <div className={"localeMenu "+variant} ref={ref}>
     <button
-      className="localeTrigger"
+      className={"localeTrigger"+(open?" open":"")}
       type="button"
       onClick={()=>setOpen(value=>!value)}
       aria-expanded={open}
       aria-label={t("locale.change")+" — "+current.label}
       title={current.label}
     >
-      <span className="localeTriangle"><OpenTriangle/></span>
+      <span className="localeCurrent">{current.short}</span>
     </button>
     {open&&<div className="localePopover" role="menu">
       <div className="localeMenuTitle">{t("locale.change")}</div>

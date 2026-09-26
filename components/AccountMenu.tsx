@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {usePathname} from "next/navigation";
 import {useEffect,useRef,useState} from "react";
 import {useI18n} from "./I18nProvider";
 
@@ -11,6 +12,7 @@ function MenuIcon(){
 
 export default function AccountMenu(){
   const {t}=useI18n();
+  const pathname=usePathname();
   const [open,setOpen]=useState(false);
   const ref=useRef<HTMLDivElement>(null);
 
@@ -22,6 +24,8 @@ export default function AccountMenu(){
     return ()=>{document.removeEventListener("pointerdown",outside);document.removeEventListener("keydown",escape);};
   },[]);
 
+  useEffect(()=>{setOpen(false);},[pathname]);
+
   async function logout(){
     await fetch("/api/auth/logout",{method:"POST"}).catch(()=>{});
     location.href="/";
@@ -29,7 +33,7 @@ export default function AccountMenu(){
 
   return <div className="accountMenu" ref={ref}>
     <button
-      className="accountMenuTrigger"
+      className={"accountMenuTrigger"+(open?" open":"")}
       type="button"
       onClick={()=>setOpen(v=>!v)}
       aria-expanded={open}
@@ -39,6 +43,17 @@ export default function AccountMenu(){
       <MenuIcon/>
     </button>
     {open&&<div className="accountPopover">
+      <nav className="mobileMenuNav" aria-label="Mobile">
+        <Link href="/" onClick={()=>setOpen(false)}>{t("nav.domain")}</Link>
+        <Link href="/pricing" onClick={()=>setOpen(false)}>{t("nav.pricing")}</Link>
+        <Link href="/transfer" onClick={()=>setOpen(false)}>{t("nav.transfer")}</Link>
+        <Link href="/dropcatch" onClick={()=>setOpen(false)}>{t("nav.dropcatch")}</Link>
+        <Link href="/#learn" onClick={()=>setOpen(false)}>{t("nav.learn")}</Link>
+        <Link href="/rdap" onClick={()=>setOpen(false)}>{t("nav.rdap")}</Link>
+        <Link href="/support" onClick={()=>setOpen(false)}>{t("nav.support")}</Link>
+        <Link href="/login" onClick={()=>setOpen(false)}>{t("nav.login")}</Link>
+      </nav>
+      <div className="mobileMenuDivider"/>
       <Link href="/domains" onClick={()=>setOpen(false)}><strong>{t("accountMenu.domains")}</strong><span>{t("accountMenu.domainsHint")}</span></Link>
       <Link href="/account/activity" onClick={()=>setOpen(false)}><strong>{t("accountMenu.activity")}</strong><span>{t("accountMenu.activityHint")}</span></Link>
       <Link href="/account/orders" onClick={()=>setOpen(false)}><strong>{t("accountMenu.orders")}</strong><span>{t("accountMenu.ordersHint")}</span></Link>

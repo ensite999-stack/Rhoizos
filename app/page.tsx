@@ -109,16 +109,6 @@ export default function Home(){
         </div>
 
         <div className="homeServiceGrid">
-          <Link className="homeServiceCard" href="/marketplace">
-            <div className="homeServiceMeta">
-              <span>{t("home.marketplaceEyebrow")}</span>
-              <b>{t("home.freeBadge")}</b>
-            </div>
-            <h3>{t("home.marketplaceTitle")}</h3>
-            <p>{t("home.marketplaceCopy")}</p>
-            <strong>{t("home.marketplaceAction")}</strong>
-          </Link>
-
           <Link className="homeServiceCard" href="/dropcatch">
             <div className="homeServiceMeta">
               <span>{t("home.dropcatchEyebrow")}</span>
