@@ -7,9 +7,9 @@ export const runtime="nodejs";
 export async function POST(request:Request,{params}:{params:Promise<{id:string}>}){
   try{
     const user=await requireUser(),{id}=await params;
-    const body=await request.json() as {offerAmount?:number|null;message?:string};
+    const body=await request.json() as {offerAmount?:number|string|null;message?:string};
     const raw=body.offerAmount;
-    const offerAmount=raw===null||raw===undefined||raw==="" as never?null:Number(raw);
+    const offerAmount=raw===null||raw===undefined||raw===""?null:Number(raw);
     const deal=await createMarketplaceOffer({
       listingId:id,
       buyerUserId:user.id,
