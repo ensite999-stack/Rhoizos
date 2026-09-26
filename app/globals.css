@@ -1428,7 +1428,7 @@ svg{display:block}
 .pricingNotice strong{display:block;margin-bottom:8px;font-size:15px}
 .pricingNotice p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
 .publicPriceTable{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.publicPriceRow{display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:18px;align-items:center;min-height:62px;padding:0 6px;border-bottom:1px solid var(--line)}
+.publicPriceRow{display:grid;grid-template-columns:1.1fr repeat(3,1fr);gap:18px;align-items:center;min-height:62px;padding:0 6px;border-bottom:1px solid var(--line)}
 .publicPriceRow:last-child{border-bottom:0}
 .publicPriceRow.header{min-height:44px;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
 .publicPriceRow strong{font-size:18px}
@@ -1439,7 +1439,7 @@ svg{display:block}
 @media(max-width:720px){
   .legalSections section{grid-template-columns:1fr;gap:10px}
   .policyLinks{grid-template-columns:1fr}
-  .publicPriceRow{grid-template-columns:1fr repeat(4,.8fr);gap:8px;font-size:12px}
+  .publicPriceRow{grid-template-columns:1fr repeat(3,.9fr);gap:8px;font-size:12px}
   .publicPriceRow strong{font-size:15px}
 }
 
@@ -1447,7 +1447,7 @@ svg{display:block}
 /* Multi-price domain quotes */
 .domainPriceBreakdown{
   display:grid;
-  grid-template-columns:repeat(3,minmax(78px,auto));
+  grid-template-columns:repeat(2,minmax(92px,auto));
   gap:8px;
   align-items:stretch;
 }
@@ -1766,3 +1766,66 @@ svg{display:block}
 
 html[data-theme="dark"] .localePopover,
 html[data-theme="dark"] .accountPopover{background:#172432;border-color:#314255}
+
+/* Public service detail and auth gates */
+.backHomeLink{
+  display:inline-flex;
+  margin-bottom:34px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:720;
+}
+.backHomeLink:hover{color:var(--purple)}
+.serviceLanding .pageIntro{max-width:760px}
+.serviceSteps{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-top:42px;
+}
+.serviceSteps article{
+  min-height:210px;
+  padding:24px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-raised);
+}
+.serviceSteps article>span{
+  display:inline-flex;
+  margin-bottom:28px;
+  color:var(--purple);
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.08em;
+}
+.serviceSteps h2{margin:0;font-size:21px;letter-spacing:-.025em}
+.serviceSteps p{margin:12px 0 0;color:var(--muted);font-size:13px;line-height:1.7}
+.serviceGate{
+  margin-top:30px;
+  padding:26px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-soft);
+}
+.serviceGate strong{display:block;font-size:20px}
+.serviceGate p{max-width:660px;margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.7}
+.serviceCta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.serviceDetailLead{
+  margin-top:42px;
+  padding:26px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface-soft);
+}
+.serviceDetailLead h2{margin:0;font-size:22px}
+.serviceDetailLead p{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.72}
+.localeCurrent{display:block;white-space:nowrap}
+.localeTrigger{min-width:0;width:auto;padding-left:10px;padding-right:10px}
+@media(max-width:900px){
+  .localeMenu.header .localeTrigger{font-size:10px;padding-left:8px;padding-right:8px}
+}
+@media(max-width:640px){
+  .serviceSteps{grid-template-columns:1fr}
+  .serviceSteps article{min-height:0}
+  .localeMenu.header .localeTrigger{font-size:9px;max-width:none;padding-left:6px;padding-right:6px}
+}
