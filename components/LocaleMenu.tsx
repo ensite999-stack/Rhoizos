@@ -35,7 +35,7 @@ export default function LocaleMenu({variant="header"}:{variant?:"header"|"footer
       aria-label={t("locale.change")+" — "+current.label}
       title={current.label}
     >
-      <span className="localeCurrent">{current.short}</span>
+      <span className="localeCurrent">{current.label}</span>
     </button>
     {open&&<div className="localePopover" role="menu">
       <div className="localeMenuTitle">{t("locale.change")}</div>
