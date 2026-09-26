@@ -11,7 +11,7 @@ export default async function AdminSettings(){
   `;
   const env=[
     ["Database",Boolean(process.env.DATABASE_URL)],
-    ["NameSilo",Boolean(process.env.NAMESILO_API_KEY&&process.env.NAMESILO_PAYMENT_ID)],
+    ["NameSilo",Boolean(process.env.NAMESILO_API_KEY)],
     ["NOWPayments",Boolean(process.env.NOWPAYMENTS_API_KEY&&process.env.NOWPAYMENTS_IPN_SECRET)],
     ["Live payments",process.env.RHOIZOS_LIVE_PAYMENTS==="1"],
     ["Live registration",process.env.RHOIZOS_LIVE_REGISTRATION==="1"]
