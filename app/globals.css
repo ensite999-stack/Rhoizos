@@ -338,6 +338,14 @@ svg{display:block}
 .searchButton:hover{background:var(--purple-hover);transform:translateY(-1px)}
 .searchButton svg{width:28px;height:28px}
 .searchPromos{
+
+.cryptoOnlyNote{
+  margin-top:12px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.09em;
+}
   display:flex;
   justify-content:center;
   gap:12px;
@@ -1776,6 +1784,14 @@ html[data-theme="dark"] .accountPopover{background:#172432;border-color:#314255}
   font-weight:720;
 }
 .backHomeLink:hover{color:var(--purple)}
+.backNavigationLink{
+  border:0;
+  padding:0;
+  background:none;
+  font:inherit;
+  cursor:pointer;
+  text-align:left;
+}
 .serviceLanding .pageIntro{max-width:760px}
 .serviceSteps{
   display:grid;
