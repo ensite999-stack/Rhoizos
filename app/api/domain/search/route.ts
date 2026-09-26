@@ -120,7 +120,9 @@ export async function GET(request:NextRequest){
           const configured=priceMap.get(tlds[index]);
           const firstYear=firstYearMap.get(index)??configured?.firstYear??null;
           const promo=!premium&&configured?.promo&&firstYear&&configured.promo<firstYear?configured.promo:null;
-          const renew=renewMap.get(index)??configured?.renew??null;
+          const renew=premium
+            ?renewMap.get(index)??null
+            :renewMap.get(index)??configured?.renew??null;
           const price=promo??firstYear;
           return {
             domain,
@@ -158,7 +160,9 @@ export async function GET(request:NextRequest){
     const registerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
     const renewCost=result.quotedRenew??(result.premium?null:standard?.renew??null);
     const firstYear=registerCost?await retailFromCost(registerCost,"register"):configured?.firstYear??null;
-    const renew=renewCost?await retailFromCost(renewCost,"renew"):configured?.renew??null;
+    const renew=renewCost
+      ?await retailFromCost(renewCost,"renew")
+      :result.premium?null:configured?.renew??null;
     const promo=!result.premium&&configured?.promo&&firstYear&&configured.promo<firstYear?configured.promo:null;
     const price=promo??firstYear;
 
