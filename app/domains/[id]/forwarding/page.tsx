@@ -2,6 +2,7 @@
 import {FormEvent,useEffect,useState} from "react";
 import {useParams} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 type State={domain:string;forwarding:{enabled:boolean;url:string|null;type:string|null}};
 
@@ -46,6 +47,7 @@ export default function Forwarding(){
   }
 
   return <div className="page">
+    <BackLink fallbackHref="/domains"/>
     <p className="kicker">{t("forwarding.kicker")}</p>
     <h1 className="pageTitle">{t("forwarding.title")}</h1>
     <p className="pageIntro">{data?.domain||t("common.loading")}</p>
