@@ -33,7 +33,7 @@ export async function createRegisterOrder(userId:string,input:string){
   if(!a.available) throw new Error("Domain is not available.");
   const cost=a.quotedPrice??(a.premium?null:await namesiloStandardCost(domain,"register"));
   if(!cost) throw new Error("Premium pricing is unavailable for this domain. Contact support.");
-  const amount=a.premium?await retailFromCost(cost,"register"):await retailPrice(domain,"register");
+  const amount=await retailFromCost(cost,"register");
   return insertOrder(userId,"register",domain,amount,{
     years:1,providerCostAtQuote:cost,contact:await contactSnapshot(userId)
   });
