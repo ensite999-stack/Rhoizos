@@ -174,3 +174,30 @@ alter table admin_users enable row level security;
 alter table admin_sessions enable row level security;
 alter table admin_audit_log enable row level security;
 alter table pricing_settings enable row level security;
+
+
+create table if not exists dropcatch_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references users(id) on delete cascade,
+  domain text not null,
+  years integer not null default 1 check (years between 1 and 10),
+  private boolean not null default true,
+  auto_renew boolean not null default false,
+  status text not null default 'pending'
+    check (status in ('pending','processing','caught','awaiting_payment','completed','failed','cancelled')),
+  last_error text,
+  provider_order_amount numeric(12,2),
+  attempts integer not null default 0,
+  last_attempt_at timestamptz,
+  caught_at timestamptz,
+  order_id uuid references orders(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(user_id,domain)
+);
+create index if not exists dropcatch_status_idx on dropcatch_requests(status,updated_at);
+create index if not exists dropcatch_user_idx on dropcatch_requests(user_id,created_at desc);
+
+alter table orders drop constraint if exists orders_kind_check;
+alter table orders add constraint orders_kind_check
+  check (kind in ('register','transfer','renew','dropcatch'));

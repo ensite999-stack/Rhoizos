@@ -44,6 +44,28 @@ export type NameSiloDomainDetails={
   eppStatuses:string[];
   nameservers:{hosts:string[]};
   privacyProtection:{level:"high"|"public"}|null;
+  forwarding:{
+    enabled:boolean;
+    url:string|null;
+    type:string|null;
+  };
+};
+
+export type NameSiloEmailForward={
+  email:string;
+  forwardsTo:string[];
+};
+
+export type NameSiloMarketplaceSale={
+  domain:string;
+  status:string;
+  reserve:number|null;
+  buyNow:number|null;
+  saleType:string;
+  paymentPlanOffered:boolean;
+  endDate:string|null;
+  timeRemaining:string|null;
+  private:boolean;
 };
 
 export type NameSiloDnsRecord=DnsRecord&{recordId:string};
@@ -304,13 +326,20 @@ export async function namesiloDomainDetails(input:string):Promise<NameSiloDomain
   const rawStatus=String(reply.status||"active").trim().toLowerCase();
   const lifecycleStatus=rawStatus==="active"?"registered":rawStatus.replace(/\s+/g,"_");
 
+  const forwardUrl=String(reply.forward_url??reply.forwardUrl??"").trim()||null;
+  const trafficType=String(reply.traffic_type??reply.trafficType??"").trim().toLowerCase();
   return {
     expirationDate:String(reply.expires??reply.expiration_date??reply.expirationDate??"")||null,
     registrationDate:String(reply.created??reply.registration_date??reply.registrationDate??"")||null,
     lifecycleStatus,
     eppStatuses:locked?["clientTransferProhibited"]:[],
     nameservers:{hosts},
-    privacyProtection:{level:isPrivate?"high":"public"}
+    privacyProtection:{level:isPrivate?"high":"public"},
+    forwarding:{
+      enabled:Boolean(forwardUrl)||trafficType==="forwarded",
+      url:forwardUrl,
+      type:String(reply.forward_type??reply.forwardType??"").trim()||null
+    }
   };
 }
 
@@ -400,4 +429,206 @@ export async function namesiloChangeNameServers(input:string,hosts:string[]){
   const params:Record<string,string>={domain};
   normalized.forEach((host,index)=>{params["ns"+(index+1)]=host;});
   await command("changeNameServers",params);
+}
+
+
+function validEmail(value:string){
+  const email=value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254){
+    throw new Error("Enter a valid forwarding destination.");
+  }
+  return email;
+}
+
+export async function namesiloListEmailForwards(input:string):Promise<NameSiloEmailForward[]>{
+  const domain=normalizeDomain(input);
+  const reply=await command("listEmailForwards",{domain});
+  const raw=reply.addresses;
+  let rows:unknown[]=[];
+  if(Array.isArray(raw))rows=raw;
+  else if(raw&&typeof raw==="object"){
+    const obj=raw as Record<string,unknown>;
+    rows=asArray((obj.address??obj.email_forward??obj.forward) as unknown);
+  }else if(raw)rows=[raw];
+
+  const items:NameSiloEmailForward[]=[];
+  for(const value of rows){
+    if(!value||typeof value!=="object")continue;
+    const row=value as Record<string,unknown>;
+    const rawEmail=String(row.email??row.address??"").trim().toLowerCase();
+    if(!rawEmail)continue;
+    const email=rawEmail.endsWith("@"+domain)?rawEmail.slice(0,-(domain.length+1)):rawEmail;
+    const rawTargets=row.forwards_to??row.forwardsTo??row.forward_to??row.forward;
+    const forwardsTo=asArray(rawTargets as string|string[])
+      .flatMap(item=>String(item).split(","))
+      .map(item=>item.trim().toLowerCase())
+      .filter(Boolean);
+    items.push({email,forwardsTo});
+  }
+  return items;
+}
+
+export async function namesiloConfigureEmailForward(
+  input:string,
+  aliasInput:string,
+  destinations:string[]
+){
+  const domain=normalizeDomain(input);
+  const alias=aliasInput.trim().toLowerCase();
+  if(alias!=="*"&&!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}$/.test(alias)){
+    throw new Error("Enter a valid email alias or * for catch-all.");
+  }
+  const forwards=[...new Set(destinations.map(validEmail))];
+  if(forwards.length<1||forwards.length>5)throw new Error("Use between 1 and 5 forwarding destinations.");
+
+  const params:Record<string,string>={domain,email:alias,forward1:forwards[0]};
+  forwards.slice(1).forEach((email,index)=>{params["forward"+(index+2)]=email;});
+  await command("configureEmailForward",params);
+}
+
+export async function namesiloDeleteEmailForward(input:string,aliasInput:string){
+  const domain=normalizeDomain(input);
+  const alias=aliasInput.trim().toLowerCase();
+  if(alias!=="*"&&!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}$/.test(alias)){
+    throw new Error("Invalid email alias.");
+  }
+  await command("deleteEmailForward",{domain,email:alias});
+}
+
+export async function namesiloSetDomainForward(
+  input:string,
+  targetInput:string,
+  method:"301"|"302"
+){
+  const domain=normalizeDomain(input);
+  const target=new URL(targetInput.trim());
+  if(target.protocol!=="http:"&&target.protocol!=="https:")throw new Error("Forwarding URL must use HTTP or HTTPS.");
+  if(target.username||target.password)throw new Error("Forwarding URL must not contain credentials.");
+  if(!["301","302"].includes(method))throw new Error("Unsupported forwarding method.");
+
+  // NameSilo's current forwarding service documents HTTP forwarding. Keep the
+  // target's requested scheme in the address while using the API protocol value.
+  const protocol=target.protocol.replace(":","");
+  const address=target.host+target.pathname+target.search+target.hash;
+  await command("domainForward",{domain,protocol,address,method});
+  return {url:target.toString(),method};
+}
+
+export async function namesiloDisableDomainForward(input:string){
+  const domain=normalizeDomain(input);
+  await command("forceDomainTrafficType",{domain,traffic_type:3});
+}
+
+function marketplaceNumber(value:unknown){
+  const n=Number(value);
+  return Number.isFinite(n)&&n>0?n:null;
+}
+
+function marketplaceRows(value:unknown):Record<string,unknown>[]{
+  if(Array.isArray(value))return value.filter(item=>item&&typeof item==="object") as Record<string,unknown>[];
+  if(value&&typeof value==="object"){
+    const obj=value as Record<string,unknown>;
+    const nested=obj.sale??obj.sales??obj.sale_detail;
+    if(Array.isArray(nested))return nested.filter(item=>item&&typeof item==="object") as Record<string,unknown>[];
+    if(nested&&typeof nested==="object")return [nested as Record<string,unknown>];
+    if("domain" in obj)return [obj];
+  }
+  return [];
+}
+
+export async function namesiloMarketplaceSales():Promise<NameSiloMarketplaceSale[]>{
+  const reply=await command("marketplaceActiveSalesOverview");
+  const rows=marketplaceRows(reply.sale_details??reply.sales);
+  return rows.flatMap(row=>{
+    const rawDomain=String(row.domain??"").trim();
+    if(!rawDomain)return [];
+    let domain:string;
+    try{domain=normalizeDomain(rawDomain);}catch{return [];}
+    return [{
+      domain,
+      status:String(row.status??"").trim(),
+      reserve:marketplaceNumber(row.reserve),
+      buyNow:marketplaceNumber(row.buy_now??row.buyNow),
+      saleType:(()=>{
+        const raw=String(row.sale_type??row.saleType??"").trim().toLowerCase().replace(/[\s-]+/g,"_");
+        if(raw==="auction")return "auction";
+        if(raw==="offer_counter_offer"||raw==="offer/counter_offer"||raw==="offer_counteroffer")return "offer_counter_offer";
+        return raw;
+      })(),
+      paymentPlanOffered:flag(row.pay_plan_offered??row.payment_plan_offered),
+      endDate:String(row.end_date??"").trim()||null,
+      timeRemaining:String(row.time_remaining??"").trim()||null,
+      private:flag(row.private)
+    }];
+  });
+}
+
+export async function namesiloMarketplaceSetSale(input:{
+  domain:string;
+  action:"add"|"modify";
+  saleType:"auction"|"offer_counter_offer";
+  reserve?:number|null;
+  buyNow?:number|null;
+  description?:string;
+  paymentPlanOffered?:boolean;
+}){
+  const domain=normalizeDomain(input.domain);
+  const money=(value:number|null|undefined,label:string)=>{
+    if(value===null||value===undefined)return undefined;
+    if(!Number.isFinite(value)||value<=0||value>100000000)throw new Error(`${label} is invalid.`);
+    return Math.round(value*100)/100;
+  };
+  const description=(input.description||"").trim();
+  if(description.length>2000)throw new Error("Marketplace description is too long.");
+
+  await command("marketplaceAddOrModifySale",{
+    domain,
+    action:input.action,
+    sale_type:input.saleType,
+    reserve:money(input.reserve,"Reserve price"),
+    buy_now:money(input.buyNow,"Buy-now price"),
+    payment_plan_offered:input.paymentPlanOffered?1:0,
+    description:description||undefined,
+    use_for_sale_landing_page:0,
+    mp_use_our_nameservers:0
+  });
+}
+
+export async function namesiloMarketplaceCancelSale(
+  input:string,
+  saleType:"auction"|"offer_counter_offer"
+){
+  const domain=normalizeDomain(input);
+  await command("marketplaceAddOrModifySale",{
+    domain,
+    action:"modify",
+    sale_type:saleType,
+    cancel_sale:1
+  });
+}
+
+export async function namesiloRegisterDomainDrop(input:{
+  domain:string;
+  years:number;
+  private?:boolean;
+  autoRenew?:boolean;
+}){
+  const domain=normalizeDomain(input.domain);
+  const years=Math.max(1,Math.min(10,Math.trunc(input.years||1)));
+  const payload=await namesiloGet<{reply?:ReplyBase&Record<string,unknown>}>(
+    BATCH_BASE,
+    "registerDomainDrop",
+    {
+      domain,
+      years,
+      private:input.private===false?0:1,
+      auto_renew:input.autoRenew?1:0
+    }
+  );
+  const reply=payload.reply||{};
+  successful(reply,"registerDomainDrop");
+  return {
+    domain:normalizeDomain(String(reply.domain||domain)),
+    orderAmount:amount(reply.order_amount)
+  };
 }

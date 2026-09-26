@@ -85,6 +85,9 @@ export default function Domains(){
         </div>
         <div className="actions">
           <Link className="secondary" href={"/dns/"+item.id}>{t("domains.dns")}</Link>
+          <Link className="secondary" href={"/domains/"+item.id+"/forwarding"}>{t("domains.forwarding")}</Link>
+          <Link className="secondary" href={"/domains/"+item.id+"/email-forwarding"}>{t("domains.emailForwarding")}</Link>
+          <Link className="secondary" href={"/domains/"+item.id+"/sell"}>{t("domains.sell")}</Link>
           <button className="secondary" onClick={()=>renew(item.id)}>{t("domains.renew")}</button>
           <button className="secondary" onClick={()=>updateLock(item.id,!item.transfer_locked)}>{item.transfer_locked?t("domains.unlock"):t("domains.lock")}</button>
           <button className="secondary" onClick={()=>revealCode(item.id)}>{t("domains.authCode")}</button>

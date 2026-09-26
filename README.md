@@ -37,9 +37,13 @@ The previous FOSSBilling 0.7.2 implementation is retained only as a limited migr
 - Renewal with a normal-renewal eligibility check before checkout.
 - Public RDAP lookup.
 - DNS add/delete and private per-record notes.
+- Domain forwarding with explicit nameserver-impact acknowledgement.
+- Free NameSilo email forwarding management.
+- NameSilo Marketplace listing management plus a public Rhoizos marketplace view.
+- Domain backorder/drop-catch requests; unsuccessful attempts are not billed, and caught domains are invoiced before delivery.
 - Required registrar contact details and account/session handling.
 
-There is no hosting, email bundle, site builder, general invoice dashboard, or unrelated upsell layer.
+There is no hosting, paid mailbox bundle, site builder, general invoice dashboard, or unrelated upsell layer. Email forwarding is the registrar-provided forwarding service, not a hosted mailbox.
 
 ## Safety model
 
@@ -82,9 +86,9 @@ The legacy PHP validation remains in GitHub Actions during migration.
 1. Use the existing Netlify project `rhoizos-preview`.
 2. Connect the GitHub repository `ensite999-stack/Rhoizos` to that Netlify project.
 3. Framework detection should resolve to Next.js. The build command is defined in `netlify.toml`.
-4. The hourly reconciliation worker is `netlify/functions/reconcile.mts`.
+4. The hourly reconciliation worker is `netlify/functions/reconcile.mts`; `netlify/functions/dropcatch.mts` checks the NameSilo drop-catch window every five minutes.
 5. Configure the required environment variables from `.env.example`.
-6. Keep `RHOIZOS_LIVE_PAYMENTS=0` and `RHOIZOS_LIVE_REGISTRATION=0` during acceptance testing.
+6. Keep `RHOIZOS_LIVE_PAYMENTS=0`, `RHOIZOS_LIVE_REGISTRATION=0`, and `RHOIZOS_LIVE_DROPCATCH=0` during acceptance testing.
 7. Verify `/api/health` after deployment.
 8. Test account isolation, domain search, payment callbacks, reconciliation, registration, transfer, renewal, transfer-out and DNS before enabling live fences.
 
@@ -112,4 +116,9 @@ Do not run the Vercel-native app and the legacy FOSSBilling runtime against the 
 
 ## Registrar
 
-NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes and DNS management. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price. For registrar charges, Rhoizos checks the NameSilo account-funds balance first; if it covers the provider cost, account funds are used. Otherwise, an optional `NAMESILO_PAYMENT_ID` is used for a verified card.
+NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes, DNS management, domain forwarding, email forwarding, Marketplace listings and drop-catching. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price. For registrar charges, Rhoizos checks the NameSilo account-funds balance first; if it covers the provider cost, account funds are used. Otherwise, an optional `NAMESILO_PAYMENT_ID` is used for a verified card.
+
+
+### Drop-catching
+
+Drop-catching is separately fenced by `RHOIZOS_LIVE_DROPCATCH`. The scheduled worker only submits pending requests during NameSilo's documented Pacific-time drop-catch window. NameSilo charges the Rhoizos registrar account when a catch succeeds. Rhoizos then creates a customer claim invoice from the actual registrar charge plus the current markup; local ownership is delivered only after that invoice is paid.

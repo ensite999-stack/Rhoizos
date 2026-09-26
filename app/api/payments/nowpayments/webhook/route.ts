@@ -3,6 +3,7 @@ import {verifyNowPaymentsSignature,getPayment} from "@/lib/nowpayments";
 import {startProvisioning} from "@/lib/provision";
 import {appUrl,liveRegistration} from "@/lib/env";
 import {safeSendUserTemplate} from "@/lib/email";
+import {deliverPaidDropcatch} from "@/lib/dropcatch";
 
 export const runtime="nodejs";
 
@@ -77,7 +78,9 @@ export async function POST(request:Request){
     "rhoizos:payment-received:"+orderId+":"+paymentId
   );
 
-  if(liveRegistration()){
+  if(String(order.kind)==="dropcatch"){
+    try{await deliverPaidDropcatch(orderId);}catch(error){console.error("Drop-catch delivery failed",error);}
+  }else if(liveRegistration()){
     try{await startProvisioning(orderId);}catch{}
   }
   return new Response("ok");

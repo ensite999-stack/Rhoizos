@@ -58,6 +58,8 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
           <Link href="/">{t("nav.domain")}</Link>
           <Link href="/pricing">{t("nav.pricing")}</Link>
           <Link href="/transfer">{t("nav.transfer")}</Link>
+          <Link href="/marketplace">{t("nav.marketplace")}</Link>
+          <Link href="/dropcatch">{t("nav.dropcatch")}</Link>
           <Link href="/#learn">{t("nav.learn")}</Link>
           <Link href="/rdap">{t("nav.rdap")}</Link>
         </nav>
@@ -79,6 +81,8 @@ export default function SiteChrome({children,year,theme}:{children:React.ReactNo
         <nav className="footerNav" aria-label="Footer">
           <Link href="/">{t("footer.search")}</Link>
           <Link href="/transfer">{t("footer.transfer")}</Link>
+          <Link href="/marketplace">{t("footer.marketplace")}</Link>
+          <Link href="/dropcatch">{t("footer.dropcatch")}</Link>
           <Link href="/rdap">{t("footer.rdap")}</Link>
           <Link href="/domains">{t("footer.domains")}</Link>
           <Link href="/#learn">{t("footer.learn")}</Link>
