@@ -101,7 +101,7 @@ export async function GET(request:NextRequest){
       });
       const registerRetail=await retailFromCosts(registerEntries.map(entry=>entry.cost),"register");
       const renewRetail=await retailFromCosts(renewEntries.map(entry=>entry.cost),"renew");
-      const firstYearMap=new Map(registerEntries.map((entry,index)=>[entry.index,registerRetail[index]]));
+      const registerPriceMap=new Map(registerEntries.map((entry,index)=>[entry.index,registerRetail[index]]));
       const renewMap=new Map(renewEntries.map((entry,index)=>[entry.index,renewRetail[index]]));
 
       return ok({
@@ -115,7 +115,7 @@ export async function GET(request:NextRequest){
           const available=state?.available??null;
           const premium=state?.premium??false;
           const configured=priceMap.get(tlds[index]);
-          const price=firstYearMap.get(index)??configured?.register??null;
+          const price=registerPriceMap.get(index)??configured?.register??null;
           const renew=renewMap.get(index)??configured?.renew??null;
           return {
             domain,
