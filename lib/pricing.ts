@@ -70,9 +70,9 @@ export async function retailPrice(domain:string,kind:PriceKind){
     if(kind!=="register"||!process.env.DATABASE_URL)return standard;
 
     const {rows}=await databasePricing();
-    const row=rows.find(r=>String(r.tld)===tld&&Boolean(r.active));
-    if(!row) throw new Error("This extension is not currently offered.");
-    return promotional(row.override_register,standard)??standard;
+    const row=rows.find(r=>String(r.tld)===tld);
+    if(row&&!Boolean(row.active)) throw new Error("This extension is not currently offered.");
+    return promotional(row?.override_register,standard)??standard;
   }
 
   if(process.env.DATABASE_URL){
