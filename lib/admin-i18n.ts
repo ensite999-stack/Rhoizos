@@ -15,7 +15,7 @@ const en:Record<string,string>={
   "loadingPricing":"Loading pricing…","pricingPolicy":"Pricing policy","pricingFormula":"Customer price = registrar cost + payment processing fee + $1.00.","pricingPriority":"Cost + payment fee + $1","paymentFeeRate":"Payment fee allowance","serviceMargin":"Service margin",
   "minimumMargin":"Minimum margin","saveGlobal":"Save global","saving":"Saving…","tldPricing":"TLD pricing",
   "costRegister":"Cost register","costRenew":"Cost renew","costTransfer":"Cost transfer",
-  "markupRegister":"Markup R","markupRenew":"Markup N","markupTransfer":"Markup T","overrideRegister":"Override R","overrideRenew":"Override N","overrideTransfer":"Override T",
+  
   "featured":"Featured","effective":"Effective / Save","save":"Save","global":"global","none":"none","loadPricingFailed":"Could not load pricing.","saveFailed":"Save failed."
 };
 
@@ -32,13 +32,13 @@ const zhCN={...en,
   "loadingPricing":"正在加载价格…","pricingPolicy":"定价规则","pricingFormula":"客户价格 = 注册成本 + 支付手续费 + 1.00 美元。","pricingPriority":"成本 + 支付手续费 + 1 美元","paymentFeeRate":"支付手续费预留","serviceMargin":"服务利润",
   "minimumMargin":"最低利润","saveGlobal":"保存全局设置","saving":"正在保存…","tldPricing":"TLD 价格",
   "costRegister":"注册成本","costRenew":"续费成本","costTransfer":"转入成本",
-  "markupRegister":"注册加价","markupRenew":"续费加价","markupTransfer":"转入加价","overrideRegister":"注册固定价","overrideRenew":"续费固定价","overrideTransfer":"转入固定价",
+  
   "featured":"首页展示","effective":"实际售价 / 保存","save":"保存","global":"全局","none":"无","loadPricingFailed":"无法加载价格。","saveFailed":"保存失败。"
 };
 const zhTW={...zhCN,
   "subtitle":"營運、使用者、網域與價格管理。","overview":"概覽","users":"使用者","domains":"網域","orders":"訂單","operations":"操作","pricing":"價格","settings":"設定","signOut":"登出",
   "overview.copy":"快速查看 Rhoizos 目前營運狀態。","users.copy":"使用者帳戶與網域歸屬活動。","domains.copy":"已註冊和已轉入的網域庫存。",
-  "orders.copy":"每筆註冊商訂單的付款與交付狀態。","operations.copy":"註冊商端非同步操作與失敗記錄。","pricing.copy":"管理上游成本；註冊、續費和轉入統一使用固定美元加價。",
+  "orders.copy":"每筆註冊商訂單的付款與交付狀態。","operations.copy":"註冊商端非同步操作與失敗記錄。","pricing.copy":"管理註冊成本。客戶價格按照固定規則自動計算。",
   "settings.copy":"執行環境狀態與最近的管理員變更。","needsAttention":"需要處理","openOperations":"進行中的操作","recentOrders":"最近訂單",
   "user":"使用者","country":"國家","status":"狀態","created":"建立時間","customer":"客戶","type":"類型","amount":"金額","payment":"付款",
   "owner":"所有者","expires":"到期","transferLock":"轉移鎖","updated":"更新時間","error":"錯誤","operation":"操作","providerId":"上游 ID","order":"訂單","operationStatus":"操作狀態",
@@ -48,7 +48,7 @@ const zhTW={...zhCN,
   "loadingPricing":"正在載入價格…","pricingPolicy":"定價規則","pricingFormula":"客戶價格 = 註冊成本 + 支付手續費 + 1.00 美元。","pricingPriority":"成本 + 支付手續費 + 1 美元","paymentFeeRate":"支付手續費預留","serviceMargin":"服務利潤",
   "minimumMargin":"最低利潤","saveGlobal":"儲存全域設定","saving":"正在儲存…","tldPricing":"TLD 價格",
   "costRegister":"註冊成本","costRenew":"續費成本","costTransfer":"轉入成本",
-  "markupRegister":"註冊加價","markupRenew":"續費加價","markupTransfer":"轉入加價","overrideRegister":"註冊固定價","overrideRenew":"續費固定價","overrideTransfer":"轉入固定價",
+  
   "featured":"首頁顯示","effective":"實際售價 / 儲存","save":"儲存","global":"全域","none":"無","loadPricingFailed":"無法載入價格。","saveFailed":"儲存失敗。"
 };
 const fr={...en,
@@ -64,7 +64,7 @@ const fr={...en,
   "loadingPricing":"Chargement des tarifs…","pricingPolicy":"Règle tarifaire","pricingFormula":"Prix client = coût d’enregistrement + frais de paiement + 1,00 $.","pricingPriority":"Coût + frais de paiement + 1 $","paymentFeeRate":"Provision frais de paiement","serviceMargin":"Marge de service",
   "minimumMargin":"Marge minimale","saveGlobal":"Enregistrer global","saving":"Enregistrement…","tldPricing":"Tarifs TLD",
   "costRegister":"Coût enregistrement","costRenew":"Coût renouvellement","costTransfer":"Coût transfert",
-  "markupRegister":"Marge R","markupRenew":"Marge N","markupTransfer":"Marge T","overrideRegister":"Prix fixe R","overrideRenew":"Prix fixe N","overrideTransfer":"Prix fixe T",
+  
   "featured":"Mis en avant","effective":"Prix effectif / Enregistrer","save":"Enregistrer","global":"global","none":"aucun","loadPricingFailed":"Impossible de charger les tarifs.","saveFailed":"Échec de l’enregistrement."
 };
 const es={...en,
@@ -80,7 +80,7 @@ const es={...en,
   "loadingPricing":"Cargando precios…","pricingPolicy":"Regla de precios","pricingFormula":"Precio al cliente = coste de registro + comisión de pago + $1,00.","pricingPriority":"Coste + comisión de pago + $1","paymentFeeRate":"Reserva de comisión de pago","serviceMargin":"Margen de servicio",
   "minimumMargin":"Margen mínimo","saveGlobal":"Guardar global","saving":"Guardando…","tldPricing":"Precios TLD",
   "costRegister":"Coste registro","costRenew":"Coste renovación","costTransfer":"Coste transferencia",
-  "markupRegister":"Margen R","markupRenew":"Margen N","markupTransfer":"Margen T","overrideRegister":"Precio fijo R","overrideRenew":"Precio fijo N","overrideTransfer":"Precio fijo T",
+  
   "featured":"Destacado","effective":"Precio efectivo / Guardar","save":"Guardar","global":"global","none":"ninguno","loadPricingFailed":"No se pudieron cargar los precios.","saveFailed":"Error al guardar."
 };
 
