@@ -96,8 +96,7 @@ export async function startProvisioning(orderId:string){
       if(!a.available) throw new Error("Domain is no longer available for registration.");
       const providerCost=a.quotedPrice??(a.premium?null:await namesiloStandardCost(domain,"register"));
       if(!providerCost) throw new Error("Current premium pricing is unavailable. Manual review is required.");
-      const latest=await retailFromCost(providerCost,"register");
-      if(latest>Number(order.amount_usd)+0.009) throw new Error("The live registration price increased after payment. Manual review is required.");
+      if(providerCost>Number(order.amount_usd)+0.009) throw new Error("The live provider cost increased above the amount collected. Manual review is required.");
 
       const request=order.request as {contact:ContactInput;years?:number};
       await namesiloRegisterDomain({domain,years:Number(request.years||1),contact:request.contact,cost:providerCost});
