@@ -1,5 +1,6 @@
 "use client";
 import {FormEvent,useEffect,useState} from "react";
+import Link from "next/link";
 import {useI18n} from "@/components/I18nProvider";
 
 export default function Transfer(){
@@ -23,13 +24,14 @@ export default function Transfer(){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({domain:form.get("domain"),authCode:form.get("authCode")})
     });
-    if(response.status===401){location.href="/login";return;}
+    if(response.status===401){location.href="/login?next="+encodeURIComponent("/transfer?domain="+domain);return;}
     const data=await response.json();
     if(!response.ok){setError(data.error||t("transfer.failed"));setBusy(false);return;}
     location.href=data.checkoutUrl;
   }
 
   return <div className="page">
+    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
     <p className="kicker">{t("transfer.kicker")}</p>
     <h1 className="pageTitle">{t("transfer.title")}</h1>
     <p className="pageIntro">{t("transfer.copy")}</p>
