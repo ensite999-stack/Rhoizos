@@ -112,6 +112,7 @@ export default function Home(){
           <Link className="homeServiceCard" href="/marketplace">
             <div className="homeServiceMeta">
               <span>{t("home.marketplaceEyebrow")}</span>
+              <b>{t("home.freeBadge")}</b>
             </div>
             <h3>{t("home.marketplaceTitle")}</h3>
             <p>{t("home.marketplaceCopy")}</p>

@@ -201,3 +201,56 @@ create index if not exists dropcatch_user_idx on dropcatch_requests(user_id,crea
 alter table orders drop constraint if exists orders_kind_check;
 alter table orders add constraint orders_kind_check
   check (kind in ('register','transfer','renew','dropcatch'));
+
+
+create table if not exists marketplace_listings (
+  id uuid primary key default gen_random_uuid(),
+  domain_id uuid not null references domains(id) on delete cascade,
+  seller_user_id uuid not null references users(id) on delete cascade,
+  asking_price numeric(12,2) check (asking_price is null or asking_price > 0),
+  allow_offers boolean not null default true,
+  description text not null default '',
+  status text not null default 'active'
+    check (status in ('active','reserved','sold','cancelled')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists marketplace_listings_status_idx on marketplace_listings(status,updated_at desc);
+create index if not exists marketplace_listings_seller_idx on marketplace_listings(seller_user_id,updated_at desc);
+create unique index if not exists marketplace_listings_active_domain_idx
+  on marketplace_listings(domain_id)
+  where status in ('active','reserved');
+
+create table if not exists marketplace_deals (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references marketplace_listings(id) on delete cascade,
+  buyer_user_id uuid not null references users(id) on delete cascade,
+  offer_amount numeric(12,2) check (offer_amount is null or offer_amount > 0),
+  message text not null default '',
+  status text not null default 'pending'
+    check (status in ('pending','accepted','rejected','cancelled','released')),
+  accepted_at timestamptz,
+  released_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(listing_id,buyer_user_id)
+);
+create index if not exists marketplace_deals_buyer_idx on marketplace_deals(buyer_user_id,updated_at desc);
+create index if not exists marketplace_deals_listing_idx on marketplace_deals(listing_id,updated_at desc);
+create unique index if not exists marketplace_deals_one_accepted_idx
+  on marketplace_deals(listing_id)
+  where status in ('accepted','released');
+
+create table if not exists marketplace_events (
+  id bigserial primary key,
+  deal_id uuid not null references marketplace_deals(id) on delete cascade,
+  actor_user_id uuid references users(id) on delete set null,
+  action text not null,
+  details jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists marketplace_events_deal_idx on marketplace_events(deal_id,created_at desc);\ncreate index if not exists marketplace_events_actor_idx on marketplace_events(actor_user_id);
+
+alter table marketplace_listings enable row level security;
+alter table marketplace_deals enable row level security;
+alter table marketplace_events enable row level security;

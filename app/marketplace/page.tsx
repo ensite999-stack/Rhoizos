@@ -1,15 +1,21 @@
 "use client";
-import {useEffect,useState} from "react";
+import Link from "next/link";
+import {useEffect,useMemo,useState} from "react";
 import {useI18n} from "@/components/I18nProvider";
 
-type Sale={
-  domain:string;status:string;reserve:number|null;buyNow:number|null;saleType:string;
-  paymentPlanOffered:boolean;endDate:string|null;timeRemaining:string|null;
+type Listing={
+  id:string;
+  domain:string;
+  askingPrice:number|null;
+  allowOffers:boolean;
+  description:string;
+  status:string;
 };
 
 export default function Marketplace(){
   const {t}=useI18n();
-  const [items,setItems]=useState<Sale[]>([]);
+  const [items,setItems]=useState<Listing[]>([]);
+  const [query,setQuery]=useState("");
   const [error,setError]=useState("");
 
   useEffect(()=>{
@@ -20,29 +26,46 @@ export default function Marketplace(){
     }).catch(error=>setError(error.message));
   },[t]);
 
-  function namesiloUrl(domain:string){
-    const params=new URLSearchParams({
-      domain_search_keyword:domain,
-      domain_search_keyword_location:"anywhere"
-    });
-    return "https://www.namesilo.com/Marketplace?"+params.toString();
-  }
+  const visible=useMemo(()=>{
+    const needle=query.trim().toLowerCase();
+    return needle?items.filter(item=>item.domain.toLowerCase().includes(needle)):items;
+  },[items,query]);
 
   return <div className="page wide">
-    <p className="kicker">{t("marketplace.kicker")}</p>
-    <h1 className="pageTitle">{t("marketplace.title")}</h1>
-    <p className="pageIntro">{t("marketplace.copy")}</p>
+    <div className="marketHeroRow">
+      <div>
+        <p className="kicker">{t("marketplace.kicker")}</p>
+        <h1 className="pageTitle">{t("marketplace.title")}</h1>
+        <p className="pageIntro">{t("marketplace.copy")}</p>
+      </div>
+      <Link className="secondaryLink" href="/marketplace/deals">{t("marketplace.myDeals")}</Link>
+    </div>
+
+    <div className="marketTrustStrip">
+      <strong>{t("marketplace.freeTitle")}</strong>
+      <span>{t("marketplace.freeCopy")}</span>
+    </div>
+
+    <label className="marketSearch">
+      <span>{t("marketplace.search")}</span>
+      <input value={query} onChange={event=>setQuery(event.target.value)} placeholder="example.com"/>
+    </label>
+
     {error&&<p className="error">{error}</p>}
     <div className="marketGrid">
-      {items.map(item=><article className="marketCard" key={item.domain}>
-        <div><span>{item.saleType==="auction"?t("marketplace.auction"):t("marketplace.offer")}</span><h2>{item.domain}</h2></div>
+      {visible.map(item=><article className="marketCard" key={item.id}>
+        <div>
+          <span>{item.allowOffers?t("marketplace.offersOpen"):t("marketplace.fixedPrice")}</span>
+          <h2>{item.domain}</h2>
+        </div>
         <dl>
-          <div><dt>{t("marketplace.buyNow")}</dt><dd>{item.buyNow?"$"+item.buyNow.toFixed(2):"—"}</dd></div>
-          <div><dt>{t("marketplace.reserve")}</dt><dd>{item.reserve?"$"+item.reserve.toFixed(2):"—"}</dd></div>
+          <div><dt>{t("marketplace.askingPrice")}</dt><dd>{item.askingPrice?"$"+item.askingPrice.toFixed(2):t("marketplace.makeOffer")}</dd></div>
+          <div><dt>{t("marketplace.platformFee")}</dt><dd>0%</dd></div>
         </dl>
-        <a className="primaryLink" href={namesiloUrl(item.domain)} target="_blank" rel="noopener noreferrer">{t("marketplace.viewAtNameSilo")}</a>
+        {item.description&&<p className="marketDescription">{item.description}</p>}
+        <Link className="primaryLink" href={"/marketplace/"+item.id}>{t("marketplace.viewListing")}</Link>
       </article>)}
     </div>
-    {!items.length&&!error&&<p className="fine marketEmpty">{t("marketplace.empty")}</p>}
+    {!visible.length&&!error&&<p className="fine marketEmpty">{query?t("marketplace.noSearchResults"):t("marketplace.empty")}</p>}
   </div>;
 }
