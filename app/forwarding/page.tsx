@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 export default function ForwardingInfo(){
   const {t}=useI18n();
   return <div className="page wide serviceLanding">
-    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
+    <BackLink fallbackHref="/"/>
     <p className="kicker">{t("forwarding.kicker")}</p>
     <h1 className="pageTitle">{t("forwarding.publicTitle")}</h1>
     <p className="pageIntro">{t("forwarding.publicCopy")}</p>
