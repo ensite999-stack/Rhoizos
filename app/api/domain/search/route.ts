@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 import {fail,ok} from "@/lib/http";
 import {normalizeDomain} from "@/lib/domain";
-import {publicPrices,retailFromCost,retailFromCosts,retailPrice} from "@/lib/pricing";
+import {publicPrices,retailFromCost,retailFromCosts} from "@/lib/pricing";
 import {namesiloAvailability,namesiloPrices} from "@/lib/namesilo";
 
 export const runtime="nodejs";
@@ -67,7 +67,14 @@ export async function GET(request:NextRequest){
           tlds:allTlds.map(tld=>"."+tld),
           items:domains.map((domain,index)=>{
             const price=priceMap.get(tlds[index]);
-            return {domain,available:null,premium:false,price:price?.register??null,preview:true};
+            return {
+              domain,available:null,premium:false,
+              price:price?.register??null,
+              firstYearPrice:price?.firstYear??null,
+              promoPrice:price?.promo??null,
+              renewPrice:price?.renew??null,
+              preview:true
+            };
           })
         });
       }
@@ -76,22 +83,28 @@ export async function GET(request:NextRequest){
       const providerPrices=await namesiloPrices();
       const availability=namesilo.map(item=>{
         const standard=providerPrices.get(item.domain.split(".").at(-1)!);
-        const registerPrice=item.quotedPrice??(item.premium?null:standard?.registration??null);
         return {
           domain:item.domain,
           available:item.available,
           premium:item.premium,
-          registerPrice
+          registerCost:item.quotedPrice??(item.premium?null:standard?.registration??null),
+          renewCost:item.quotedRenew??(item.premium?null:standard?.renew??null)
         };
       });
       const availabilityMap=new Map(availability.map(item=>[item.domain,item]));
 
-      const liveEntries=domains.flatMap((domain,index)=>{
-        const cost=availabilityMap.get(domain)?.registerPrice;
+      const registerEntries=domains.flatMap((domain,index)=>{
+        const cost=availabilityMap.get(domain)?.registerCost;
         return typeof cost==="number"&&Number.isFinite(cost)&&cost>0?[{index,cost}]:[];
       });
-      const livePrices=await retailFromCosts(liveEntries.map(entry=>entry.cost),"register");
-      const livePriceMap=new Map(liveEntries.map((entry,index)=>[entry.index,livePrices[index]]));
+      const renewEntries=domains.flatMap((domain,index)=>{
+        const cost=availabilityMap.get(domain)?.renewCost;
+        return typeof cost==="number"&&Number.isFinite(cost)&&cost>0?[{index,cost}]:[];
+      });
+      const registerRetail=await retailFromCosts(registerEntries.map(entry=>entry.cost),"register");
+      const renewRetail=await retailFromCosts(renewEntries.map(entry=>entry.cost),"renew");
+      const firstYearMap=new Map(registerEntries.map((entry,index)=>[entry.index,registerRetail[index]]));
+      const renewMap=new Map(renewEntries.map((entry,index)=>[entry.index,renewRetail[index]]));
 
       return ok({
         query:label,
@@ -104,15 +117,19 @@ export async function GET(request:NextRequest){
           const state=availabilityMap.get(domain);
           const available=state?.available??null;
           const premium=state?.premium??false;
-          const configured=priceMap.get(tlds[index])?.register??null;
-          const live=premium
-            ?livePriceMap.get(index)??null
-            :livePriceMap.get(index)??configured;
+          const configured=priceMap.get(tlds[index]);
+          const firstYear=firstYearMap.get(index)??configured?.firstYear??null;
+          const promo=!premium&&configured?.promo&&firstYear&&configured.promo<firstYear?configured.promo:null;
+          const renew=renewMap.get(index)??configured?.renew??null;
+          const price=promo??firstYear;
           return {
             domain,
             available,
             premium,
-            price:available===true?live:null,
+            price:available===true?price:null,
+            firstYearPrice:available===true?firstYear:null,
+            promoPrice:available===true?promo:null,
+            renewPrice:available===true?renew:null,
             preview:false
           };
         })
@@ -122,23 +139,37 @@ export async function GET(request:NextRequest){
     if(!input) return ok({prices:await publicPrices()});
 
     const domain=normalizeDomain(input);
-    const price=await retailPrice(domain,"register").catch(()=>null);
+    const tld=domain.split(".").at(-1)!;
+    const configured=(await publicPrices()).find(item=>item.tld.replace(/^\./,"")===tld);
 
     if(!process.env.NAMESILO_API_KEY){
-      return ok({domain,available:null,premium:false,price,preview:true});
+      return ok({
+        domain,available:null,premium:false,
+        price:configured?.register??null,
+        firstYearPrice:configured?.firstYear??null,
+        promoPrice:configured?.promo??null,
+        renewPrice:configured?.renew??null,
+        preview:true
+      });
     }
 
     const [result]=await namesiloAvailability([domain]);
-    const standard=(await namesiloPrices()).get(domain.split(".").at(-1)!);
-    const providerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
-    const live=providerCost
-      ?await retailFromCost(providerCost,"register")
-      :result.premium?null:price;
+    const standard=(await namesiloPrices()).get(tld);
+    const registerCost=result.quotedPrice??(result.premium?null:standard?.registration??null);
+    const renewCost=result.quotedRenew??(result.premium?null:standard?.renew??null);
+    const firstYear=registerCost?await retailFromCost(registerCost,"register"):configured?.firstYear??null;
+    const renew=renewCost?await retailFromCost(renewCost,"renew"):configured?.renew??null;
+    const promo=!result.premium&&configured?.promo&&firstYear&&configured.promo<firstYear?configured.promo:null;
+    const price=promo??firstYear;
+
     return ok({
       domain:result.domain,
       available:result.available,
       premium:result.premium,
-      price:result.available?live:null,
+      price:result.available?price:null,
+      firstYearPrice:result.available?firstYear:null,
+      promoPrice:result.available?promo:null,
+      renewPrice:result.available?renew:null,
       preview:false
     });
   }catch(error){
