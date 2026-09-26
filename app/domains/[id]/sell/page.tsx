@@ -1,11 +1,16 @@
 "use client";
+import Link from "next/link";
 import {FormEvent,useEffect,useState} from "react";
 import {useParams} from "next/navigation";
 import {useI18n} from "@/components/I18nProvider";
 
 type Sale={
-  domain:string;status:string;reserve:number|null;buyNow:number|null;saleType:string;
-  paymentPlanOffered:boolean;endDate:string|null;timeRemaining:string|null;
+  id:string;
+  domain:string;
+  status:"active"|"reserved";
+  askingPrice:number|null;
+  allowOffers:boolean;
+  description:string;
 };
 
 export default function SellDomain(){
@@ -28,15 +33,13 @@ export default function SellDomain(){
   async function save(event:FormEvent<HTMLFormElement>){
     event.preventDefault();setBusy(true);setError("");
     const form=new FormData(event.currentTarget);
-    const numberOrNull=(name:string)=>form.get(name)?Number(form.get(name)):null;
+    const raw=String(form.get("askingPrice")||"").trim();
     const response=await fetch("/api/domains/"+id+"/marketplace",{
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
-        saleType:form.get("saleType"),
-        reserve:numberOrNull("reserve"),
-        buyNow:numberOrNull("buyNow"),
-        description:form.get("description"),
-        paymentPlanOffered:form.get("paymentPlanOffered")==="on"
+        askingPrice:raw?Number(raw):null,
+        allowOffers:form.get("allowOffers")==="on",
+        description:form.get("description")
       })
     });
     const data=await response.json();setBusy(false);
@@ -52,15 +55,17 @@ export default function SellDomain(){
     setSale(null);
   }
 
+  const reserved=sale?.status==="reserved";
+
   return <div className="page">
     <p className="kicker">{t("marketplace.sellKicker")}</p>
     <h1 className="pageTitle">{t("marketplace.sellTitle")}</h1>
     <p className="pageIntro">{domain||t("common.loading")}</p>
 
     {sale&&<div className="featureStatus">
-      <strong>{t("marketplace.activeListing")}</strong>
-      <span>{sale.saleType.replace(/_/g," ")} · {sale.status||t("status.active")}</span>
-      <small>{sale.buyNow?t("marketplace.buyNow")+": $"+sale.buyNow.toFixed(2):""}</small>
+      <strong>{reserved?t("marketplace.reservedListing"):t("marketplace.activeListing")}</strong>
+      <span>{sale.askingPrice?t("marketplace.askingPrice")+": $"+sale.askingPrice.toFixed(2):t("marketplace.offersOpen")}</span>
+      {reserved&&<Link href="/marketplace/deals">{t("marketplace.manageDeal")}</Link>}
     </div>}
 
     <div className="warningCard">
@@ -68,23 +73,22 @@ export default function SellDomain(){
       <p>{t("marketplace.notice")}</p>
     </div>
 
-    <form key={(sale?.domain||"new")+"-"+(sale?.saleType||"")+"-"+(sale?.buyNow||"")+"-"+(sale?.reserve||"")} className="form featureForm" onSubmit={save}>
-      <label className="field">{t("marketplace.saleType")}
-        <select name="saleType" defaultValue={sale?.saleType==="auction"?"auction":"offer_counter_offer"}>
-          <option value="offer_counter_offer">{t("marketplace.offer")}</option>
-          <option value="auction">{t("marketplace.auction")}</option>
-        </select>
+    <form key={(sale?.id||"new")+"-"+(sale?.askingPrice??"")+"-"+sale?.allowOffers} className="form featureForm" onSubmit={save}>
+      <label className="field">{t("marketplace.askingPrice")}
+        <input name="askingPrice" type="number" min="0.01" step="0.01" defaultValue={sale?.askingPrice??""} disabled={reserved}/>
       </label>
-      <div className="formGrid">
-        <label className="field">{t("marketplace.buyNow")}<input name="buyNow" type="number" min="0.01" step="0.01" defaultValue={sale?.buyNow??""}/></label>
-        <label className="field">{t("marketplace.reserve")}<input name="reserve" type="number" min="0.01" step="0.01" defaultValue={sale?.reserve??""}/></label>
-      </div>
-      <label className="field">{t("marketplace.description")}<textarea name="description" maxLength={2000} rows={5}/></label>
-      <label className="featureConsent"><input name="paymentPlanOffered" type="checkbox" defaultChecked={sale?.paymentPlanOffered}/><span>{t("marketplace.paymentPlan")}</span></label>
+      <label className="featureConsent">
+        <input name="allowOffers" type="checkbox" defaultChecked={sale?.allowOffers??true} disabled={reserved}/>
+        <span>{t("marketplace.allowOffers")}</span>
+      </label>
+      <label className="field">{t("marketplace.description")}
+        <textarea name="description" maxLength={2000} rows={5} defaultValue={sale?.description||""} disabled={reserved}/>
+      </label>
       {error&&<p className="error">{error}</p>}
       <div className="formActions">
-        <button className="primary" disabled={busy}>{busy?t("common.loading"):sale?t("marketplace.update"):t("marketplace.list")}</button>
-        {sale&&<button className="secondary" type="button" onClick={cancel} disabled={busy}>{t("marketplace.cancel")}</button>}
+        <button className="primary" disabled={busy||reserved}>{busy?t("common.loading"):sale?t("marketplace.update"):t("marketplace.list")}</button>
+        {sale&&<button className="secondary" type="button" onClick={cancel} disabled={busy||reserved}>{t("marketplace.cancel")}</button>}
+        <Link className="secondaryLink" href="/marketplace/deals">{t("marketplace.myDeals")}</Link>
       </div>
     </form>
   </div>;
