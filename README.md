@@ -39,7 +39,6 @@ The previous FOSSBilling 0.7.2 implementation is retained only as a limited migr
 - DNS add/delete and private per-record notes.
 - Domain forwarding with explicit nameserver-impact acknowledgement.
 - Free NameSilo email forwarding management.
-- Free Rhoizos peer marketplace: local listings and offers, direct buyer/seller payment, and seller-confirmed release with 0% Rhoizos commission.
 - Domain backorder/drop-catch requests; unsuccessful attempts are not billed, and caught domains are invoiced before delivery.
 - Required registrar contact details and account/session handling.
 
@@ -57,8 +56,6 @@ There is no hosting, paid mailbox bundle, site builder, general invoice dashboar
 - Auth Code reveal and transfer lock changes require a recent login session.
 - Private DNS notes stay in Rhoizos Postgres and are never sent to the registrar.
 - Premium domains do not auto-purchase.
-- Marketplace payments are strictly buyer-to-seller; Rhoizos does not collect, hold or verify marketplace funds.
-- Marketplace Domain release is seller-confirmed and recorded before local account control moves to the buyer.
 - Non-normal expiry/redemption renewal paths stop and require support handling.
 
 ## Local development
@@ -118,7 +115,7 @@ Do not run the Vercel-native app and the legacy FOSSBilling runtime against the 
 
 ## Registrar
 
-NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes, DNS management, domain forwarding, email forwarding and drop-catching. The Rhoizos peer marketplace is stored locally and does not depend on NameSilo Marketplace settlement. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price. For registrar charges, Rhoizos checks the NameSilo account-funds balance first; if it covers the provider cost, account funds are used. Otherwise, an optional `NAMESILO_PAYMENT_ID` is used for a verified card.
+NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes, DNS management, domain forwarding, email forwarding and drop-catching. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price. For registrar charges, Rhoizos checks the NameSilo account-funds balance first; if it covers the provider cost, account funds are used. Otherwise, an optional `NAMESILO_PAYMENT_ID` is used for a verified card.
 
 
 ### Drop-catching
