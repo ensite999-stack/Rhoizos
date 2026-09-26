@@ -149,7 +149,8 @@ create table if not exists pricing_settings (
   default_register_markup_pct numeric(8,3) not null default 0,
   default_renew_markup_pct numeric(8,3) not null default 0,
   default_transfer_markup_pct numeric(8,3) not null default 0,
-  minimum_margin numeric(12,2) not null default 0,
+  minimum_margin numeric(12,2) not null default 1,
+  fixed_markup_usd numeric(12,2) not null default 1,
   currency char(3) not null default 'USD',
   updated_at timestamptz not null default now()
 );
