@@ -106,7 +106,7 @@ const enUS:Record<string,string>={
   "detail.unavailable":"Public registration details are not available through Rhoizos for this extension yet.",
   "status.transferLock":"Transfer lock is enabled","status.registryTransferLock":"Registry transfer lock is enabled",
   "status.deleteProtected":"Protected from deletion","status.updateProtected":"Protected from unauthorized updates","status.active":"Active",
-  "meta.title":"Rhoizos — Domain Search, Registration, Transfer & DNS","meta.description":"Rhoizos is a privacy-first domain registration service with cryptocurrency payments, clear pricing, transfers, renewals, DNS management and RDAP lookup."
+  "meta.title":"Rhoizos — Domain Search, Registration, Transfer & DNS","meta.description":"Rhoizos is a privacy-first domain registration service with crypto-only payments, clear pricing, transfers, renewals, DNS management and RDAP lookup."
 };
 
 const enGB={...enUS,
