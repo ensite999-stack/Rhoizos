@@ -26,19 +26,7 @@ class Service implements \FOSSBilling\InjectionAwareInterface
         if (!$order instanceof \Model_ClientOrder || $order->status!=='active' || $order->service_type!=='domain') throw new \FOSSBilling\InformationException('Active domain order not found.');
         $domain=$service->getOrderService($order);
         if (!$domain instanceof \Model_ServiceDomain || (int)$domain->client_id!==(int)$client->id) throw new \FOSSBilling\InformationException('Domain not found.');
-        $registrar=$this->di['db']->getExistingModelById('TldRegistrar',$domain->tld_registrar_id);
-        $adapter=$this->di['mod_service']('servicedomain')->registrarGetRegistrarAdapter($registrar,$order);
-        if (!$adapter instanceof \Registrar_Adapter_Spaceship) throw new \FOSSBilling\InformationException('Domain does not use the Spaceship adapter.');
-        return [$domain,$adapter];
-    }
-    public function records($domain,$adapter): array
-    {
-        $items=[]; $skip=0;
-        do {
-            $r=$adapter->request('GET','/dns/records/'.rawurlencode($domain->sld.$domain->tld).'?take=500&skip='.$skip)['body'];
-            $batch=$r['items']??[]; $items=array_merge($items,$batch); $skip+=count($batch);
-        } while (count($batch)>0 && $skip<(int)($r['total']??0) && $skip<10000);
-        return $items;
+        return [$domain];
     }
     public function label($client,$domain,array $record,string $label): void
     {
