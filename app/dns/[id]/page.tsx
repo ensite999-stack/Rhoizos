@@ -20,7 +20,7 @@ export default function Dns(){
 
   async function load(){
     const response=await fetch("/api/domains/"+id+"/dns",{cache:"no-store"});
-    if(response.status===401){location.href="/login";return;}
+    if(response.status===401){location.replace("/domains");return;}
     const data=await response.json();
     if(!response.ok){setError(data.error||t("dns.loadFailed"));return;}
     setItems(data.items||[]);

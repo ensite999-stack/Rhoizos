@@ -14,7 +14,7 @@ export default function EmailForwarding(){
 
   async function load(){
     const response=await fetch("/api/domains/"+id+"/email-forwards",{cache:"no-store"});
-    if(response.status===401){location.href="/login";return;}
+    if(response.status===401){location.replace("/email-forwarding");return;}
     const data=await response.json();
     if(!response.ok){setError(data.error||t("emailForward.loadFailed"));return;}
     setDomain(data.domain||"");setItems(data.items||[]);

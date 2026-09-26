@@ -1,24 +1,30 @@
 "use client";
-import {FormEvent,useState} from "react";
+import {FormEvent,useEffect,useState} from "react";
+import Link from "next/link";
 import {useI18n} from "@/components/I18nProvider";
 
 export default function Signup(){
   const {t}=useI18n();
   const [error,setError]=useState("");
   const [busy,setBusy]=useState(false);
+  const [next,setNext]=useState("");
+
+  useEffect(()=>{
+    const value=new URLSearchParams(window.location.search).get("next")||"";
+    if(value.startsWith("/")&&!value.startsWith("//"))setNext(value);
+  },[]);
 
   async function submit(event:FormEvent<HTMLFormElement>){
-    event.preventDefault();
-    setBusy(true);
-    setError("");
+    event.preventDefault();setBusy(true);setError("");
     const body=Object.fromEntries(new FormData(event.currentTarget));
     const response=await fetch("/api/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const data=await response.json();
     if(!response.ok){setError(data.error||t("signup.failed"));setBusy(false);return;}
-    location.href="/login";
+    location.href=next?"/login?next="+encodeURIComponent(next):"/login";
   }
 
-  return <div className="page">
+  return <div className="page authPage">
+    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
     <p className="kicker">{t("signup.kicker")}</p>
     <h1 className="pageTitle">{t("signup.title")}</h1>
     <p className="pageIntro">{t("signup.copy")}</p>

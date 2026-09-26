@@ -209,8 +209,7 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
               </button>
               <div className="domainSuggestionAction">
                 {item.available===true&&<div className="domainPriceBreakdown">
-                  <span><small>{t("detail.firstYearPrice")}</small><b>{item.firstYearPrice!==null?"$"+item.firstYearPrice.toFixed(2):"—"}</b></span>
-                  <span className={item.promoPrice!==null?"promo":""}><small>{t("detail.promoPrice")}</small><b>{item.promoPrice!==null?"$"+item.promoPrice.toFixed(2):"—"}</b></span>
+                  <span><small>{t("detail.firstYearPrice")}</small><b>{item.price!==null?"$"+item.price.toFixed(2):"—"}</b></span>
                   <span><small>{t("detail.renewPrice")}</small><b>{item.renewPrice!==null?"$"+item.renewPrice.toFixed(2):"—"}</b></span>
                 </div>}
                 {item.available===true&&item.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
@@ -231,8 +230,7 @@ export default function DomainDetail({initialDomain}:{initialDomain:string}){
           </div>
           {result.available===true&&<div className="availabilityAction">
             <div className="domainPriceBreakdown summaryPrices">
-              <span><small>{t("detail.firstYearPrice")}</small><b>{result.firstYearPrice!==null?"$"+result.firstYearPrice.toFixed(2):"—"}</b></span>
-              <span className={result.promoPrice!==null?"promo":""}><small>{t("detail.promoPrice")}</small><b>{result.promoPrice!==null?"$"+result.promoPrice.toFixed(2):"—"}</b></span>
+              <span><small>{t("detail.firstYearPrice")}</small><b>{result.price!==null?"$"+result.price.toFixed(2):"—"}</b></span>
               <span><small>{t("detail.renewPrice")}</small><b>{result.renewPrice!==null?"$"+result.renewPrice.toFixed(2):"—"}</b></span>
             </div>
             {result.price===null&&<span className="pricePending">{t("detail.priceUnavailable")}</span>}
