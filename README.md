@@ -26,7 +26,7 @@ Next.js on Netlify
 
 A traditional VPS is not required for the new runtime. Persistent state lives in Postgres and server-side work runs in Netlify Functions.
 
-The previous FOSSBilling 0.7.2 implementation is intentionally retained in `fossbilling/`, `scripts/`, and the PHP tests during migration. It is a rollback/reference implementation, not the primary runtime.
+The previous FOSSBilling 0.7.2 implementation is retained only as a limited migration/reference layer. The active registrar integration is NameSilo.
 
 ## Product scope
 
@@ -111,8 +111,6 @@ See `legacy/README.md`.
 Do not run the Vercel-native app and the legacy FOSSBilling runtime against the same live payment/registrar credentials unless shared idempotency has been deliberately designed.
 
 
-## Registrar migration status
+## Registrar
 
-NameSilo is the primary provider for domain availability, account-specific standard TLD pricing, and new registrations. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price.
-
-Transfer, renewal, DNS, privacy, transfer-lock and auth-code operations still use the legacy Spaceship adapter while those paths are migrated. Keep live registration fenced off until `NAMESILO_PAYMENT_ID` is configured and the registration flow has been acceptance-tested.
+NameSilo is the only registrar integration. Rhoizos uses NameSilo for availability, account-specific standard TLD pricing, registration, transfer, renewal, domain status, WHOIS privacy, transfer lock, authorization codes and DNS management. Standard retail prices are calculated from the current NameSilo account cost plus the configured Rhoizos markup. Premium domains are not offered unless NameSilo returns a live per-domain price.
