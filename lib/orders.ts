@@ -5,6 +5,7 @@ import {appUrl,livePayments} from "./env";
 import {createInvoice} from "./nowpayments";
 import {retailFromCost,retailPrice} from "./pricing";
 import {domainAvailability,domainDetails} from "./spaceship";
+import {namesiloAvailability,namesiloStandardCost} from "./namesilo";
 import {sealSecret} from "./crypto";
 
 async function contactSnapshot(userId:string):Promise<ContactInput>{
@@ -28,11 +29,12 @@ async function insertOrder(userId:string,kind:"register"|"transfer"|"renew",doma
 }
 
 export async function createRegisterOrder(userId:string,input:string){
-  const domain=normalizeDomain(input),a=await domainAvailability(domain);
+  const domain=normalizeDomain(input);
+  const [a]=await namesiloAvailability([domain]);
   if(!a.available) throw new Error("Domain is not available.");
-  const amount=a.registerPrice
-    ?await retailFromCost(a.registerPrice,"register")
-    :await retailPrice(domain,"register");
+  const cost=a.quotedPrice??(a.premium?null:await namesiloStandardCost(domain,"register"));
+  if(!cost) throw new Error("Premium pricing is unavailable for this domain. Contact support.");
+  const amount=await retailFromCost(cost,"register");
   return insertOrder(userId,"register",domain,amount,{years:1,contact:await contactSnapshot(userId)});
 }
 
