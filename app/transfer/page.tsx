@@ -2,6 +2,7 @@
 import {FormEvent,useEffect,useState} from "react";
 import Link from "next/link";
 import {useI18n} from "@/components/I18nProvider";
+import BackLink from "@/components/BackLink";
 
 export default function Transfer(){
   const {t}=useI18n();
@@ -31,10 +32,11 @@ export default function Transfer(){
   }
 
   return <div className="page">
-    <Link className="backHomeLink" href="/">← {t("common.backHome")}</Link>
+    <BackLink fallbackHref="/"/>
     <p className="kicker">{t("transfer.kicker")}</p>
     <h1 className="pageTitle">{t("transfer.title")}</h1>
     <p className="pageIntro">{t("transfer.copy")}</p>
+    <div className="warningCard"><strong>{t("payment.cryptoOnlyTitle")}</strong><p>{t("payment.cryptoOnlyCopy")}</p></div>
     <form className="form" onSubmit={submit}>
       <label className="field">{t("common.domain")}<input name="domain" value={domain} onChange={event=>setDomain(event.target.value)} placeholder="example.com" required/></label>
       <label className="field">{t("transfer.auth")}<input name="authCode" type="password" autoComplete="off" required/></label>
