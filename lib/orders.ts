@@ -3,7 +3,7 @@ import {db} from "./db";
 import {normalizeDomain,validateContact,type ContactInput} from "./domain";
 import {appUrl,livePayments} from "./env";
 import {createInvoice} from "./nowpayments";
-import {retailPrice} from "./pricing";
+import {retailFromCost,retailPrice} from "./pricing";
 import {namesiloAvailability,namesiloDomainDetails,namesiloStandardCost} from "./namesilo";
 import {sealSecret} from "./crypto";
 
@@ -33,7 +33,7 @@ export async function createRegisterOrder(userId:string,input:string){
   if(!a.available) throw new Error("Domain is not available.");
   const cost=a.quotedPrice??(a.premium?null:await namesiloStandardCost(domain,"register"));
   if(!cost) throw new Error("Premium pricing is unavailable for this domain. Contact support.");
-  const amount=a.premium?await import("./pricing").then(m=>m.retailFromCost(cost,"register")):await retailPrice(domain,"register");
+  const amount=a.premium?await retailFromCost(cost,"register"):await retailPrice(domain,"register");
   return insertOrder(userId,"register",domain,amount,{
     years:1,providerCostAtQuote:cost,contact:await contactSnapshot(userId)
   });
