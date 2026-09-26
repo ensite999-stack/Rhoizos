@@ -48,7 +48,7 @@ export function validateRecord(input:Partial<DnsRecord>):DnsRecord{
   const name=String(input.name||"");
   if(!/^(?:@|\*|[a-zA-Z0-9_*.-]{1,253})$/.test(name)) throw new Error("Invalid DNS host.");
   const ttl=Number(input.ttl??3600);
-  if(!Number.isInteger(ttl)||ttl<60||ttl>3600) throw new Error("TTL must be between 60 and 3600 seconds.");
+  if(!Number.isInteger(ttl)||ttl<60||ttl>86400) throw new Error("TTL must be between 60 and 86400 seconds.");
 
   const record:DnsRecord={type,name,ttl};
   if(type==="A"){
