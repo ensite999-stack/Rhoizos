@@ -64,7 +64,7 @@ create table if not exists domains (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users(id) on delete restrict,
   name text not null unique,
-  registrar text not null default 'spaceship',
+  registrar text not null default 'namesilo',
   lifecycle_status text not null default 'registered',
   expires_at timestamptz,
   transfer_locked boolean not null default false,
